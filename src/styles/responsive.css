@@ -1,0 +1,207 @@
+@media (max-width: 900px) {
+  .sky-shell {
+    padding: 12px 12px 112px;
+  }
+
+  .sky-header {
+    top: 8px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 66px;
+    padding: 10px 12px;
+    border-radius: 20px;
+  }
+
+  .sky-brand-mark {
+    width: 44px;
+  }
+
+  .sky-brand small,
+  .sky-header-case {
+    display: none;
+  }
+
+  .sky-grid > [class*="span-"] {
+    grid-column: span 12;
+  }
+
+  .sky-workflow {
+    grid-template-columns: repeat(8, minmax(126px, 1fr));
+  }
+
+  .sky-hero .sky-card-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-hero-luna {
+    grid-template-columns: minmax(120px, 190px) minmax(0, 1fr);
+    text-align: left;
+  }
+
+  .sky-dashboard-metrics,
+  .sky-tool-map {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-briefing-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .sky-main {
+    gap: 15px;
+    margin-top: 15px;
+  }
+
+  .sky-card {
+    border-radius: 22px;
+  }
+
+  .sky-card-inner {
+    padding: 16px;
+  }
+
+  .sky-section-heading {
+    display: grid;
+    gap: 8px;
+  }
+
+  .sky-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-field,
+  .sky-field.wide {
+    grid-column: 1;
+  }
+
+  .sky-data-row {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .sky-luna {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-luna-art {
+    width: min(230px, 70vw);
+    min-height: auto;
+    aspect-ratio: 1;
+    margin: 0 auto;
+  }
+
+  .sky-bottom-nav {
+    width: calc(100% - 18px);
+    bottom: max(8px, env(safe-area-inset-bottom));
+    border-radius: 22px;
+  }
+
+  .sky-nav-button {
+    min-height: 58px;
+    font-size: 0.72rem;
+  }
+
+  .sky-workflow-shell {
+    margin-top: 10px;
+  }
+
+  .sky-workflow {
+    grid-template-columns: repeat(9, minmax(112px, 1fr));
+  }
+
+  .sky-stage {
+    min-height: 70px;
+    padding: 10px;
+  }
+
+  .sky-hero {
+    min-height: 0;
+  }
+
+  .sky-hero .sky-card-inner {
+    gap: 18px;
+  }
+
+  .sky-hero h1 {
+    font-size: clamp(2.15rem, 11vw, 3.3rem);
+  }
+
+  .sky-hero-luna {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .sky-dashboard-tile {
+    min-height: 124px;
+    padding: 18px;
+  }
+
+  .sky-dashboard-tile strong {
+    font-size: 2.8rem;
+  }
+
+  .sky-case-progress,
+  .sky-agent-panel,
+  .sky-case-banner-layout,
+  .sky-queue-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-case-banner-layout > .sky-chip {
+    justify-self: start;
+  }
+
+  .sky-case-queue {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-case-card {
+    min-height: 0;
+    padding: 18px;
+  }
+
+  .sky-case-card-top {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .sky-case-card-top > .sky-chip {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .sky-case-card-facts {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-briefing-facts,
+  .sky-tool-buttons,
+  .sky-summary-ribbon,
+  .sky-choice-grid,
+  .sky-choice-grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-next-action {
+    display: grid;
+  }
+
+  .sky-next-action .sky-action-row {
+    display: grid;
+  }
+
+  .sky-next-action button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

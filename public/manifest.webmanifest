@@ -1,0 +1,17 @@
+{
+  "name": "Fraud Bloom",
+  "short_name": "Fraud Bloom",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#02091b",
+  "theme_color": "#04112f",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

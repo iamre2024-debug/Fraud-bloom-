@@ -1,0 +1,27 @@
+{
+  "name": "fraud-bloom",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "check:evidence": "node scripts/evidence-first-check.mjs && node scripts/public-case-leak-smoke-check.mjs",
+    "check:contracts": "node scripts/case-domain-model-smoke-check.mjs && node scripts/payment-verification-smoke-check.mjs && node scripts/business-payroll-contract-smoke-check.mjs && node scripts/relationship-tools-smoke-check.mjs && node scripts/link-analysis-smoke-check.mjs && node scripts/document-request-workflow-smoke-check.mjs && node scripts/payroll-workflow-smoke-check.mjs && node scripts/review-package-smoke-check.mjs && node scripts/quick-pad-controller-smoke-check.mjs && node scripts/pinned-evidence-navigation-smoke-check.mjs && node scripts/device-intelligence-smoke-check.mjs && node scripts/system-access-contract-smoke-check.mjs && node scripts/sky-workspaces-smoke-check.mjs",
+    "check:generated": "node scripts/generated-case-smoke-check.mjs && node scripts/generated-scenario-diversity-smoke-check.mjs",
+    "check:security": "node scripts/luna-debrief-gate-smoke-check.mjs && node scripts/luna-single-module-smoke-check.mjs && node scripts/luna-api-security-smoke-check.mjs && node scripts/case-migration-smoke-check.mjs && node scripts/cloud-persistence-smoke-check.mjs",
+    "test": "npm run check:evidence && npm run check:contracts && npm run check:generated && npm run check:security",
+    "test:browser": "playwright test",
+    "verify": "npm test && npm run build"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^5.0.4",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "vite": "^7.2.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0"
+  }
+}
