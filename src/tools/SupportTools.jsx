@@ -491,4 +491,642 @@ export function LinkAnalysisTool(props) {
                 </div>
                 {result.matches.length > 3 ? (
                   <button
-                    t
+                    type="button"
+                    className="sky-button-secondary"
+                    onClick={() => setShowAll((current) => !current)}
+                  >
+                    {showAll ? 'Show first 3' : `View all ${result.matches.length}`}
+                  </button>
+                ) : null}
+              </header>
+              <div className="sky-link-reference-account-list">
+                {visibleMatches.map((match, index) => (
+                  <button
+                    type="button"
+                    key={`${match.accountId}-${match.identifierType}`}
+                    data-accent={index % 2 ? 'pink' : 'blue'}
+                    aria-pressed={selected?.accountId === match.accountId}
+                    onClick={() => setSelected(match)}
+                  >
+                    <span aria-hidden="true"><SupportGlyph type="subject" size={20} /></span>
+                    <span>
+                      <small>{match.accountId} · {match.productType}</small>
+                      <strong>{match.customerName}</strong>
+                      <em>{match.relationshipToCurrentCase}</em>
+                    </span>
+                    <span>
+                      <small>Account status</small>
+                      <strong>{match.status ?? 'Not supplied'}</strong>
+                    </span>
+                    <i aria-hidden="true">›</i>
+                  </button>
+                ))}
+                {!result.matches.length ? (
+                  <div className="sky-empty">No exact stored account match was returned.</div>
+                ) : null}
+              </div>
+            </SkyCard>
+
+            {selected ? (
+              <SkyCard
+                className="span-12 sky-link-reference-detail"
+                shape="ribbon"
+                sparkle
+              >
+                <SectionHeading
+                  eyebrow="Selected account relationship"
+                  title={selected.accountId}
+                  description={selected.investigativeNote}
+                  action={<StatusChip>{selected.currentCase ? 'Current account' : 'Linked account'}</StatusChip>}
+                />
+                <DataList rows={[
+                  ['Customer / business', selected.customerName],
+                  ['Product', selected.productType],
+                  ['Account status', selected.status ?? 'Not supplied'],
+                  ['Exact identifier', selected.exactSharedIdentifier],
+                  ['Relationship', selected.relationshipToCurrentCase],
+                  ['Source', selected.identifier?.source],
+                  ['Source record', selected.identifier?.sourceRecordId],
+                  ['First use', selected.identifier?.firstUse],
+                  ['Last use', selected.identifier?.lastUse],
+                  ['Status context', selected.statusExplanation],
+                ]} />
+                {toolActions(props, 'Link Analysis', linkPinRecord(result, selected))}
+              </SkyCard>
+            ) : null}
+
+            <SkyCard
+              className="span-12 sky-link-reference-summary"
+              tone="pink"
+              shape="shield"
+              sparkle
+            >
+              <header>
+                <span aria-hidden="true"><SkyIcon name="shield" size={24} /></span>
+                <div>
+                  <small>Exact links summary</small>
+                  <h2>Recorded relationships only</h2>
+                </div>
+              </header>
+              <div className="sky-link-reference-summary-metrics">
+                <article><strong>{result.summary.exact}</strong><span>Exact matches</span></article>
+                <article><strong>{currentMatches}</strong><span>Current account</span></article>
+                <article><strong>{result.summary.relatedCases}</strong><span>Related cases</span></article>
+                <article><strong>{result.summary.restricted}</strong><span>Restricted / closed</span></article>
+              </div>
+              <p>A shared identifier is evidence for review. It does not label the current case or choose a determination.</p>
+          </SkyCard>
+          </>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+export function SystemAccessTool(props) {
+  const {
+    activeCase,
+    query: routedQuery = '',
+    initialPayload = null,
+  } = props;
+  const records = useMemo(() => getSystemAccessRecords(activeCase), [activeCase]);
+  const prefilledQuery = clean(initialPayload?.query ?? routedQuery);
+  const [query, setQuery] = useState(prefilledQuery);
+  const [submittedQuery, setSubmittedQuery] = useState('');
+  const [ran, setRan] = useState(false);
+  const [selected, setSelected] = useState(null);
+  const [error, setError] = useState('');
+  const matches = useMemo(
+    () => (ran
+      ? sortSystemAccessRecords(searchSystemAccessRecords(records, submittedQuery))
+      : []),
+    [ran, records, submittedQuery],
+  );
+  const summary = useMemo(() => buildSystemAccessSummary(matches), [matches]);
+  const latestDisplay = timelineDisplayParts(
+    summary.latestObserved,
+    activeCase?.reportedDate ?? activeCase?.opened ?? 'Training date',
+  );
+
+  useEffect(() => {
+    setQuery(prefilledQuery);
+    setSubmittedQuery('');
+    setRan(false);
+    setSelected(null);
+    setError('');
+  }, [activeCase?.id, prefilledQuery]);
+
+  function clearResult() {
+    setRan(false);
+    setSelected(null);
+    setError('');
+  }
+
+  function runSystemAccessSearch(event) {
+    event.preventDefault();
+    const exactQuery = query.trim();
+    if (!exactQuery) {
+      setError('Enter a record ID, actor, object, lane, status, or event.');
+      setRan(false);
+      setSelected(null);
+      return;
+    }
+    setSubmittedQuery(exactQuery);
+    setRan(true);
+    setSelected(null);
+    setError('');
+    props.onAction?.(
+      'Ran system access search',
+      exactQuery,
+      'System Access Lane',
+    );
+  }
+
+  return (
+    <section
+      className="sky-main sky-reference-tool-page sky-support-reference-page sky-system-access-page"
+      data-reference-layout="sky-system-access-v1"
+      data-case-id={activeCase?.id ?? ''}
+    >
+      <SupportReferenceHero
+        title="System Access Lane"
+        eyebrow="Audit trail · Supplied records"
+        subtitle="Search the case access sources, then open one recorded event and review its exact context."
+        activeCase={activeCase}
+        onBack={props.onBackToWorkspace}
+        icon="shield"
+        luna
+        status={ran ? `${matches.length} matched` : 'Search required'}
+      />
+
+      <div className="sky-grid">
+        <SkyCard
+          className="span-12 sky-reference-search sky-system-access-search"
+          shape="ribbon"
+          sparkle
+        >
+          <header className="sky-reference-search-heading">
+            <span aria-hidden="true"><SkyIcon name="search" size={20} /></span>
+            <div>
+              <small>Run before reveal</small>
+              <strong>Find a supplied access event</strong>
+              <p>Search by exact record ID or a source-backed actor, object, lane, status, or event term.</p>
+            </div>
+          </header>
+          <form
+            className="sky-system-access-search-form"
+            onSubmit={runSystemAccessSearch}
+            noValidate
+          >
+            <label>
+              <span>Search System Access Lane</span>
+              <input
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value);
+                  clearResult();
+                }}
+                placeholder="Record ID, actor, object, lane, status, or event"
+                aria-label="Search System Access Lane"
+                autoComplete="off"
+              />
+            </label>
+            <button className="sky-button" type="submit" aria-label="Run access search">
+              <SkyIcon name="search" size={18} />
+              Run access search
+            </button>
+          </form>
+          {error ? <p className="sky-system-access-error" role="alert">{error}</p> : null}
+          <div className="sky-system-access-search-status" role="status">
+            <span>{ran ? `${matches.length} matching event${matches.length === 1 ? '' : 's'}` : 'Access events are hidden'}</span>
+            <small>{ran ? `Search: ${submittedQuery}` : 'Run the search to reveal supplied records'}</small>
+          </div>
+        </SkyCard>
+
+        {!ran ? (
+          <SkyCard className="span-12 sky-support-reference-locked" shape="notched">
+            <SkyIcon name="shield" size={23} />
+            <div>
+              <strong>System access records are hidden</strong>
+              <p>Run a case-scoped search to reveal only the matching supplied events. No outcome is inferred before review.</p>
+            </div>
+          </SkyCard>
+        ) : null}
+
+        {ran && matches.length ? (
+          <>
+            <section className="span-12 sky-system-access-summary" aria-label="System access summary">
+              <article data-tone="cyan">
+                <span aria-hidden="true"><SkyIcon name="network" size={21} /></span>
+                <strong>{summary.total}</strong>
+                <small>Matching events</small>
+                <em>Supplied records</em>
+              </article>
+              <article data-tone="pink">
+                <span aria-hidden="true"><SkyIcon name="shield" size={21} /></span>
+                <strong>{summary.lanes}</strong>
+                <small>Recorded lanes</small>
+                <em>Distinct source types</em>
+              </article>
+              <article data-tone="violet">
+                <span aria-hidden="true"><SkyIcon name="user" size={21} /></span>
+                <strong>{summary.actors}</strong>
+                <small>Recorded actors</small>
+                <em>Distinct supplied names</em>
+              </article>
+              <article data-tone="blue">
+                <span aria-hidden="true"><SkyIcon name="clock" size={21} /></span>
+                <strong>{latestDisplay.time}</strong>
+                <small>Latest matched record</small>
+                <em>{latestDisplay.date}</em>
+              </article>
+            </section>
+
+            <section className="span-12 sky-system-access-lane" aria-label="Matching system access events">
+              {matches.map((record, index) => {
+                const display = timelineDisplayParts(
+                  record.observed,
+                  activeCase?.reportedDate ?? activeCase?.opened ?? 'Training date',
+                );
+                const selectedRecord = selected?.id === record.id;
+                const icon = /vendor|device/i.test(`${record.lane} ${record.actor}`)
+                  ? 'device'
+                  : /internal|workspace|queue/i.test(`${record.lane} ${record.actor}`)
+                    ? 'user'
+                    : /audit/i.test(record.lane)
+                      ? 'shield'
+                      : 'network';
+                return (
+                  <article
+                    className="sky-system-access-event"
+                    data-accent={index % 4 === 1 ? 'violet' : index % 4 === 2 ? 'pink' : index % 4 === 3 ? 'amber' : 'cyan'}
+                    data-selected={selectedRecord || undefined}
+                    key={record.id}
+                  >
+                    <time>
+                      <strong>{display.time}</strong>
+                      <span>{display.date}</span>
+                    </time>
+                    <span className="sky-system-access-dot" aria-hidden="true" />
+                    <button
+                      type="button"
+                      onClick={() => setSelected(selectedRecord ? null : record)}
+                      aria-pressed={selectedRecord}
+                      aria-label={`Open system access record ${record.id}`}
+                    >
+                      <i aria-hidden="true"><SkyIcon name={icon} size={22} /></i>
+                      <span>
+                        <small>{record.id} · {record.lane}</small>
+                        <strong>{record.event}</strong>
+                        <em>{record.actor}</em>
+                        <b>{record.object}</b>
+                      </span>
+                      <StatusChip>{record.status}</StatusChip>
+                      <SkyIcon name="arrow" size={17} />
+                    </button>
+                    {selectedRecord ? (
+                      <div className="sky-system-access-detail">
+                        <header>
+                          <div>
+                            <small>Selected supplied record</small>
+                            <strong>{record.id}</strong>
+                          </div>
+                          <StatusChip>{record.status}</StatusChip>
+                        </header>
+                        <DataList rows={[
+                          ['Lane', record.lane],
+                          ['Actor', record.actor],
+                          ['Event', record.event],
+                          ['Object', record.object],
+                          ['Observed', record.observed],
+                          ['Context', record.context],
+                        ]} />
+                        {toolActions(props, 'System Access Lane', {
+                          ...record,
+                          label: `${record.id} · ${record.event}`,
+                          detail: record.context,
+                          pinPayload: {
+                            id: record.id,
+                            label: 'System Access Record ID',
+                            value: record.id,
+                            query: record.id,
+                            sourceRecordId: record.id,
+                            identifierType: 'system-access-record-id',
+                            detail: record.context,
+                          },
+                        })}
+                      </div>
+                    ) : null}
+                  </article>
+                );
+              })}
+            </section>
+          </>
+        ) : null}
+
+        {ran && !matches.length ? (
+          <SkyCard className="span-12 sky-system-access-empty" tone="pink" shape="shield">
+            <SkyIcon name="search" size={25} />
+            <div>
+              <strong>No supplied access event matched</strong>
+              <p>Check the record ID or try another actor, object, lane, status, or event term. An empty result does not establish a finding.</p>
+            </div>
+          </SkyCard>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+export function TimelineTool(props) {
+  const {
+    activeCase,
+    query: routedQuery = '',
+    initialPayload = null,
+  } = props;
+  const prefilledQuery = clean(initialPayload?.query ?? routedQuery);
+  const prefilledSource = clean(initialPayload?.source) || 'All';
+  const timeline = useMemo(
+    () => buildCoreToolRecords('Timeline', activeCase) ?? { columns: [], rows: [] },
+    [activeCase],
+  );
+  const [query, setQuery] = useState(prefilledQuery);
+  const [source, setSource] = useState(prefilledSource);
+  const [submittedQuery, setSubmittedQuery] = useState('');
+  const [submittedSource, setSubmittedSource] = useState('All');
+  const [ran, setRan] = useState(false);
+  const [selected, setSelected] = useState(null);
+  const allRows = useMemo(
+    () => [
+      ...(timeline.rows ?? []),
+      ...(timeline.scheduledRows ?? []),
+      ...(timeline.undatedRows ?? []),
+    ],
+    [timeline],
+  );
+  const sources = useMemo(
+    () => ['All', ...new Set(allRows.map((row) => row.values[3]).filter(Boolean))],
+    [allRows],
+  );
+  const rows = ran
+    ? allRows.filter((row) => {
+        const matchesSource = submittedSource === 'All' || row.values[3] === submittedSource;
+        const matchesQuery = !submittedQuery.trim()
+          || row.values.join(' ').toLowerCase().includes(submittedQuery.trim().toLowerCase());
+        return matchesSource && matchesQuery;
+      })
+    : [];
+  const occurredRows = rows.filter((row) => !['scheduled', 'undated'].includes(row.temporalKind));
+  const scheduledRows = rows.filter((row) => row.temporalKind === 'scheduled');
+  const undatedRows = rows.filter((row) => row.temporalKind === 'undated');
+  const fallbackDate = activeCase.reportedDate ?? activeCase.opened ?? 'Training date';
+  const groups = useMemo(
+    () => groupTimelineRows(occurredRows, fallbackDate),
+    [fallbackDate, occurredRows],
+  );
+
+  useEffect(() => {
+    setQuery(prefilledQuery);
+    setSource(sources.includes(prefilledSource) ? prefilledSource : 'All');
+    setSubmittedQuery('');
+    setSubmittedSource('All');
+    setRan(false);
+    setSelected(null);
+  }, [activeCase?.id, prefilledQuery, prefilledSource, sources]);
+
+  function clearTimelineResult() {
+    setRan(false);
+    setSelected(null);
+  }
+
+  function runTimelineSearch(event) {
+    event.preventDefault();
+    setSubmittedQuery(query.trim());
+    setSubmittedSource(source);
+    setRan(true);
+    setSelected(null);
+    props.onAction?.(
+      'Ran timeline search',
+      `${source} source · ${query.trim() || 'all supplied events'}`,
+      'Timeline',
+    );
+  }
+
+  return (
+    <section
+      className="sky-main sky-reference-tool-page sky-support-reference-page sky-timeline-reference-page"
+      data-reference-layout="sky-timeline-reference-v1"
+      data-case-id={activeCase?.id ?? ''}
+    >
+      <SupportReferenceHero
+        title="Timeline"
+        eyebrow="Sequence · Supplied records"
+        subtitle="Filter and run the case timeline, then open one event and cite its exact source."
+        activeCase={activeCase}
+        onBack={props.onBackToWorkspace}
+        icon="calendar"
+        luna
+      />
+
+      <div className="sky-grid">
+        <SkyCard
+          className="span-12 sky-reference-search sky-timeline-reference-search"
+          shape="ribbon"
+          sparkle
+        >
+          <header className="sky-reference-search-heading">
+            <span aria-hidden="true"><SkyIcon name="calendar" size={20} /></span>
+            <div>
+              <small>Run before reveal</small>
+              <strong>Put the recorded sequence in order</strong>
+              <p>Choose a source or search term, run the timeline, then open an event and cite its timestamp.</p>
+            </div>
+          </header>
+          <form className="sky-timeline-reference-form" onSubmit={runTimelineSearch} noValidate>
+            <label className="sky-timeline-reference-query">
+              <span>Search timeline</span>
+              <input
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value);
+                  clearTimelineResult();
+                }}
+                placeholder="Event, object, date, source, or ID"
+                aria-label="Search timeline"
+                autoComplete="off"
+              />
+            </label>
+            <label>
+              <span>Source</span>
+              <select
+                value={source}
+                onChange={(event) => {
+                  setSource(event.target.value);
+                  clearTimelineResult();
+                }}
+                aria-label="Timeline source"
+              >
+                {sources.map((item) => <option value={item} key={item}>{item}</option>)}
+              </select>
+            </label>
+            <button className="sky-button" type="submit">
+              <SkyIcon name="calendar" size={18} />
+              Run timeline
+            </button>
+          </form>
+          <div className="sky-timeline-reference-search-status" role="status">
+            <span>{ran ? `${rows.length} matched event${rows.length === 1 ? '' : 's'}` : 'Timeline events are hidden'}</span>
+            <small>{ran ? `${submittedSource} source filter` : 'Run the search to reveal supplied events'}</small>
+          </div>
+        </SkyCard>
+
+        {!ran ? (
+          <SkyCard className="span-12 sky-support-reference-locked" shape="notched">
+            <SkyIcon name="calendar" size={23} />
+            <div>
+              <strong>Timeline rows are hidden</strong>
+              <p>Search text is optional. Choose a source or All, then run the timeline to reveal the supplied sequence.</p>
+            </div>
+          </SkyCard>
+        ) : null}
+
+        {ran && occurredRows.length ? (
+          <section className="span-12 sky-timeline-reference" aria-label="Case timeline events">
+            {groups.map((group) => (
+              <section className="sky-timeline-reference-group" key={group.key}>
+                <header>
+                  <strong>{group.label}</strong>
+                  <span>{group.events.length} event{group.events.length === 1 ? '' : 's'}</span>
+                </header>
+                <div>
+                  {group.events.map(({ row, display }, index) => (
+                    <article
+                      className="sky-timeline-reference-event"
+                      data-accent={index % 3 === 1 ? 'pink' : index % 3 === 2 ? 'violet' : 'blue'}
+                      data-selected={selected?.id === row.id || undefined}
+                      key={row.id}
+                    >
+                      <time>{display.time}</time>
+                      <span className="sky-timeline-reference-dot" aria-hidden="true" />
+                      <button
+                        type="button"
+                        onClick={() => setSelected(row)}
+                        aria-pressed={selected?.id === row.id}
+                      >
+                        <span>
+                          <small>{row.values[3]}</small>
+                          <strong>{row.values[2]}</strong>
+                          <em>{row.values[4]} · {row.values[6]}</em>
+                        </span>
+                        <i aria-hidden="true">
+                          <SkyIcon name={timelineIconName(row.values[3])} size={22} />
+                        </i>
+                      </button>
+                      {selected?.id === row.id ? (
+                        <TimelineSelectedDetail props={props} timeline={timeline} row={row} />
+                      ) : null}
+                    </article>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </section>
+        ) : null}
+
+        {ran && scheduledRows.length ? (
+          <SkyCard
+            className="span-12 sky-timeline-reference-supplement"
+            shape="notched"
+            sparkle
+          >
+            <SectionHeading
+              eyebrow="Scheduled records"
+              title="Upcoming supplied dates"
+              description="These source-backed dates are shown separately from events that already occurred."
+            />
+            <div className="sky-timeline-reference-supplement-list">
+              {scheduledRows.map((row) => (
+                <article key={row.id} data-selected={selected?.id === row.id || undefined}>
+                  <button
+                    type="button"
+                    onClick={() => setSelected(row)}
+                    aria-pressed={selected?.id === row.id}
+                  >
+                    <span aria-hidden="true">
+                      <SkyIcon name={timelineIconName(row.values[3])} size={20} />
+                    </span>
+                    <span>
+                      <small>{row.values[1]} · {row.values[3]}</small>
+                      <strong>{row.values[2]}</strong>
+                      <em>{row.values[4]} · {row.values[6]}</em>
+                    </span>
+                  </button>
+                  {selected?.id === row.id ? (
+                    <TimelineSelectedDetail props={props} timeline={timeline} row={row} />
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          </SkyCard>
+        ) : null}
+
+        {ran && undatedRows.length ? (
+          <SkyCard
+            className="span-12 sky-timeline-reference-supplement"
+            tone="pink"
+            shape="shield"
+            sparkle
+          >
+            <SectionHeading
+              eyebrow="Undated records"
+              title="Recorded without an event timestamp"
+              description="These source records remain available for review but are not placed on the chronological rail."
+            />
+            <div className="sky-timeline-reference-supplement-list">
+              {undatedRows.map((row) => (
+                <article key={row.id} data-selected={selected?.id === row.id || undefined}>
+                  <button
+                    type="button"
+                    onClick={() => setSelected(row)}
+                    aria-pressed={selected?.id === row.id}
+                  >
+                    <span aria-hidden="true">
+                      <SkyIcon name={timelineIconName(row.values[3])} size={20} />
+                    </span>
+                    <span>
+                      <small>{row.values[1]} · {row.values[3]}</small>
+                      <strong>{row.values[2]}</strong>
+                      <em>{row.values[4]} · {row.values[6]}</em>
+                    </span>
+                  </button>
+                  {selected?.id === row.id ? (
+                    <TimelineSelectedDetail props={props} timeline={timeline} row={row} />
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          </SkyCard>
+        ) : null}
+
+        {ran && !rows.length ? (
+          <SkyCard className="span-12 sky-timeline-reference-empty" tone="pink" shape="shield">
+            <SkyIcon name="calendar" size={25} />
+            <div>
+              <strong>No timeline event matched</strong>
+              <p>Adjust the source or search term and run the timeline again. No conclusion is inferred from an empty result.</p>
+            </div>
+          </SkyCard>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+export function SupportToolRouter({ toolName, ...props }) {
+  if (toolName === 'Link Analysis') return <LinkAnalysisTool {...props} />;
+  if (toolName === 'System Access Lane') return <SystemAccessTool {...props} />;
+  if (toolName === 'Timeline') return <TimelineTool {...props} />;
+  return null;
+}
+
+export const supportToolNames = new Set(['Link Analysis', 'System Access Lane', 'Timeline']);

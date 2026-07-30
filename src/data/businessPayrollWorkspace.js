@@ -391,4 +391,181 @@ export function getPayrollHistory(activeCase) {
 export function employeePayrollHistory(payrollWorkspace, employeeId) {
   const company = payrollWorkspace.companyPayrollProfile;
   const paychecks = employeePayrollSnapshots(
-    payrollWorkspace.payrollRuns ?? 
+    payrollWorkspace.payrollRuns ?? [],
+    employeeId,
+  ).map(({ run, employee, paystub }) => ({
+    ...employee,
+    paystub,
+    runId: run.id ?? null,
+    payDate: run.payDate ?? run.processedDate ?? null,
+    payPeriod: run.payPeriod ?? null,
+    payrollType: run.runType ?? null,
+    company: company?.legalName,
+  }));
+  return {
+    employee: paychecks[0] ?? null,
+    paychecks,
+    selectedYear: paychecks[0]?.payDate?.match(/\d{4}/)?.[0] ?? null,
+    paycheckCount: paychecks.length,
+    ytdGross: paychecks[0]?.paystub?.ytdSnapshot?.grossPay ?? null,
+    ytdNet: paychecks[0]?.paystub?.ytdSnapshot?.netPay ?? null,
+  };
+}
+
+export function findPayrollRecord(payrollWorkspace, value = '') {
+  const normalized = String(value).trim().toLowerCase();
+  if (
+    !normalized
+    || ['not supplied', 'not applicable', 'not recorded', 'none'].includes(normalized)
+  ) return null;
+
+  const runs = sortPayrollRunsNewestFirst(payrollWorkspace.payrollRuns ?? []);
+  const exact = (candidate) => String(candidate ?? '').trim().toLowerCase() === normalized;
+  const result = ({
+    type,
+    identifierType,
+    identifierLabel,
+    matchedIdentifier,
+    occurrences,
+  }) => {
+    const primary = occurrences[0] ?? {};
+    return {
+      type,
+      identifierType,
+      identifierLabel,
+      matchedIdentifier,
+      occurrences,
+      matchCount: occurrences.length,
+      ...primary,
+    };
+  };
+
+  if (exact(payrollWorkspace.companyPayrollProfile?.payrollId)) {
+    return result({
+      type: 'profile',
+      identifierType: 'payroll-profile-id',
+      identifierLabel: 'Payroll Profile ID',
+      matchedIdentifier: payrollWorkspace.companyPayrollProfile.payrollId,
+      occurrences: [{ run: runs[0] ?? null }],
+    });
+  }
+
+  const runMatches = runs
+    .filter((run) => exact(run.id))
+    .map((run) => ({ run }));
+  if (runMatches.length) {
+    return result({
+      type: 'run',
+      identifierType: 'payroll-run-id',
+      identifierLabel: 'Payroll Run ID',
+      matchedIdentifier: runMatches[0].run.id,
+      occurrences: runMatches,
+    });
+  }
+
+  const employeeOccurrences = runs.flatMap((run) => (
+    (run.employees ?? []).map((employee) => ({
+      run,
+      employee,
+      paystub: employee.paystub ?? null,
+    }))
+  ));
+  const paystubMatches = employeeOccurrences.filter(({ paystub }) => exact(paystub?.id));
+  if (paystubMatches.length) {
+    return result({
+      type: 'paystub',
+      identifierType: 'paystub-id',
+      identifierLabel: 'Paystub ID',
+      matchedIdentifier: paystubMatches[0].paystub.id,
+      occurrences: paystubMatches,
+    });
+  }
+
+  const employeeMatches = employeeOccurrences.filter(({ employee }) => exact(employee.employeeId));
+  if (employeeMatches.length) {
+    return result({
+      type: 'employee',
+      identifierType: 'employee-id',
+      identifierLabel: 'Employee ID',
+      matchedIdentifier: employeeMatches[0].employee.employeeId,
+      occurrences: employeeMatches,
+    });
+  }
+
+  const destinationOccurrences = employeeOccurrences.flatMap((occurrence) => (
+    (occurrence.paystub?.paymentDestinations ?? []).map((destination) => ({
+      ...occurrence,
+      destination,
+    }))
+  ));
+  for (const [field, identifierType, identifierLabel] of [
+    ['id', 'payment-destination-record-id', 'Payment Destination Record ID'],
+    ['destinationId', 'destination-id', 'Destination ID'],
+    ['bankCode', 'bank-code', 'Bank Code'],
+    ['paymentRecordId', 'payment-record-id', 'Payment Record ID'],
+  ]) {
+    const matches = destinationOccurrences.filter(({ destination }) => exact(destination[field]));
+    if (matches.length) {
+      return result({
+        type: 'destination',
+        identifierType,
+        identifierLabel,
+        matchedIdentifier: matches[0].destination[field],
+        occurrences: matches,
+      });
+    }
+  }
+
+  const fundingOccurrences = runs.map((run) => ({
+    run,
+    funding: run.companyFunding ?? null,
+  }));
+  for (const [field, identifierType, identifierLabel] of [
+    ['bankCode', 'funding-bank-code', 'Funding Bank Code'],
+    ['paymentRecordId', 'funding-payment-record-id', 'Funding Payment Record ID'],
+  ]) {
+    const matches = fundingOccurrences.filter(({ funding }) => exact(funding?.[field]));
+    if (matches.length) {
+      return result({
+        type: 'funding',
+        identifierType,
+        identifierLabel,
+        matchedIdentifier: matches[0].funding[field],
+        occurrences: matches,
+      });
+    }
+  }
+
+  return null;
+}
+
+export function getPayrollAccessContext(activeCase) {
+  if (activeCase.workflowType !== WORKFLOW_TYPES.PAYROLL_ACCOUNT_TAKEOVER) return null;
+  const parties = buildCaseParties(activeCase);
+  const login = activeCase.loginHistory?.[0] ?? {};
+  const businessRecords = getBusinessRecords(activeCase);
+  const financialRecords = getFinancialRecords(activeCase);
+  const payrollRecords = businessRecords.payrollRuns ?? [];
+  const destinationRecords = financialRecords.paymentVerification ?? [];
+  const initiator = parties.find((party) => /initiator/i.test(party.role ?? ''));
+  const approver = parties.find((party) => /approver/i.test(party.role ?? ''));
+  const administrator = parties.find((party) => /administrator/i.test(party.role ?? ''));
+  const recoveryDocument = (activeCase.documents ?? []).find((document) => /recover|recall|return/i.test(`${document.name ?? document.title} ${document.detail ?? ''}`));
+  const abnormalSamePerson = Boolean(initiator?.name && approver?.name && initiator.name === approver.name);
+
+  return {
+    initiator: initiator?.name ?? 'Initiator record not supplied',
+    approver: approver?.name ?? 'Approver record not supplied',
+    administrator: administrator?.name ?? 'Administrator record not supplied',
+    approvalSeparation: abnormalSamePerson
+      ? 'The same person initiated and approved; compare this with the business baseline.'
+      : 'Separate initiator and approver records are available.',
+    deviceId: login.deviceId ?? login.device ?? 'Device record not supplied',
+    ipAddress: login.ip ?? 'IP record not supplied',
+    sessionId: login.session ?? login.sessionReference ?? 'Session record not supplied',
+    payrollHistory: `${payrollRecords.length} payroll record${payrollRecords.length === 1 ? '' : 's'} available`,
+    destinationChanges: `${destinationRecords.length} payment or destination record${destinationRecords.length === 1 ? '' : 's'} available`,
+    fundsStatus: financialRecords.transactions?.[0]?.status ?? 'Funds status not supplied',
+    recoveryInformation: recoveryDocument?.detail ?? 'No recovery or recall result is recorded yet.',
+  };
+}

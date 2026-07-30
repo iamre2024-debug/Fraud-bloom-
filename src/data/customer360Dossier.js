@@ -415,4 +415,357 @@ function normalizeProfileUpdates(activeCase) {
       actor: safeRecordText(event.user, 'Customer or authorized servicing user'),
       deviceId: safeRecordText(event.device, 'Device not recorded'),
       sessionId: safeRecordText(event.session, 'Session not recorded'),
-   
+      authentication: safeRecordText(event.mfaMethod, 'Authentication method not recorded'),
+    }));
+
+  // Filtering supplied rows must never trigger replacement evidence. Missing
+  // history stays missing until a durable source packet supplies it.
+  return provided;
+}
+
+function suppliedSecuritySummary(activeCase) {
+  const security = activeCase.customer?.security
+    ?? activeCase.security
+    ?? activeCase.profile?.security
+    ?? {};
+  const devices = Array.isArray(security.trustedDevices) ? security.trustedDevices : [];
+  return {
+    mfaStatus: safeRecordText(security.mfaStatus),
+    passwordChanged: safeRecordText(security.passwordChanged),
+    lockouts: safeRecordText(security.lockouts),
+    alerts: safeRecordText(security.alerts),
+    recoveryContact: safeRecordText(security.recoveryContact),
+    trustedPhone: safeRecordText(security.trustedPhone),
+    trustedEmail: safeRecordText(security.trustedEmail),
+    recentPasswordReset: safeRecordText(firstSupplied(
+      security.recentPasswordReset,
+      security.passwordChanged,
+    )),
+    securityAlertsSent: safeRecordText(firstSupplied(
+      security.securityAlertsSent,
+      security.alerts,
+    )),
+    trustedDevices: devices
+      .filter((device) => recordDateIsAvailableAsOf(device.firstSeen, activeCase))
+      .map((device, index) => ({
+      id: safeRecordText(device.id, `DEVICE-SUPPLIED-${index + 1}`),
+      name: safeRecordText(device.name),
+      type: safeRecordText(device.type),
+      platform: safeRecordText(firstSupplied(
+        device.platform,
+        device.browserOrOperatingSystem,
+      )),
+      browserOrOperatingSystem: safeRecordText(firstSupplied(
+        device.browserOrOperatingSystem,
+        device.platform,
+      )),
+      firstSeen: asOfText(device.firstSeen, activeCase),
+      lastSeen: asOfText(device.lastSeen, activeCase),
+      mostRecentSuccessfulLogin: asOfText(firstSupplied(
+        device.mostRecentSuccessfulLogin,
+        device.lastSeen,
+      ), activeCase),
+      trustStatus: safeRecordText(device.trustStatus),
+      authentication: safeRecordText(firstSupplied(
+        device.authentication,
+        device.mfaMethod,
+      )),
+      mfaMethod: safeRecordText(firstSupplied(
+        device.mfaMethod,
+        device.authentication,
+      )),
+    })),
+  };
+}
+
+function suppliedServiceContacts(activeCase) {
+  const records = firstSupplied(
+    activeCase.customer?.serviceContacts,
+    activeCase.customer?.contactHistory,
+    activeCase.serviceContacts,
+    activeCase.contactHistory,
+  );
+  if (!Array.isArray(records)) return [];
+  return records
+    .filter((record) => recordDateIsAvailableAsOf(
+      firstSupplied(record.dateTime, record.date, record.observed),
+      activeCase,
+    ))
+    .map((record, index) => ({
+    id: safeRecordText(record.id, `SERVICE-SUPPLIED-${index + 1}`),
+    dateTime: safeRecordText(firstSupplied(
+      record.dateTime,
+      record.date && `${record.date}${record.time ? ` · ${record.time}` : ''}`,
+    )),
+    type: safeRecordText(record.type),
+    channel: safeRecordText(record.channel),
+    outcome: safeRecordText(record.outcome),
+    agent: safeRecordText(record.agent),
+    notes: safeRecordText(record.notes),
+    relatedAccountId: safeRecordText(record.relatedAccountId),
+    reasonForContact: safeRecordText(record.reasonForContact),
+    reportedInformation: safeRecordText(firstSupplied(
+      record.reportedInformation,
+      record.customerReported,
+    )),
+    assistanceProvided: safeRecordText(record.assistanceProvided),
+    documentsRequested: safeRecordText(record.documentsRequested),
+    followUpStatus: safeRecordText(record.followUpStatus),
+    agentOrDepartment: safeRecordText(firstSupplied(
+      record.agentOrDepartment,
+      record.agent,
+    )),
+  }));
+}
+
+function suppliedRelationshipSummary(activeCase) {
+  const relationship = activeCase.customer?.relationshipProfile
+    ?? activeCase.customer?.relationshipSummary
+    ?? activeCase.relationshipProfile
+    ?? {};
+  const rows = Array.isArray(activeCase.customer?.relationship)
+    ? activeCase.customer.relationship
+    : [];
+  const rowValue = (pattern) => rows.find((row) => pattern.test(String(row.label ?? '')))?.value;
+  return {
+    normalDeposits: safeRecordText(firstSupplied(
+      relationship.normalDeposits,
+      activeCase.customer?.normalDeposits,
+      rowValue(/normal deposit/i),
+    )),
+    normalSpending: safeRecordText(firstSupplied(
+      relationship.normalSpending,
+      activeCase.customer?.normalSpending,
+      rowValue(/normal spending/i),
+    )),
+    authorizedUsers: safeRecordText(firstSupplied(
+      relationship.authorizedUsers,
+      activeCase.customer?.authorizedUsers,
+      rowValue(/authorized user|additional signer/i),
+    )),
+    digitalBanking: safeRecordText(firstSupplied(
+      relationship.digitalBanking,
+      activeCase.customer?.digitalBanking,
+      rowValue(/digital banking|online banking/i),
+    )),
+  };
+}
+
+function suppliedRelationshipFacts(activeCase) {
+  const rows = Array.isArray(activeCase.customer?.relationship)
+    ? activeCase.customer.relationship
+    : [];
+  return rows
+    .map((row) => ({
+      label: safeRecordText(row?.label),
+      value: safeRecordText(row?.value),
+    }))
+    .filter((row) => row.label !== unavailable && row.value !== unavailable);
+}
+
+function sanitizeRelationshipSummary(relationship = {}) {
+  return {
+    normalDeposits: safeRecordText(relationship.normalDeposits),
+    normalSpending: safeRecordText(relationship.normalSpending),
+    authorizedUsers: safeRecordText(relationship.authorizedUsers),
+    digitalBanking: safeRecordText(relationship.digitalBanking),
+  };
+}
+
+function completeSecuritySummary(security, identity, activeCase) {
+  return {
+    mfaStatus: safeRecordText(security.mfaStatus),
+    passwordChanged: safeRecordText(security.passwordChanged),
+    lockouts: safeRecordText(security.lockouts),
+    alerts: safeRecordText(security.alerts),
+    recoveryContact: safeRecordText(security.recoveryContact),
+    trustedPhone: safeRecordText(security.trustedPhone ?? identity.mobilePhone),
+    trustedEmail: safeRecordText(security.trustedEmail ?? identity.email),
+    recentPasswordReset: safeRecordText(security.recentPasswordReset ?? security.passwordChanged),
+    securityAlertsSent: safeRecordText(security.securityAlertsSent ?? security.alerts),
+    trustedDevices: (security.trustedDevices ?? [])
+      .filter((device) => recordDateIsAvailableAsOf(device.firstSeen, activeCase))
+      .map((device) => ({
+      id: safeRecordText(device.id),
+      name: safeRecordText(device.name),
+      type: safeRecordText(device.type),
+      platform: safeRecordText(device.platform ?? device.browserOrOperatingSystem),
+      browserOrOperatingSystem: safeRecordText(device.browserOrOperatingSystem ?? device.platform),
+      firstSeen: asOfText(device.firstSeen, activeCase),
+      lastSeen: asOfText(device.lastSeen, activeCase),
+      mostRecentSuccessfulLogin: asOfText(device.mostRecentSuccessfulLogin ?? device.lastSeen, activeCase),
+      trustStatus: safeRecordText(device.trustStatus),
+      authentication: safeRecordText(device.authentication ?? device.mfaMethod),
+      mfaMethod: safeRecordText(device.mfaMethod ?? device.authentication),
+    })),
+  };
+}
+
+function completeServiceContacts(records = [], activeCase) {
+  return records
+    .filter((record) => recordDateIsAvailableAsOf(
+      record.dateTime ?? record.date ?? record.observed,
+      activeCase,
+    ))
+    .map((record) => ({
+    id: safeRecordText(record.id),
+    dateTime: safeRecordText(record.dateTime),
+    type: safeRecordText(record.type),
+    channel: safeRecordText(record.channel),
+    outcome: safeRecordText(record.outcome),
+    agent: safeRecordText(record.agent),
+    notes: safeRecordText(record.notes),
+    relatedAccountId: safeRecordText(record.relatedAccountId),
+    reasonForContact: safeRecordText(record.reasonForContact ?? record.type),
+    reportedInformation: safeRecordText(record.reportedInformation ?? record.customerReported ?? record.notes),
+    assistanceProvided: safeRecordText(record.assistanceProvided ?? record.outcome),
+    documentsRequested: safeRecordText(record.documentsRequested ?? 'None recorded'),
+    followUpStatus: safeRecordText(record.followUpStatus ?? (
+      /pending|requested|follow-up/i.test(`${record.outcome ?? ''} ${record.notes ?? ''}`)
+        ? 'Follow-up recorded'
+        : 'Completed'
+    )),
+    agentOrDepartment: safeRecordText(record.agentOrDepartment ?? record.agent),
+  }));
+}
+
+function normalizeBusinessLink(raw, index) {
+  const relationship = raw.relationshipType
+    ?? raw.relationship
+    ?? raw.role
+    ?? raw.linkType
+    ?? '';
+  const businessId = raw.businessId ?? raw.id ?? raw.entityId;
+  const businessName = raw.businessName ?? raw.legalName ?? raw.name ?? raw.entity;
+  if (!businessId || !businessName) return null;
+  const isOwnershipRelationship = /owner|ownership|beneficial|control/i.test(relationship);
+  return {
+    id: raw.id ?? `BUSINESS-LINK-${index + 1}`,
+    businessId,
+    businessName,
+    relationship,
+    ownershipPercentage: raw.ownershipPercentage
+      ?? raw.ownership
+      ?? (isOwnershipRelationship ? 'Not recorded' : 'Not applicable'),
+    relationshipSince: raw.relationshipSince ?? raw.since ?? 'Not recorded',
+    status: raw.status ?? 'Relationship record available',
+  };
+}
+
+function linkedBusinesses(activeCase) {
+  const candidates = [
+    ...(activeCase.customer?.businessRelationships ?? []),
+    ...(activeCase.businessRelationships ?? []),
+    ...(activeCase.linkedBusinesses ?? []),
+    ...(activeCase.relationships ?? []),
+  ];
+  return candidates
+    .map(normalizeBusinessLink)
+    .filter(Boolean)
+    .filter((item, index, all) => all.findIndex((candidate) => candidate.businessId === item.businessId) === index);
+}
+
+export function getCustomerIdentityFacts(activeCase) {
+  const profile = builtInProfiles[activeCase.id];
+  const identity = sanitizeIdentity(profile?.identity
+    ?? suppliedIdentity(activeCase));
+  const trainingId = safeRecordText(activeCase.trainingId);
+  const suppliedMaskedMemberId = activeCase.customer?.identity?.maskedMemberId
+    ?? activeCase.identity?.maskedMemberId
+    ?? activeCase.profile?.identity?.maskedMemberId;
+  return {
+    ...identity,
+    trainingId,
+    relationshipLength: /\b(?:19|20)\d{2}\b/.test(identity.customerSince)
+      ? relationshipLengthFrom(identity.customerSince)
+      : unavailable,
+    maskedMemberId: safeRecordText(suppliedMaskedMemberId),
+  };
+}
+
+export function getCustomer360Dossier(activeCase) {
+  const accounts = getPersistedRelationshipAccounts(activeCase);
+  const preset = builtInProfiles[activeCase.id];
+  const identity = getCustomerIdentityFacts(activeCase);
+  const security = preset
+    ? completeSecuritySummary(
+      preset.security,
+      identity,
+      activeCase,
+    )
+    : suppliedSecuritySummary(activeCase);
+  const serviceContacts = preset
+    ? completeServiceContacts(
+      preset.serviceContacts,
+      activeCase,
+    )
+    : suppliedServiceContacts(activeCase);
+  const profileUpdates = normalizeProfileUpdates(activeCase);
+  const businessRelationships = linkedBusinesses(activeCase);
+  const relationshipFacts = suppliedRelationshipFacts(activeCase);
+  const relationshipSource = preset?.relationship
+    ?? suppliedRelationshipSummary(activeCase);
+  const relationship = sanitizeRelationshipSummary(relationshipSource);
+  const asOf = safeRecordText(activeCase.reportedDate ?? activeCase.opened);
+  const hasPersistedIdentityPacket = Boolean(
+    activeCase.customer?.identity?.sourceRecordId
+    || activeCase.customer?.identity?.legalName,
+  );
+
+  return {
+    identity,
+    contact: {
+      mobilePhone: identity.mobilePhone,
+      homePhone: identity.homePhone,
+      email: identity.email,
+      mailingAddress: identity.currentAddress,
+      physicalAddress: identity.currentAddress,
+      previousAddress: identity.previousAddress,
+      preferredContact: identity.preferredContact,
+      verificationStatus: identity.verificationStatus,
+    },
+    accounts,
+    products: accounts,
+    relationship: {
+      ...relationship,
+      businessRelationships,
+      facts: relationshipFacts,
+    },
+    security,
+    profileUpdates,
+    serviceContacts,
+    recentContacts: serviceContacts,
+    priorClaims: [],
+    coverage: {
+      asOf,
+      sourceMode: preset
+        ? 'Built-in training profile'
+        : hasPersistedIdentityPacket
+          ? 'Persisted training packet'
+          : 'Supplied records only',
+      identity: preset
+        ? 'Training identity profile available.'
+        : hasPersistedIdentityPacket
+          ? 'Persisted training identity fields are available.'
+          : 'Unsupplied identity fields are explicitly unavailable.',
+      accounts: accounts.length
+        ? `${accounts.length} persisted relationship account${accounts.length === 1 ? '' : 's'} available.`
+        : 'No relationship-account snapshot is supplied.',
+      profileUpdates: profileUpdates.length
+        ? `${profileUpdates.length} profile update record${profileUpdates.length === 1 ? '' : 's'} available through ${asOf}.`
+        : `No profile update record is supplied through ${asOf}.`,
+      security: security.trustedDevices.length
+        ? `${security.trustedDevices.length} trusted-device record${security.trustedDevices.length === 1 ? '' : 's'} supplied.`
+        : 'No trusted-device record is supplied.',
+      serviceContacts: serviceContacts.length
+        ? `${serviceContacts.length} service-contact record${serviceContacts.length === 1 ? '' : 's'} supplied.`
+        : 'No service-contact record is supplied.',
+    },
+    atAGlance: [
+      ['Relationship length', identity.relationshipLength],
+      ['Products', accounts.length],
+      ['Trusted devices', security.trustedDevices.length],
+      ['Service contacts', serviceContacts.length],
+    ],
+  };
+}

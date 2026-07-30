@@ -463,4 +463,115 @@ export function buildCoreToolRecords(tool, activeCase, fallbackData = { rows: []
   };
 
   if (tool === 'Timeline') {
-  
+    const fallbackDate = activeCase.reportedDate ?? activeCase.opened ?? 'Training date';
+    const caseOpenedRow = timelineRow({
+      id: 'TML-OPEN',
+      time: activeCase.reportedDate ?? activeCase.opened,
+      event: 'Case opened',
+      source: 'Case Summary',
+      linkedObject: activeCase.id,
+      caseId: activeCase.id,
+      detail: activeCase.queueReason,
+      pin: activeCase.id,
+      label: 'Timeline event',
+      sourceCollection: 'activeCase',
+      sourceRecordId: activeCase.id,
+    });
+    const profileChangeRows = profileChanges.map((item) => timelineRow({
+      id: `TML-${item.id}`,
+      time: `${item.date ?? ''}${item.time ? ` · ${item.time}` : ''}`.trim(),
+      event: item.item,
+      source: 'Customer 360',
+      linkedObject: item.session ?? item.id,
+      caseId: activeCase.id,
+      detail: profileChangeDetail(item, financial.paymentVerification),
+      pin: item.id,
+      label: 'Profile change timeline',
+      sourceCollection: 'activeCase.customer.profileChanges',
+      sourceRecordId: item.id,
+    }));
+    const eventRows = events.map((item) => timelineRow({
+      id: `TML-${item.id}`,
+      time: item.time,
+      event: item.label,
+      source: item.sourceTool ?? item.source ?? item.chip ?? 'Case Events',
+      linkedObject: item.object,
+      caseId: activeCase.id,
+      detail: item.detail,
+      pin: item.id,
+      label: 'Timeline event',
+      sourceCollection: 'activeCase.events',
+      sourceRecordId: item.id,
+    }));
+    const loginRows = logins.map((item) => timelineRow({
+      id: `TML-${item.id}`,
+      time: item.time,
+      event: item.result,
+      source: 'Login History',
+      linkedObject: item.session,
+      caseId: activeCase.id,
+      detail: `${item.deviceId ?? item.device} · ${item.ip}`,
+      pin: item.session,
+      label: 'Login timeline',
+      sourceCollection: 'activeCase.loginHistory',
+      sourceRecordId: item.id,
+    }));
+    const transactionRows = financial.transactions.map((item) => timelineRow({
+      id: `TML-${item.id}`,
+      time: [item.posted, item.time].filter(Boolean).join(' · '),
+      event: item.merchant,
+      source: 'Transaction History',
+      linkedObject: item.id,
+      caseId: activeCase.id,
+      detail: `${item.amount} · ${item.status}`,
+      pin: item.id,
+      label: 'Transaction timeline',
+      sourceCollection: 'financial.transactions',
+      sourceRecordId: item.id,
+    }));
+    const paymentRows = activeCase.availableTools?.includes('Payment Verification')
+      ? financial.paymentVerification.map((item) => timelineRow({
+        id: `TML-${item.id}`,
+        time: item.lastSeen,
+        event: item.type,
+        source: 'Payment Verification',
+        linkedObject: item.id,
+        caseId: activeCase.id,
+        detail: paymentRecordDetail(item),
+        pin: item.id,
+        label: 'Payment timeline',
+        sourceCollection: 'financial.paymentVerification',
+        sourceRecordId: item.id,
+      }))
+      : [];
+    const documentRows = documents.map((item) => timelineRow({
+      id: `TML-${item.id}`,
+      time: item.received,
+      event: item.title,
+      source: 'Document Viewer',
+      linkedObject: item.id,
+      caseId: activeCase.id,
+      detail: item.status,
+      pin: item.id,
+      label: 'Document timeline',
+      sourceCollection: 'documents',
+      sourceRecordId: item.id,
+    }));
+    const rows = [
+      caseOpenedRow,
+      ...profileChangeRows,
+      ...eventRows,
+      ...loginRows,
+      ...transactionRows,
+      ...paymentRows,
+      ...documentRows,
+    ];
+    const normalized = normalizedTimelineRows(rows, fallbackDate);
+    return {
+      columns: ['Timeline', 'Time', 'Event', 'Source', 'Linked Object', 'Case', 'Detail'],
+      ...normalized,
+    };
+  }
+
+  return null;
+}

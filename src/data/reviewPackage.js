@@ -435,4 +435,108 @@ export function buildReviewPackage({
     .sort((left, right) => (
       right.packageVersion - left.packageVersion
       || String(right.savedAtIso ?? '').localeCompare(String(left.savedAtIso ?? ''))
-    )
+    ))[0] ?? null;
+  const resolvedPackageVersion = positiveInteger(packageVersion)
+    ?? (Math.max(latestPriorPackage?.packageVersion ?? 0, priorPackages.length) + 1);
+
+  return {
+    id: `${caseId}-P${resolvedPackageVersion}-${Date.now()}`,
+    schemaVersion: CASE_DOMAIN_VERSION,
+    packageSchemaVersion: REVIEW_PACKAGE_SCHEMA_VERSION,
+    packageVersion: resolvedPackageVersion,
+    supersedesPackageId: latestPriorPackage?.id ?? null,
+    caseId,
+    agentId,
+    ...domain,
+    customerTypeLabel: activeCase?.customerTypeLabel ?? null,
+    productTypeLabel: activeCase?.productTypeLabel ?? null,
+    workflowTypeLabel: activeCase?.workflowTypeLabel ?? getWorkflowType(domain.workflowType)?.label ?? null,
+    alertReason: activeCase?.alertReason ?? activeCase?.queueReason ?? null,
+    reportedAllegation: activeCase?.reportedAllegation ?? activeCase?.allegation ?? null,
+    suspectedPatterns: [...(activeCase?.suspectedPatterns ?? [])],
+    operationalDecision: normalizedDraft.operationalDecision,
+    finalFinding: normalizedDraft.finalFinding,
+    findingBasis,
+    evidenceRationale: findingBasis,
+    // Legacy aliases remain readable so prior persistence and progress consumers continue to work.
+    choice: normalizedDraft.operationalDecision,
+    reason: findingBasis,
+    claimTypeId: activeCase?.claimTypeId ?? null,
+    claimType: activeCase?.claimType ?? activeCase?.type ?? null,
+    lane: activeCase?.lane ?? null,
+    confidence: normalizedDraft.confidence,
+    rationaleWordCount: packageStatus?.rationaleWordCount ?? wordCount(findingBasis),
+    completedTools: normalizedCompletedTools,
+    requiredTools,
+    pinnedEvidence: snapshotValue(tray),
+    noteSnapshot: snapshotValue(notes),
+    packageInputSummary: packageStatus?.packageInputSummary ?? buildPackageInputSummary({
+      completedTools: normalizedCompletedTools,
+      tray,
+      notes,
+    }),
+    reviewedRequired: requiredTools.length - missingTools.length,
+    totalRequired: requiredTools.length,
+    missingTools,
+    blockers: snapshotValue(packageStatus?.blockers ?? []),
+    coachingGaps: snapshotValue(packageStatus?.coachingGaps ?? []),
+    decisionIndicators: snapshotValue(packageStatus?.indicatorSummary?.answeredIndicators ?? []),
+    indicatorSummary: packageStatus?.indicatorSummary ? {
+      answeredCount: packageStatus.indicatorSummary.answeredCount,
+      unansweredCount: packageStatus.indicatorSummary.unansweredCount,
+      selectedCount: packageStatus.indicatorSummary.selectedCount,
+      answerCounts: snapshotValue(packageStatus.indicatorSummary.answerCounts),
+      advisoryOnly: true,
+    } : null,
+    savedAtIso,
+    savedAt: new Date(savedAtIso).toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+  };
+}
+
+function buildPackageInputSummary({
+  completedTools = [],
+  tray = [],
+  notes = [],
+  indicatorSummary,
+}) {
+  return `Decision package preview: ${completedTools.length} reviewed tool(s), ${tray.length} optional pinned object(s), ${notes.length} optional note(s), and ${indicatorSummary?.answeredCount ?? 0} answered indicator(s) will be saved.`;
+}
+
+function snapshotValue(value) {
+  if (Array.isArray(value)) return value.map((item) => snapshotValue(item));
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, snapshotValue(item)]),
+    );
+  }
+  return value;
+}
+
+function hasEvidenceReference(text = '') {
+  const source = cleanText(text);
+  const labeledRecordReferences = [...source.matchAll(
+    /\b(?:transaction|document|device|session|destination|account|training|payment|payroll|event|record)\s+(?:id\s*)?[#: -]?([A-Z0-9-]{3,})\b/gi,
+  )];
+  return /\b[A-Z]{2,}(?:-[A-Z0-9]+)+\b/.test(source)
+    || labeledRecordReferences.some((match) => /[\d-]/.test(match[1]))
+    || /\$\s?\d[\d,]*(?:\.\d{2})?/.test(text)
+    || /\b\d{1,2}:\d{2}\s?(?:AM|PM)\b/i.test(text);
+}
+
+function cleanText(value) {
+  return String(value ?? '').trim();
+}
+
+function wordCount(text = '') {
+  return cleanText(text).split(/\s+/).filter(Boolean).length;
+}
+
+function positiveInteger(value) {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}

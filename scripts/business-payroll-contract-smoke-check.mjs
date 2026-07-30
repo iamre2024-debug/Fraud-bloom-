@@ -278,4 +278,293 @@ const historicalOccurrences = newestGeneratedRuns.filter((run) => run.employees.
   ))
 )));
 if (
-  historicalDestinationResult
+  historicalDestinationResult?.run?.id !== historicalOccurrences[0]?.id
+  || historicalDestinationResult?.matchCount !== historicalOccurrences.length
+  || historicalDestinationResult?.occurrences?.length !== historicalOccurrences.length
+) {
+  fail('Historical payroll destination search does not preserve only its real occurrences in newest-first order.');
+}
+
+const payrollQuickPadItems = [{
+  id: `${newestGeneratedPaystub.id}:quick-pad`,
+  label: 'Paystub ID',
+  value: newestGeneratedPaystub.id,
+  sourceTool: 'Payroll History',
+  sourceRecordId: newestGeneratedPaystub.id,
+  identifierType: 'paystub-id',
+}];
+const payrollQuickPadDestination = buildQuickPadDestinationRoute(
+  'Payroll History',
+  payrollQuickPadItems,
+);
+if (
+  payrollQuickPadDestination?.payload.query !== newestGeneratedPaystub.id
+  || payrollQuickPadDestination?.payload.sourceRecordId !== newestGeneratedPaystub.id
+  || payrollQuickPadDestination?.payload.identifierType !== 'paystub-id'
+  || !validateQuickPadDestinationPayload(
+    'Payroll History',
+    payrollQuickPadDestination?.payload,
+  ).valid
+) {
+  fail('Typed Payroll Quick Pad item does not preserve its exact paystub identifier and label.');
+}
+if (quickPadQueryForTool(payrollQuickPadItems[0], 'Payroll History') !== newestGeneratedPaystub.id) {
+  fail('Payroll Quick Pad query decorates or replaces the exact source identifier.');
+}
+const payrollSourceRoute = quickPadSourceRoute(payrollQuickPadItems[0], {
+  availableTools: generatedPayrollCase.availableTools,
+});
+if (
+  payrollSourceRoute?.sourceTool !== 'Payroll History'
+  || payrollSourceRoute?.query !== newestGeneratedPaystub.id
+) {
+  fail('Payroll Quick Pad cannot reopen its exact source record in Payroll History.');
+}
+for (const exactPayrollIdentifier of [newestGeneratedRun.id, newestGeneratedPaystub.id]) {
+  if (resolvePinnedEvidence(exactPayrollIdentifier, generatedPayrollCase, workspaceTools)?.tool !== 'Payroll History') {
+    fail(`${exactPayrollIdentifier} does not route back to Payroll History from pinned evidence.`);
+  }
+}
+
+const employeeContractCase = {
+  id: 'FA-EMPLOYEE-CONTRACT-1',
+  toolResults: {
+    employeeProfile: [
+      {
+        id: 'EMP-CONTRACT-1',
+        name: 'EMP-CONTRACT-2',
+        employer: 'Contract Training Company',
+        hireDate: 'Jan 2, 2024',
+        paymentHistory: [
+          {
+            effectiveDate: 'Jul 1, 2026',
+            method: 'Direct deposit',
+            paymentRecordId: 'PV-CURRENT-1',
+            destinations: [{
+              id: 'PD-CURRENT-1',
+              bankCode: 'BC-CURRENT-1',
+              destinationId: 'DST-CURRENT-1',
+              paymentRecordId: 'PV-CURRENT-1',
+            }],
+          },
+          {
+            effectiveDate: 'Jan 1, 2025',
+            method: 'Paper check',
+            paymentRecordId: 'PV-OLD-CHECK-1',
+            destinations: [],
+          },
+          {
+            effectiveDate: 'May 1, 2026',
+            method: 'Direct deposit',
+            paymentRecordId: 'PV-MIDDLE-1',
+            destinations: [{
+              id: 'PD-MIDDLE-1',
+              bankCode: 'BC-MIDDLE-1',
+              destinationId: 'DST-MIDDLE-1',
+              paymentRecordId: 'PV-MIDDLE-1',
+            }],
+          },
+        ],
+      },
+      { id: 'EMP-CONTRACT-2', name: 'Shared Employee' },
+      { id: 'EMP-CONTRACT-3', name: 'Shared Employee' },
+    ],
+    payrollRuns: [
+      {
+        id: 'PR-CONTRACT-NEW',
+        payDate: 'Jul 15, 2026',
+        employees: [{
+          employeeId: 'EMP-CONTRACT-1',
+          name: 'EMP-CONTRACT-2',
+          paystub: { id: 'STUB-CONTRACT-NEW', paymentDestinations: [] },
+        }],
+      },
+      {
+        id: 'PR-CONTRACT-OLD',
+        payDate: 'Jan 15, 2026',
+        employees: [
+          { employeeId: 'EMP-CONTRACT-1', name: 'EMP-CONTRACT-2' },
+          {
+            employeeId: 'EMP-CONTRACT-2',
+            name: 'Shared Employee',
+            paystub: { id: 'STUB-CONTRACT-EMP-2', paymentDestinations: [] },
+          },
+        ],
+      },
+      {
+        id: 'PR-CONTRACT-MIDDLE',
+        payDate: 'May 15, 2026',
+        employees: [{
+          employeeId: 'EMP-CONTRACT-1',
+          name: 'EMP-CONTRACT-2',
+          paystub: { id: 'STUB-CONTRACT-MIDDLE', paymentDestinations: [] },
+        }],
+      },
+    ],
+  },
+};
+const employeeProfiles = getEmployeeProfiles(employeeContractCase);
+const primaryEmployeeProfile = employeeProfiles.find((item) => item.id === 'EMP-CONTRACT-1');
+const secondaryEmployeeProfile = employeeProfiles.find((item) => item.id === 'EMP-CONTRACT-2');
+if (
+  !primaryEmployeeProfile
+  || primaryEmployeeProfile.lastSeen !== 'Jul 15, 2026'
+  || primaryEmployeeProfile.latestPaycheck?.runId !== 'PR-CONTRACT-NEW'
+  || primaryEmployeeProfile.linkedPayroll.join('|') !== 'STUB-CONTRACT-NEW|STUB-CONTRACT-MIDDLE'
+  || primaryEmployeeProfile.paycheckHistory.length !== 3
+) {
+  fail('Employee Profile does not preserve employee-specific newest-first payroll snapshots or safely omit a sparse paystub ID.');
+}
+if (
+  secondaryEmployeeProfile?.lastSeen !== 'Jan 15, 2026'
+  || secondaryEmployeeProfile?.latestPaycheck?.runId !== 'PR-CONTRACT-OLD'
+) {
+  fail('Employee Profile last-seen data is derived from a company-wide run instead of the employee’s newest supplied occurrence.');
+}
+if (
+  primaryEmployeeProfile?.currentPaymentPlan?.paymentRecordId !== 'PV-CURRENT-1'
+  || primaryEmployeeProfile?.currentDestinations?.[0]?.destinationId !== 'DST-CURRENT-1'
+  || sortEmployeePaymentHistoryNewestFirst(
+    employeeContractCase.toolResults.employeeProfile[0].paymentHistory,
+  )[0]?.paymentRecordId !== 'PV-CURRENT-1'
+) {
+  fail('Employee Profile current payment instruction depends on source-array order instead of the newest supplied effective date.');
+}
+if (
+  primaryEmployeeProfile?.officialContact
+  || primaryEmployeeProfile?.linkedPayroll.includes(undefined)
+  || employeePayrollSnapshots(
+    employeeContractCase.toolResults.payrollRuns,
+    'EMP-CONTRACT-1',
+  )[0]?.runId !== 'PR-CONTRACT-NEW'
+) {
+  fail('Employee Profile invents an official contact or retains an invalid sparse-paystub link.');
+}
+if (
+  resolveEmployeeProfileLookup(employeeProfiles, 'EMP-CONTRACT-2').state !== 'found'
+  || findEmployeeProfile(employeeProfiles, 'EMP-CONTRACT-2')?.id !== 'EMP-CONTRACT-2'
+) {
+  fail('Employee Profile does not prioritize an exact Employee ID over another profile whose name equals that ID.');
+}
+const ambiguousEmployeeLookup = resolveEmployeeProfileLookup(employeeProfiles, 'Shared Employee');
+if (
+  ambiguousEmployeeLookup.state !== 'ambiguous'
+  || ambiguousEmployeeLookup.record
+  || ambiguousEmployeeLookup.matches.length !== 2
+) {
+  fail('Employee Profile silently selects the first profile when an exact employee name is ambiguous.');
+}
+for (const invalidEmployeeQuery of ['', ' ', 'Not supplied', 'Not applicable', 'Not recorded', 'none']) {
+  if (resolveEmployeeProfileLookup(employeeProfiles, invalidEmployeeQuery).state !== 'invalid') {
+    fail(`Employee Profile accepted invalid exact query "${invalidEmployeeQuery}".`);
+  }
+}
+if (resolveEmployeeProfileLookup(employeeProfiles, 'EMP-CONTRACT').state !== 'not-found') {
+  fail('Employee Profile accepted a partial Employee ID search.');
+}
+
+const legacyPayrollCase = {
+  id: 'FA-LEGACY-PAYROLL-1',
+  accountId: 'PAYROLL-LEGACY-1',
+  profile: { business: 'Preserved Training Company' },
+  toolResults: {
+    payrollHistory: [{
+      id: 'LEGACY-PR-1',
+      employer: 'Preserved Training Company',
+      period: 'Apr 1 – Apr 15, 2024',
+      processedDate: 'Apr 15, 2024',
+      status: 'Recorded',
+      amount: '$12,345.67',
+    }],
+  },
+};
+const legacyPayroll = getPayrollHistory(legacyPayrollCase);
+const legacyRun = legacyPayroll.payrollRuns[0];
+if (
+  !legacyRun?.legacySummaryOnly
+  || legacyRun.employees.length
+  || legacyRun.employeeCount !== null
+  || legacyRun.grossWages !== null
+  || legacyRun.netPay !== null
+  || legacyRun.totalPayrollCost !== null
+  || legacyPayroll.summary.employeesPaid !== null
+  || legacyPayroll.summary.grossWages !== null
+  || legacyPayroll.summary.netPay !== null
+) {
+  fail('Legacy Payroll History invents employee, paystub, count, or payroll-total detail that was not supplied.');
+}
+if (
+  findPayrollRecord(legacyPayroll, 'LEGACY-PR-1')?.identifierType !== 'payroll-run-id'
+  || findPayrollRecord(legacyPayroll, 'FA-LEGACY-PAYROLL-1-EMP-1')
+) {
+  fail('Legacy Payroll History exact search does not expose only the supplied summary-run identifier.');
+}
+
+const businessCredit = createGeneratedCase({ index: 88119001, claimTypeId: 'business-loan-bust-out', scenarioId: 'blo-sleeper-llc-sudden-draw' });
+if (businessCredit.availableTools.some((tool) => ['Employee Profile', 'Payroll History'].includes(tool))) fail('Business-credit monitoring receives employee or payroll tools without explicit relevance.');
+for (const scenarioId of ['cr-new-business', 'cr-existing-business']) {
+  const generatedBusinessCredit = createGeneratedCase({ index: 88119002, claimTypeId: 'credit-risk', scenarioId });
+  if (generatedBusinessCredit.availableTools.some((tool) => ['Employee Profile', 'Payroll History'].includes(tool))) fail(`${scenarioId} receives employee or payroll tools without explicit relevance.`);
+}
+if (generatedPayrollCase.availableTools.includes('Transaction History')) fail('Payroll-direct-deposit claim incorrectly receives Transaction History.');
+if (generatedPayrollCase.requiredTools.includes('Transaction History')) fail('Payroll-direct-deposit claim incorrectly requires Transaction History.');
+const generatedPayrollAtoCase = createGeneratedCase({
+  index: 12345679,
+  claimTypeId: 'payroll-account-takeover',
+  difficulty: 'deep',
+  evidenceDepth: 'deep',
+});
+if (
+  generatedPayrollAtoCase.availableTools.includes('Transaction History')
+  || generatedPayrollAtoCase.requiredTools.includes('Transaction History')
+) {
+  fail('Payroll account takeover incorrectly receives or requires Transaction History.');
+}
+
+const paymentRecords = getFinancialRecords(generatedPayrollCase).paymentVerification;
+const payment = paymentRecords[0];
+if (resolvePaymentLookup(paymentRecords, { bankCode: '', destinationId: '', ownerName: generatedPayrollCase.person }).state !== 'not-found') fail('Payment Verification exposes a result without exact identifiers.');
+if (resolvePaymentLookup(paymentRecords, { bankCode: payment.bankCode, destinationId: payment.destinationId, ownerName: generatedPayrollCase.person }).state !== 'found') fail('Payment Verification exact search does not reveal the matching result.');
+
+const payrollPanel = fs.readFileSync('src/tools/FinancialBusinessTools.jsx', 'utf8');
+for (const anchor of [
+  'export function EmployeeProfileTool',
+  'Find an exact employee profile',
+  'Run employee search',
+  'Latest Paycheck',
+  'Payment Destinations',
+  'Compensation History',
+  'Profile History',
+  'Open Payroll History',
+  'Verify exact destination',
+  'resolveEmployeeProfileLookup',
+  'pinPayload',
+]) {
+  if (!payrollPanel.includes(anchor)) fail(`Clean Employee Profile is missing ${anchor}.`);
+}
+if (payrollPanel.includes('Employer payroll office on file')) {
+  fail('Employee Profile still invents an employer payroll contact when none was supplied.');
+}
+for (const anchor of [
+  'export function PayrollHistoryTool',
+  'Run payroll search',
+  'Payroll overview',
+  'payroll-history-filters',
+  'Open payroll run',
+  'Employee Pay Records Preview',
+  'Open paystub',
+  'Select payment destination',
+  'Verify payment destination',
+  'matchedIdentifier',
+  'pinPayload',
+]) {
+  if (!payrollPanel.includes(anchor)) fail(`Clean Payroll History is missing ${anchor}.`);
+}
+
+if (failures.length) {
+  console.error('Business 360 and Payroll History contract smoke check failed:');
+  for (const failure of failures) console.error(`- ${failure}`);
+  process.exit(1);
+}
+
+console.log('Business 360, Employee Profile, and Payroll History contract smoke check passed for migrations, neutral research, exact and ambiguous employee lookup, employee-specific newest-first snapshots, sparse paystubs, current payment ordering, reconciled built-in/generated payroll, functional filters, non-invented legacy summaries, immutable historical/split/paper-check destinations, typed Quick Pad reopen, pinned routing, tool scope, and search-first Payment Verification.');

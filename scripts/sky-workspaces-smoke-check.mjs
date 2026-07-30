@@ -460,4 +460,396 @@ for (const forbidden of [
   'item.status',
   'High Risk',
   'Medium Risk',
-  'L
+  'Low Risk',
+  'My Queue',
+]) {
+  if (caseQueueSource.includes(forbidden)) {
+    fail(`Case Queue exposes forbidden risk, assignment, or raw status content ${forbidden}.`);
+  }
+}
+for (const anchor of [
+  'workspaceMapBlueprints',
+  'sky-toolmap-canvas',
+  'sky-toolmap-lines',
+  'sky-toolmap-core',
+  'sky-toolmap-node',
+  'sky-toolmap-drawer',
+  'progress.percent',
+  "navigate('tool', { tool })",
+]) {
+  if (!workspaceSource.includes(anchor)) fail(`Tool Map structural rebuild is missing ${anchor}.`);
+}
+for (const forbidden of ['68%', 'High Risk', '3 New', 'My Queue']) {
+  if (workspaceSource.includes(forbidden)) {
+    fail(`Tool Map hard-codes unsafe reference value ${forbidden}.`);
+  }
+}
+for (const anchor of [
+  'variant="floating"',
+  'activeCaseId={state.activeCase.id}',
+]) {
+  if (!appSource.includes(anchor)) fail(`Case Queue/Tool Map Quick Pad integration is missing ${anchor}.`);
+}
+for (const anchor of [
+  "variant === 'floating'",
+  'sky-quick-pad-fab',
+  'sky-quick-pad-sheet',
+  'aria-controls={panelId}',
+  'aria-modal="true"',
+  'panelRef.current',
+  "document.body.style.overflow = 'hidden'",
+]) {
+  if (!quickPadSource.includes(anchor)) fail(`Functional floating Quick Pad is missing ${anchor}.`);
+}
+if (
+  !appSource.includes("['Employee Profile', 'System Access Lane'].includes(toolName)")
+  || !quickPadSource.includes("'System Access Lane': 'System Access Record ID'")
+) {
+  fail('System Access Lane is missing its floating Quick Pad and exact identifier label.');
+}
+for (const anchor of ['sky-toolmap-lines-mobile', 'aria-live="polite"']) {
+  if (!workspaceSource.includes(anchor)) fail(`Responsive accessible Tool Map is missing ${anchor}.`);
+}
+
+const workflowOrdering = [
+  'Queue',
+  'Briefing',
+  'Tools',
+  'Summary',
+  'Indicators',
+  'Determine',
+  'Submit',
+  'Luna',
+  'Report',
+];
+const workflowRailSource = shellSource.slice(
+  shellSource.indexOf('const workflowStages'),
+  shellSource.indexOf('function routeFamily'),
+);
+let previousIndex = -1;
+for (const stage of workflowOrdering) {
+  const index = workflowRailSource.indexOf(`label: '${stage}'`);
+  if (index < 0) fail(`${stage} is missing from the workflow rail.`);
+  if (index >= 0 && index < previousIndex) fail(`${stage} is out of dependency order.`);
+  previousIndex = Math.max(previousIndex, index);
+}
+
+const indicatorSection = workflowSource.slice(
+  workflowSource.indexOf('export function IndicatorsReview'),
+  workflowSource.indexOf('const decisionDescriptions'),
+);
+for (const forbidden of ['indicator.type', 'indicator.weight', 'redPoints', 'greenPoints']) {
+  if (indicatorSection.includes(forbidden)) fail(`Pre-submission indicators expose ${forbidden}.`);
+}
+for (const response of ['Yes', 'No', 'Not enough evidence']) {
+  if (!indicatorSection.includes(response)) fail(`Indicators are missing the ${response} learner response.`);
+}
+for (const anchor of ['indicatorAnswerComplete', 'answer.proof', 'answer.explanation', 'response, evidence reference, and explanation']) {
+  if (!indicatorSection.includes(anchor)) fail(`Indicators do not enforce ${anchor}.`);
+}
+
+const summarySection = workflowSource.slice(
+  workflowSource.indexOf('export function InvestigationSummary'),
+  workflowSource.indexOf('export function IndicatorsReview'),
+);
+if (!summarySection.includes("markReviewed('Investigation Summary')")) {
+  fail('Investigation Summary does not record completion before continuing.');
+}
+if (!briefingSource.includes("markReviewed('Case Briefing')")) {
+  fail('Case Briefing does not record completion before opening the workspace.');
+}
+
+const determinationSection = workflowSource.slice(
+  workflowSource.indexOf('export function Determination'),
+  workflowSource.indexOf('export function SubmitDecision'),
+);
+for (const anchor of ['determinationComplete', 'decisionDraft.findingBasis', 'disabled={reviewed || !determinationComplete}', 'disabled={!determinationComplete}']) {
+  if (!determinationSection.includes(anchor)) fail(`Determination does not enforce ${anchor}.`);
+}
+
+for (const stage of ['Case Briefing', 'Investigation Summary', 'Case Indicators Review', 'Determination']) {
+  if (!stateSource.includes(`'${stage}'`)) fail(`Submission gate is missing ${stage}.`);
+}
+if ((stateSource.match(/applyWorkflowSubmissionGate\(/g) ?? []).length < 3) {
+  fail('Submission gating is not applied to both displayed and submitted package status.');
+}
+for (const anchor of ['workflowCompletedTools', 'After briefing', 'After summary', 'After indicators', 'After determination', 'After submission']) {
+  if (!shellSource.includes(anchor)) fail(`App shell stage locks are missing ${anchor}.`);
+}
+for (const anchor of ['const legacyHistory', 'legacyHistory ? null : resolvePostSubmissionTruth(activeCase)', 'truthReveal: caseTruth ?']) {
+  if (!lunaSource.includes(anchor)) fail(`Luna legacy-history protection is missing ${anchor}.`);
+}
+
+const baseReadyStatus = { ready: true, blockers: [], messages: [] };
+const gatedStatus = applyWorkflowSubmissionGate(baseReadyStatus, ['Case Briefing']);
+if (gatedStatus.ready) fail('Submission gate allows a package before all workflow stages are complete.');
+if (gatedStatus.missingWorkflowStages.join('|') !== 'Investigation Summary|Case Indicators Review|Determination') {
+  fail('Submission gate reports the wrong missing workflow stages.');
+}
+const completeStatus = applyWorkflowSubmissionGate(baseReadyStatus, requiredSubmissionStages);
+if (!completeStatus.ready || completeStatus.missingWorkflowStages.length) {
+  fail('Submission gate does not release after all required workflow stages are complete.');
+}
+
+const activeCase = enrichTrainingCases(trainingCases)[0];
+const workspaceProgress = getWorkspaceProgress(activeCase, [
+  'Case Briefing',
+  'Customer 360',
+  'Determination',
+]);
+if (workspaceProgress.reviewed !== 1) {
+  fail('Dashboard workspace progress counts workflow stages as reviewed investigation tools.');
+}
+if (
+  !workspaceProgress.total
+  || workspaceProgress.percent !== Math.round((1 / workspaceProgress.total) * 100)
+) {
+  fail('Dashboard workspace progress does not use the case-scoped workspace tool total.');
+}
+const checklist = getDecisionChecklist(activeCase);
+for (const flag of checklist.flags) {
+  if ('type' in flag || 'weight' in flag || 'points' in flag || 'requiresAttention' in flag) {
+    fail(`${flag.id} exposes coaching classification before submission.`);
+  }
+  if (!Array.isArray(flag.answerChoices) || flag.answerChoices.join('|') !== 'Yes|No|Not enough evidence') {
+    fail(`${flag.id} does not expose the neutral three-choice answer contract.`);
+  }
+}
+
+for (const [file, source, anchors] of [
+  ['Dashboard', dashboardSource, [
+    'DashboardMetric',
+    'sky-dashboard-tile',
+    'sky-hero',
+    'sky-dashboard-academy',
+    'SkyProgressRing',
+    'sky-dashboard-lower',
+    'luna-sky-vector-v1.svg',
+  ]],
+  ['Case Briefing', briefingSource, [
+    'sky-case-banner',
+    'sky-briefing-allegation',
+    'sky-briefing-facts',
+    'sky-briefing-lower',
+    'sky-briefing-quick',
+    'sky-briefing-evidence',
+    'sky-briefing-completion',
+    'sky-document-checklist',
+    'EvidenceActions',
+  ]],
+  ['Case Queue', caseQueueSource, [
+    'sky-queue-reference',
+    'sky-queue-reference-card',
+    'sky-queue-pagination',
+  ]],
+  ['Tool Map', workspaceSource, [
+    'sky-tool-map',
+    'sky-tool-button',
+    'sky-toolmap-canvas',
+    'sky-toolmap-node',
+    'sky-toolmap-core',
+    'sky-toolmap-drawer',
+  ]],
+  ['Review workflow', workflowSource, [
+    'sky-review-page',
+    'sky-review-hero',
+    'sky-indicator-checklist',
+    'sky-indicator-item',
+    'sky-scope-cues',
+    'sky-indicator-notes',
+    'sky-determination-summary',
+    'sky-determination-options',
+    'sky-finding-options',
+    'sky-determination-next',
+    'sky-choice-card',
+    'sky-decision-card',
+    'sky-luna-debrief',
+    'sky-report-json',
+  ]],
+]) {
+  for (const anchor of anchors) {
+    if (!source.includes(anchor)) fail(`${file} is missing structural component class ${anchor}.`);
+  }
+}
+
+for (const anchor of [
+  '.sky-dashboard-tile',
+  '.sky-case-card',
+  '.sky-briefing-facts',
+  '.sky-tool-button',
+  '.sky-choice-card',
+  '.sky-decision-card',
+  '.sky-luna-art',
+  '.sky-customer-reference-dashboard',
+  '.sky-customer-reference-profile',
+  '.sky-customer-reference-middle',
+  '.sky-customer-reference-lower',
+  '.sky-customer-account-grid',
+  '.sky-transaction-summary',
+  '.sky-transaction-search',
+  '.sky-transaction-record',
+]) {
+  if (!skyCss.includes(anchor)) fail(`Sky structural CSS is missing ${anchor}.`);
+}
+for (const anchor of ['@media (max-width: 900px)', '@media (max-width: 680px)', 'prefers-reduced-motion']) {
+  if (!responsiveCss.includes(anchor)) fail(`Responsive Sky CSS is missing ${anchor}.`);
+}
+if (!/\.sky-dashboard-metrics\s*\{[^}]*grid-template-columns:\s*repeat\(3/m.test(responsiveCss)) {
+  fail('The mobile Dashboard no longer preserves its three-card metric row.');
+}
+if (!/\.sky-dashboard-lower\s*\{[^}]*grid-template-columns:\s*minmax/m.test(responsiveCss)) {
+  fail('The mobile Dashboard no longer preserves the paired Luna and quote cards.');
+}
+if (!responsiveCss.includes('.sky-app[data-tool="Customer 360"] .sky-workflow-shell')) {
+  fail('Mobile Customer 360 still exposes the generic workflow rail.');
+}
+if (!responsiveCss.includes('.sky-app[data-tool="Transaction History"] .sky-workflow-shell')) {
+  fail('Mobile Transaction History still exposes the generic workflow rail.');
+}
+if (dashboardSource.includes('className="span-8"') || dashboardSource.includes('className="span-4"')) {
+  fail('The Dashboard has fallen back to the oversized generic active-case grid.');
+}
+for (const anchor of [
+  'publicAlertReason(activeCase)',
+  'publicReportedAllegation(activeCase)',
+  'publicCaseFacts(activeCase)',
+  "markReviewed('Case Briefing')",
+  "navigate('workspace')",
+  "navigate('tool', { tool: 'Document Viewer' })",
+]) {
+  if (!briefingSource.includes(anchor)) fail(`Case Briefing is missing preserved contract ${anchor}.`);
+}
+if (briefingSource.includes('4 / 6')) {
+  fail('Case Briefing has fallen back to a hard-coded evidence count.');
+}
+if (!shellSource.includes('primaryRouteFamily') || !shellSource.includes('data-context={isDashboard')) {
+  fail('The app shell is missing its route-aware page header and primary navigation state.');
+}
+for (const anchor of [
+  "['Yes', 'No', 'Not enough evidence']",
+  'updateIndicator(indicator.id, {',
+  'updateIndicator(indicator.id, { proof:',
+  'updateIndicator(indicator.id, { explanation:',
+  "markReviewed('Case Indicators Review')",
+  "navigate('determination')",
+]) {
+  if (!indicatorsSource.includes(anchor)) fail(`Case Indicators is missing learner contract ${anchor}.`);
+}
+for (const unsafeAnchor of [
+  'High Risk',
+  'Low Risk',
+  'Risk Profile',
+  'indicator.type',
+  'indicator.weight',
+  'requiresAttention',
+]) {
+  if (indicatorsSource.includes(unsafeAnchor)) {
+    fail(`Case Indicators exposes pre-submission coaching field ${unsafeAnchor}.`);
+  }
+}
+for (const anchor of [
+  'getDecisionCallGroups(activeCase)',
+  'getFinalFindingChoices(activeCase)',
+  "updateDecision('operationalDecision', option)",
+  "updateDecision('finalFinding', option)",
+  "updateDecision('confidence', event.target.value)",
+  "updateDecision('findingBasis', event.target.value)",
+  'operationalOptions.includes(decisionDraft.operationalDecision)',
+  'finalFindings.includes(decisionDraft.finalFinding)',
+  'rationaleWordCount >= 12',
+  "markReviewed('Determination')",
+  "navigate('submit')",
+]) {
+  if (!determinationSource.includes(anchor)) fail(`Determination is missing preserved contract ${anchor}.`);
+}
+for (const referenceOnlyValue of ['FA-CB-24007', '$2,450', 'TechSphere', '12 files']) {
+  if (indicatorsSource.includes(referenceOnlyValue) || determinationSource.includes(referenceOnlyValue)) {
+    fail(`Review workflow hard-codes reference-only value ${referenceOnlyValue}.`);
+  }
+}
+const doNotSupportToneIndex = decisionVisualSource.indexOf('/do not support');
+const supportToneIndex = decisionVisualSource.indexOf('/support customer');
+if (
+  doNotSupportToneIndex < 0
+  || supportToneIndex < 0
+  || doNotSupportToneIndex > supportToneIndex
+) {
+  fail('Do Not Support is visually classified by the positive Support branch.');
+}
+if (
+  !determinationSource.includes("/business/i.test(activeCase.customerType ?? '')")
+  || !determinationSource.includes('activeCase.businessProfile?.legalName')
+) {
+  fail('Determination does not prefer the active business entity for business cases.');
+}
+if (!/\.sky-indicator-options\s*\{[^}]*grid-template-columns:\s*repeat\(3/m.test(responsiveCss)) {
+  fail('Mobile Case Indicators no longer preserves the three neutral learner choices.');
+}
+if (!/\.sky-determination-options,\s*\.sky-finding-options\s*\{[^}]*grid-template-columns:\s*repeat\(2/m.test(responsiveCss)) {
+  fail('Mobile Determination no longer preserves the two-column decision layout.');
+}
+for (const anchor of [
+  'sky-submit-reference',
+  'publicCaseTaxonomy(activeCase)',
+  'tray.slice(0, 3)',
+  'notes.slice(0, 3)',
+  'submittingRef.current',
+  'if (submittingRef.current || !packageStatus.ready) return',
+  'submitPackage()',
+  "navigate('luna')",
+  'Confirm & submit decision',
+  'Luna unlocks only after the package is saved',
+]) {
+  if (!submitDecisionSource.includes(anchor)) fail(`Submit Decision is missing reference contract ${anchor}.`);
+}
+for (const anchor of [
+  'sky-luna-reference',
+  'sky-luna-coach-hero',
+  'Evidence You Might Have Missed',
+  'debrief.missedEvidence',
+  'reviewMissedEvidence',
+  "navigate('tool', { tool: item.tool })",
+  'Scenario outcome',
+  'debrief.legacyHistory',
+  'debrief.truthReveal',
+  'Back to Workspace',
+  'Open case report',
+]) {
+  if (!lunaDebriefScreenSource.includes(anchor)) fail(`Luna Debrief is missing reference contract ${anchor}.`);
+}
+for (const anchor of [
+  '.sky-review-reference-header',
+  '.sky-submit-confirm',
+  '.sky-luna-coach-hero',
+  '.sky-luna-missed-list',
+]) {
+  if (!skyCss.includes(anchor)) fail(`Reference review CSS is missing ${anchor}.`);
+}
+if (!shellSource.includes("['cases', 'workspace', 'submit', 'luna']")) {
+  fail('Submit Decision and Luna Debrief still depend on the generic shell header and workflow rail.');
+}
+for (const referenceOnlyValue of [
+  'Refund Issued',
+  'James Carter',
+  'TechSphere',
+  'High Risk Transaction',
+  'Customer will be notified automatically',
+]) {
+  if (submitDecisionSource.includes(referenceOnlyValue) || lunaDebriefScreenSource.includes(referenceOnlyValue)) {
+    fail(`Submit Decision or Luna Debrief hard-codes reference-only value ${referenceOnlyValue}.`);
+  }
+}
+
+for (const source of [appSource, dashboardSource, briefingSource, workspaceSource, workflowSource]) {
+  if (/ornate-card|visual-command|mission-deck|legacy-theme|sky-theme\s+/.test(source)) {
+    fail('A clean Sky screen depends on a legacy theme class.');
+  }
+}
+
+if (failures.length) {
+  console.error('Sky workspace smoke check failed:');
+  failures.forEach((failure) => console.error(`- ${failure}`));
+  process.exit(1);
+}
+
+console.log('Sky workspace smoke check passed for the neutral Case Queue, five-zone Tool Map, canonical tool coverage, functional Quick Pad, ordered workflow locks, evidence-complete decisions, legacy-safe Luna history, and responsive Sky components.');
