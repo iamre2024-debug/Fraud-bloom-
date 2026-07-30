@@ -1,15 +1,29 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   publicAlertReason,
   publicCaseSearchText,
   publicCaseTaxonomy,
 } from '../data/publicCaseView.js';
-import { SkyCard, SectionHeading, StatusChip } from '../components/SkyPrimitives.jsx';
+import { getWorkspaceProgress } from '../data/workspaceProgress.js';
+import {
+  SkyIcon,
+  SkyProgressRing,
+  SkySparkles,
+  StatusChip,
+} from '../components/SkyPrimitives.jsx';
 
-function caseStatus(item, completedToolsByCase = {}, packageByCase = {}) {
-  if (packageByCase[item.id]?.length) return 'Submitted';
+const pageSize = 10;
+const lifecycleOptions = ['All', 'Open', 'In progress', 'Submitted'];
+
+export function queueCaseStatus(item, completedToolsByCase = {}, packagesByCase = {}) {
+  if (packagesByCase[item.id]?.length) return 'Submitted';
   if (completedToolsByCase[item.id]?.length) return 'In progress';
-  return item.status ?? 'Open';
+  return 'Open';
+}
+
+function uniqueOptions(rows, key) {
+  return [...new Set(rows.map((row) => row.taxonomy[key]).filter(Boolean))]
+    .sort((left, right) => left.localeCompare(right));
 }
 
 export default function CaseQueue({
@@ -19,19 +33,63 @@ export default function CaseQueue({
   reviewPackagesByCase = {},
   openCase,
   createCase,
+  navigate,
 }) {
   const [search, setSearch] = useState('');
-  const [priority, setPriority] = useState('All');
+  const [lifecycle, setLifecycle] = useState('All');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [customerType, setCustomerType] = useState('All');
+  const [productType, setProductType] = useState('All');
+  const [workflowType, setWorkflowType] = useState('All');
+  const [visibleLimit, setVisibleLimit] = useState(pageSize);
   const [creating, setCreating] = useState(false);
-  const visibleCases = useMemo(() => cases.filter((item) => {
+  const [generationError, setGenerationError] = useState('');
+
+  const rows = useMemo(() => cases.map((item) => {
+    const completedTools = completedToolsByCase[item.id] ?? [];
+    return {
+      item,
+      taxonomy: publicCaseTaxonomy(item),
+      lifecycle: queueCaseStatus(item, completedToolsByCase, reviewPackagesByCase),
+      progress: getWorkspaceProgress(item, completedTools),
+      briefingComplete: completedTools.includes('Case Briefing'),
+    };
+  }), [cases, completedToolsByCase, reviewPackagesByCase]);
+
+  const filterOptions = useMemo(() => ({
+    customerTypes: uniqueOptions(rows, 'customerType'),
+    productTypes: uniqueOptions(rows, 'productType'),
+    workflowTypes: uniqueOptions(rows, 'workflowType'),
+  }), [rows]);
+
+  const lifecycleCounts = useMemo(() => Object.fromEntries(
+    lifecycleOptions.map((option) => [
+      option,
+      option === 'All' ? rows.length : rows.filter((row) => row.lifecycle === option).length,
+    ]),
+  ), [rows]);
+
+  const filteredRows = useMemo(() => rows.filter(({ item, taxonomy, lifecycle: rowLifecycle }) => {
     const matchesSearch = !search.trim()
       || publicCaseSearchText(item).includes(search.trim().toLowerCase());
-    const matchesPriority = priority === 'All' || item.priority === priority;
-    return matchesSearch && matchesPriority;
-  }), [cases, priority, search]);
+    const matchesLifecycle = lifecycle === 'All' || rowLifecycle === lifecycle;
+    const matchesCustomer = customerType === 'All' || taxonomy.customerType === customerType;
+    const matchesProduct = productType === 'All' || taxonomy.productType === productType;
+    const matchesWorkflow = workflowType === 'All' || taxonomy.workflowType === workflowType;
+    return matchesSearch
+      && matchesLifecycle
+      && matchesCustomer
+      && matchesProduct
+      && matchesWorkflow;
+  }), [customerType, lifecycle, productType, rows, search, workflowType]);
+
+  useEffect(() => {
+    setVisibleLimit(pageSize);
+  }, [customerType, lifecycle, productType, search, workflowType]);
 
   async function generatePracticeCase() {
     setCreating(true);
+    setGenerationError('');
     try {
       await createCase({
         customerType: activeCase.customerType,
@@ -40,87 +98,237 @@ export default function CaseQueue({
         difficulty: 'standard',
         evidenceDepth: 'expanded',
       });
+    } catch {
+      setGenerationError('The practice case could not be generated. Try again.');
     } finally {
       setCreating(false);
     }
   }
 
-  return (
-    <>
-      <SkyCard>
-        <SectionHeading
-          eyebrow="Case queue"
-          title="Choose the next investigation"
-          description="Every case begins with a neutral briefing. The expected outcome stays hidden."
-          action={(
-            <button className="sky-button" type="button" onClick={generatePracticeCase} disabled={creating}>
-              {creating ? 'Building case…' : 'Generate practice case'}
-            </button>
-          )}
-        />
-        <div className="sky-queue-controls">
-          <label className="sky-field wide">
-            <span>Search cases</span>
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Case ID, customer, product, or alert reason"
-            />
-          </label>
-          <div className="sky-tabs" role="group" aria-label="Priority filter">
-            {['All', 'High', 'Medium', 'Low'].map((option) => (
-              <button
-                className="sky-tab"
-                type="button"
-                key={option}
-                aria-selected={priority === option}
-                onClick={() => setPriority(option)}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-        </div>
-      </SkyCard>
+  function clearFilters() {
+    setCustomerType('All');
+    setProductType('All');
+    setWorkflowType('All');
+  }
 
-      <div className="sky-case-queue">
-        {visibleCases.map((item, index) => {
-          const taxonomy = publicCaseTaxonomy(item);
-          const status = caseStatus(item, completedToolsByCase, reviewPackagesByCase);
+  const visibleRows = filteredRows.slice(0, visibleLimit);
+  const hasAdvancedFilters = [customerType, productType, workflowType]
+    .some((value) => value !== 'All');
+
+  return (
+    <section className="sky-queue-reference" aria-labelledby="case-queue-heading">
+      <header className="sky-queue-reference-header">
+        <button
+          type="button"
+          className="sky-queue-brand"
+          onClick={() => navigate('dashboard')}
+          aria-label="Open Fraud Bloom dashboard"
+        >
+          <span className="sky-queue-brand-mark" aria-hidden="true">
+            <SkyIcon name="shield" size={30} />
+            <i>✦</i>
+          </span>
+          <span>
+            <strong>Fraud Bloom <em>v1</em></strong>
+            <small>Investigate. Learn. Prevent.</small>
+          </span>
+        </button>
+        <div className="sky-queue-luna" aria-hidden="true">
+          <img src="/assets/luna-sky-vector-v1.svg" alt="" />
+          <i>♥</i>
+        </div>
+      </header>
+
+      <div className="sky-queue-titlebar">
+        <div>
+          <p className="sky-eyebrow">Evidence First</p>
+          <h1 id="case-queue-heading">Case Queue</h1>
+          <h2>Choose the next investigation</h2>
+        </div>
+        <div className="sky-queue-title-actions">
+          <button
+            className="sky-button-secondary sky-queue-generate"
+            type="button"
+            onClick={generatePracticeCase}
+            disabled={creating}
+            aria-busy={creating}
+          >
+            <SkyIcon name="sparkle" size={17} />
+            <span>{creating ? 'Building…' : 'New case'}</span>
+          </button>
+          <button
+            className="sky-button-secondary sky-queue-filter-toggle"
+            type="button"
+            onClick={() => setFiltersOpen((value) => !value)}
+            aria-expanded={filtersOpen}
+            aria-controls="case-queue-filters"
+          >
+            <SkyIcon name="review" size={17} />
+            <span>Filters{hasAdvancedFilters ? ' · On' : ''}</span>
+          </button>
+        </div>
+      </div>
+
+      <form
+        className="sky-queue-search"
+        role="search"
+        onSubmit={(event) => event.preventDefault()}
+      >
+        <SkyIcon name="sparkle" size={20} />
+        <label htmlFor="case-queue-search">Search cases</label>
+        <input
+          id="case-queue-search"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Case ID, customer, account, product, or alert"
+          autoComplete="off"
+        />
+        {search ? (
+          <button type="button" onClick={() => setSearch('')} aria-label="Clear case search">
+            ×
+          </button>
+        ) : null}
+      </form>
+
+      <div className="sky-queue-status-tabs" role="group" aria-label="Case lifecycle filters">
+        {lifecycleOptions.map((option) => (
+          <button
+            type="button"
+            key={option}
+            aria-pressed={lifecycle === option}
+            onClick={() => setLifecycle(option)}
+          >
+            <span>{option}</span>
+            <strong>{lifecycleCounts[option]}</strong>
+          </button>
+        ))}
+      </div>
+
+      {filtersOpen ? (
+        <section className="sky-queue-filter-sheet" id="case-queue-filters" aria-label="Advanced case filters">
+          <div className="sky-queue-filter-heading">
+            <div>
+              <strong>Advanced filters</strong>
+              <span>Filter only by neutral intake information.</span>
+            </div>
+            <button type="button" onClick={clearFilters} disabled={!hasAdvancedFilters}>
+              Clear
+            </button>
+          </div>
+          <div className="sky-queue-filter-grid">
+            <label>
+              <span>Customer type</span>
+              <select value={customerType} onChange={(event) => setCustomerType(event.target.value)}>
+                <option>All</option>
+                {filterOptions.customerTypes.map((option) => <option key={option}>{option}</option>)}
+              </select>
+            </label>
+            <label>
+              <span>Product</span>
+              <select value={productType} onChange={(event) => setProductType(event.target.value)}>
+                <option>All</option>
+                {filterOptions.productTypes.map((option) => <option key={option}>{option}</option>)}
+              </select>
+            </label>
+            <label>
+              <span>Workflow</span>
+              <select value={workflowType} onChange={(event) => setWorkflowType(event.target.value)}>
+                <option>All</option>
+                {filterOptions.workflowTypes.map((option) => <option key={option}>{option}</option>)}
+              </select>
+            </label>
+          </div>
+        </section>
+      ) : null}
+
+      <div className="sr-only" aria-live="polite">
+        {creating ? 'Building a practice case.' : `${filteredRows.length} matching cases.`}
+      </div>
+      {generationError ? <div className="sky-notice" role="alert">{generationError}</div> : null}
+
+      <div className="sky-queue-reference-list">
+        {visibleRows.map(({
+          item,
+          taxonomy,
+          lifecycle: rowLifecycle,
+          progress,
+          briefingComplete,
+        }, index) => {
+          const isSubmitted = rowLifecycle === 'Submitted';
+          const destination = !briefingComplete || isSubmitted ? 'briefing' : 'workspace';
+          const actionLabel = isSubmitted
+            ? 'View submitted case'
+            : briefingComplete
+              ? 'Continue workspace'
+              : 'Open briefing';
           return (
             <button
-              className="sky-case-card"
-              data-tone={index % 3 === 1 ? 'pink' : undefined}
+              className="sky-case-card sky-queue-reference-card"
+              data-accent={index % 3}
+              data-active={item.id === activeCase.id || undefined}
               type="button"
               key={item.id}
-              onClick={() => openCase(item.id)}
+              onClick={() => openCase(item.id, destination)}
+              aria-current={item.id === activeCase.id ? 'true' : undefined}
             >
-              <span className="sky-case-card-top">
-                <span className="sky-case-shield" aria-hidden="true">✦</span>
+              <SkySparkles />
+              <span className="sky-queue-card-topline">
+                <StatusChip tone={rowLifecycle === 'In progress' ? 'pink' : undefined}>
+                  {rowLifecycle}
+                </StatusChip>
+                <small>{taxonomy.workflowType}</small>
+              </span>
+              <span className="sky-queue-card-main">
                 <span>
-                  <small>{taxonomy.workflowType}</small>
                   <strong>{item.id}</strong>
+                  <b>{item.person ?? 'Name not supplied'}</b>
                 </span>
-                <StatusChip tone={status === 'Submitted' ? undefined : 'pink'}>{status}</StatusChip>
+                <span className="sky-queue-progress">
+                  <SkyProgressRing
+                    value={progress.percent}
+                    label="reviewed"
+                    size="micro"
+                    decorative
+                  />
+                  <small>{progress.reviewed} / {progress.total} tools</small>
+                </span>
               </span>
-              <span className="sky-case-card-body">
-                <strong>{item.person ?? 'Training customer'}</strong>
-                <small>{publicAlertReason(item)}</small>
+              <span className="sky-queue-card-alert">{publicAlertReason(item)}</span>
+              <span className="sky-queue-card-facts">
+                <span>
+                  <small>Amount / exposure</small>
+                  <strong>{item.amountExposure ?? item.amount ?? 'Not supplied'}</strong>
+                </span>
+                <span>
+                  <small>Product</small>
+                  <strong>{taxonomy.productType}</strong>
+                </span>
+                <span>
+                  <small>Opened</small>
+                  <strong>{item.opened ?? item.reportedDate ?? 'Not supplied'}</strong>
+                </span>
               </span>
-              <span className="sky-case-card-facts">
-                <span>{item.amountExposure ?? item.amount ?? 'Amount not supplied'}</span>
-                <span>{taxonomy.productType}</span>
-                <span>{item.opened ?? item.reportedDate ?? 'Training date'}</span>
+              <span className="sky-case-card-action">
+                <strong>{actionLabel}</strong>
+                <SkyIcon name="arrow" size={18} />
               </span>
-              <span className="sky-case-card-action">Open case <b>→</b></span>
             </button>
           );
         })}
       </div>
 
-      {!visibleCases.length ? (
-        <div className="sky-empty">No cases match this search and priority.</div>
-      ) : null}
-    </>
+      {!filteredRows.length ? (
+        <div className="sky-empty">No cases match this search and these neutral filters.</div>
+      ) : (
+        <footer className="sky-queue-pagination">
+          <span>Showing {visibleRows.length} of {filteredRows.length} cases</span>
+          {visibleRows.length < filteredRows.length ? (
+            <button type="button" onClick={() => setVisibleLimit((value) => value + pageSize)}>
+              Load more <SkyIcon name="arrow" size={16} />
+            </button>
+          ) : null}
+        </footer>
+      )}
+    </section>
   );
 }

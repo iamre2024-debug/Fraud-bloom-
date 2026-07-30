@@ -312,6 +312,15 @@ const versionedLegacyPackage = normalizeReviewPackage({
 }, cardCase);
 assert(isValidReviewPackage(cardCase, versionedLegacyPackage), 'A migrated legacy package with an operational decision but no historical final finding should remain valid.');
 
+const suppliedPins = Array.from({ length: 11 }, (_, index) => ({
+  id: `PIN-${index + 1}`,
+  metadata: { sourceState: 'reviewed' },
+}));
+const suppliedNotes = Array.from({ length: 12 }, (_, index) => ({
+  id: `NOTE-${index + 1}`,
+  text: `Note ${index + 1}`,
+  citation: { recordId: `REC-${index + 1}` },
+}));
 const builtPackage = buildReviewPackage({
   caseId: cardCase.id,
   agentId: 'AGT-SMOKE',
@@ -324,10 +333,12 @@ const builtPackage = buildReviewPackage({
     indicators: {},
   },
   completedTools: requiredTools,
-  tray: Array.from({ length: 11 }, (_, index) => ({ id: `PIN-${index + 1}` })),
-  notes: Array.from({ length: 12 }, (_, index) => `Note ${index + 1}`),
+  tray: suppliedPins,
+  notes: suppliedNotes,
   packageStatus: confirmedWithEvidence,
 });
+suppliedPins[0].metadata.sourceState = 'mutated after submission';
+suppliedNotes[0].citation.recordId = 'MUTATED-AFTER-SUBMISSION';
 assert(builtPackage.operationalDecision === 'Support Customer Claim', 'Saved package should store the operational decision explicitly.');
 assert(builtPackage.finalFinding === 'Fraud Confirmed', 'Saved package should store the final finding explicitly.');
 assert(builtPackage.findingBasis.includes('TXN-SMOKE-001'), 'Saved package should store the evidence-based finding rationale.');
@@ -346,6 +357,11 @@ assert(
 assert(
   builtPackage.pinnedEvidence.length === 11 && builtPackage.noteSnapshot.length === 12,
   'Saved packages must retain every supplied pin and note without silent truncation.',
+);
+assert(
+  builtPackage.pinnedEvidence[0].metadata.sourceState === 'reviewed'
+    && builtPackage.noteSnapshot[0].citation.recordId === 'REC-1',
+  'Saved packages must deep-snapshot nested pin and note content instead of retaining mutable live references.',
 );
 
 const amendedPackage = buildReviewPackage({

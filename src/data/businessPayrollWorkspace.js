@@ -3,57 +3,120 @@ import { getBusinessResearch } from './businessResearchRecords.js';
 import { payrollContractIssues, summarizeCompanyPayroll } from './payrollDataModel.js';
 import { WORKFLOW_TYPES } from './caseDomain.js';
 import { buildCaseParties } from './caseParties.js';
+import { transactionAmountValue } from './transactionHistoryRecords.js';
 
 function amountValue(value = '') {
   const source = String(value ?? '').trim();
+  if (!source || !/\d/.test(source)) return null;
   const parsed = Number(source.replace(/[^0-9.-]/g, ''));
-  if (!Number.isFinite(parsed)) return 0;
+  if (!Number.isFinite(parsed)) return null;
   return /^\(.*\)$/.test(source) ? -Math.abs(parsed) : parsed;
 }
 
-function transactionCategory(item) {
-  if (/recurring/i.test(item.channel)) return 'Recurring';
-  if (/transfer|destination|account request|payment setup/i.test(`${item.merchant} ${item.channel}`)) return 'Account activity';
-  if (/fuel/i.test(item.merchant)) return 'Fuel';
-  if (/grocery/i.test(item.merchant)) return 'Grocery';
-  return 'Digital goods';
+function payrollDateValue(value) {
+  const parsed = Date.parse(String(value ?? '').trim());
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
-function transactionLocation(item) {
-  if (/card present/i.test(item.channel)) return 'Merchant location recorded in training packet';
-  if (/recurring/i.test(item.channel)) return 'Merchant billing location not supplied';
-  if (/account request|payment setup/i.test(item.channel)) return 'Internal account workspace';
-  return 'Online merchant location not supplied';
+export function sortPayrollRunsNewestFirst(payrollRuns = []) {
+  return payrollRuns
+    .map((run, index) => ({ run, index }))
+    .sort((left, right) => (
+      (payrollDateValue(right.run.payDate ?? right.run.processedDate) ?? 0)
+      - (payrollDateValue(left.run.payDate ?? left.run.processedDate) ?? 0)
+      || right.index - left.index
+    ))
+    .map(({ run }) => run);
 }
 
-function transactionEntryMode(item) {
-  if (/card not present/i.test(item.channel)) return 'Card not present';
-  if (/card present/i.test(item.channel)) return 'Chip / card present';
-  if (/recurring/i.test(item.channel)) return 'Stored credential / recurring';
-  if (/payment setup/i.test(item.channel)) return 'Profile setup';
-  return 'Internal request';
+export function filterPayrollRuns(
+  payrollRuns = [],
+  { runType = 'all', status = 'all' } = {},
+) {
+  const requestedType = String(runType ?? 'all').trim().toLowerCase();
+  const requestedStatus = String(status ?? 'all').trim().toLowerCase();
+  return sortPayrollRunsNewestFirst(payrollRuns).filter((run) => {
+    if (
+      requestedType !== 'all'
+      && String(run.runType ?? '').trim().toLowerCase() !== requestedType
+    ) return false;
+    if (
+      requestedStatus !== 'all'
+      && String(run.runStatus ?? run.status ?? '').trim().toLowerCase() !== requestedStatus
+    ) return false;
+    return true;
+  });
+}
+
+export function payrollHistoryOverview(payrollWorkspace = {}) {
+  const payrollRuns = sortPayrollRunsNewestFirst(payrollWorkspace.payrollRuns ?? []);
+  const latestRun = payrollRuns[0] ?? null;
+  return {
+    latestRun,
+    latestNetPayroll: latestRun?.netPay ?? latestRun?.netPayroll ?? null,
+    latestPayDate: latestRun?.payDate ?? latestRun?.processedDate ?? null,
+    payrollRunCount: payrollRuns.length,
+    employeesPaid: latestRun?.employeeCount ?? payrollWorkspace.summary?.employeesPaid ?? null,
+    nextPayDate: payrollWorkspace.companyPayrollProfile?.nextPayDate ?? null,
+    paySchedule: payrollWorkspace.companyPayrollProfile?.paySchedule ?? null,
+  };
+}
+
+function summarizeLegacyPayroll(payrollRuns = []) {
+  const sumKnown = (field) => {
+    const values = payrollRuns
+      .map((run) => amountValue(run[field]))
+      .filter(Number.isFinite);
+    return values.length ? values.reduce((total, value) => total + value, 0) : null;
+  };
+  const employeeIds = new Set(
+    payrollRuns
+      .flatMap((run) => run.employees ?? [])
+      .map((employee) => employee.employeeId)
+      .filter(Boolean),
+  );
+  return {
+    totalPayrollCost: sumKnown('totalPayrollCost'),
+    grossWages: sumKnown('grossWages'),
+    employeeTaxes: sumKnown('employeeTaxes'),
+    employerTaxes: sumKnown('employerTaxes'),
+    deductions: sumKnown('deductions'),
+    employerContributions: sumKnown('employerContributions'),
+    reimbursements: sumKnown('reimbursements'),
+    netPay: sumKnown('netPay'),
+    totalFundingAmount: sumKnown('totalFundingAmount'),
+    employeesPaid: employeeIds.size || null,
+  };
 }
 
 export function getTransactionHistory(activeCase) {
   const financial = getFinancialRecords(activeCase);
   return financial.transactions.map((item) => ({
     ...item,
-    amountValue: amountValue(item.amount),
-    direction: amountValue(item.amount) > 0
-      ? 'Debit'
-      : amountValue(item.amount) < 0
-        ? 'Credit'
-        : 'Non-monetary',
-    category: transactionCategory(item),
-    location: transactionLocation(item),
-    entryMode: transactionEntryMode(item),
-    relatedRecords: [
+    amountValue: transactionAmountValue(item.amount),
+    direction: item.direction ?? null,
+    category: item.category ?? null,
+    location: item.location ?? null,
+    entryMode: item.entryMode ?? null,
+    relatedRecords: [...new Set([
       item.id,
+      ...((Array.isArray(item.relatedRecords) ? item.relatedRecords : [])),
       ...((financial.paymentVerification ?? [])
         .filter((record) => record.relatedRecords?.includes(item.id))
         .map((record) => record.id)),
-    ],
-    relatedDocuments: activeCase.documents?.slice(0, 2).map((document) => document.id ?? document.title ?? document.name) ?? [],
+    ])],
+    relatedDocuments: Array.isArray(item.relatedDocuments)
+      ? item.relatedDocuments
+      : [],
+    pinPayload: {
+      id: item.id,
+      recordId: item.id,
+      sourceRecordId: item.id,
+      value: item.id,
+      label: `${item.id} · ${item.merchant}`,
+      query: item.id,
+      identifierType: 'transaction-id',
+    },
   }));
 }
 
@@ -96,30 +159,134 @@ export function getBusiness360Workspace(activeCase) {
   };
 }
 
+export function sortEmployeePaymentHistoryNewestFirst(paymentHistory = []) {
+  return (Array.isArray(paymentHistory) ? paymentHistory : [])
+    .map((item, index) => ({ item, index }))
+    .sort((left, right) => (
+      (payrollDateValue(right.item.effectiveDate ?? right.item.firstSeen) ?? 0)
+      - (payrollDateValue(left.item.effectiveDate ?? left.item.firstSeen) ?? 0)
+      || right.index - left.index
+    ))
+    .map(({ item }) => item);
+}
+
+export function employeePayrollSnapshots(payrollRuns = [], employeeId = '') {
+  const requestedId = String(employeeId ?? '').trim();
+  if (!requestedId) return [];
+  return sortPayrollRunsNewestFirst(payrollRuns).flatMap((run) => {
+    const employee = (Array.isArray(run.employees) ? run.employees : [])
+      .find((item) => item?.employeeId === requestedId);
+    if (!employee) return [];
+    const paystub = employee.paystub ?? null;
+    return [{
+      run,
+      employee,
+      paystub,
+      runId: run.id ?? null,
+      payDate: run.payDate ?? run.processedDate ?? null,
+      payPeriod: run.payPeriod ?? null,
+      runType: run.runType ?? null,
+      runStatus: run.runStatus ?? run.status ?? null,
+      destinations: Array.isArray(paystub?.paymentDestinations)
+        ? paystub.paymentDestinations
+        : [],
+    }];
+  });
+}
+
+function employeeProfileHistory(employee, paymentHistory) {
+  const changes = [
+    ...paymentHistory.map((item, index) => ({
+      id: item.paymentRecordId ?? `${employee.id}-PAYMENT-${index + 1}`,
+      type: 'Payment method',
+      effectiveDate: item.effectiveDate ?? null,
+      value: item.method ?? null,
+      detail: item.paymentRecordId ?? null,
+      destinations: Array.isArray(item.destinations) ? item.destinations : [],
+    })),
+    ...(employee.hireDate ? [{
+      id: `${employee.id}-HIRE`,
+      type: 'Employment started',
+      effectiveDate: employee.hireDate,
+      value: null,
+      detail: null,
+    }] : []),
+  ];
+  return changes
+    .map((item, index) => ({ item, index }))
+    .sort((left, right) => (
+      (payrollDateValue(right.item.effectiveDate) ?? 0)
+      - (payrollDateValue(left.item.effectiveDate) ?? 0)
+      || right.index - left.index
+    ))
+    .map(({ item }) => item);
+}
+
 export function getEmployeeProfiles(activeCase) {
   const records = getBusinessRecords(activeCase);
   const payrollRuns = records.payrollRuns ?? [];
   return (records.employeeProfile ?? []).map((employee) => {
-    const paychecks = payrollRuns
-      .flatMap((run) => run.employees ?? [])
-      .filter((runEmployee) => runEmployee.employeeId === employee.id)
-      .map((runEmployee) => runEmployee.paystub.id);
-    const currentPaymentPlan = employee.paymentHistory?.at(-1);
+    const paycheckHistory = employeePayrollSnapshots(payrollRuns, employee.id);
+    const paymentHistory = sortEmployeePaymentHistoryNewestFirst(employee.paymentHistory);
+    const currentPaymentPlan = paymentHistory[0] ?? null;
+    const currentDestinations = Array.isArray(currentPaymentPlan?.destinations)
+      ? currentPaymentPlan.destinations
+      : [];
+    const employmentTimeline = employee.employmentTimeline ?? [
+      employee.hireDate,
+      employee.employmentStatus ?? employee.status,
+    ].filter(Boolean).join(' – ');
     return {
       ...employee,
-      status: employee.employmentStatus ?? employee.status ?? 'Recorded',
-      lastSeen: payrollRuns.at(-1)?.payDate ?? employee.lastSeen ?? 'Not supplied',
-      employmentTimeline: `${employee.hireDate ?? 'Hire date not supplied'} – ${employee.employmentStatus ?? 'Status not supplied'}`,
-      officialContact: employee.officialContact ?? 'Employer payroll office on file',
-      directDeposit: currentPaymentPlan?.method === 'Paper check'
-        ? 'Paper check · destination identifiers are not applicable'
-        : `${currentPaymentPlan?.method ?? 'Payment method recorded'} · event-level destination identifiers are shown only on paystubs`,
-      linkedPayroll: paychecks,
-      employer: employee.employer ?? records.companyPayrollProfile?.legalName ?? 'Employer not supplied',
-      role: employee.role ?? employee.position ?? 'Employee',
-      department: employee.department ?? 'Not supplied',
+      status: employee.employmentStatus ?? employee.status ?? null,
+      lastSeen: paycheckHistory[0]?.payDate ?? employee.lastSeen ?? null,
+      employmentTimeline: employmentTimeline || null,
+      paymentHistory,
+      currentPaymentPlan,
+      currentDestinations,
+      paycheckHistory,
+      latestPaycheck: paycheckHistory[0] ?? null,
+      profileHistory: employeeProfileHistory(employee, paymentHistory),
+      linkedPayroll: paycheckHistory.map((item) => item.paystub?.id).filter(Boolean),
+      employer: employee.employer ?? records.companyPayrollProfile?.legalName ?? null,
+      role: employee.role ?? employee.position ?? null,
+      department: employee.department ?? null,
     };
   });
+}
+
+export function resolveEmployeeProfileLookup(employeeProfiles = [], value = '') {
+  const normalized = String(value ?? '').trim().toLowerCase();
+  if (
+    !normalized
+    || ['not supplied', 'not applicable', 'not recorded', 'none'].includes(normalized)
+  ) {
+    return { state: 'invalid', record: null, matches: [] };
+  }
+  const records = Array.isArray(employeeProfiles) ? employeeProfiles : [];
+  const exactIds = records.filter((item) => (
+    String(item?.id ?? '').trim().toLowerCase() === normalized
+  ));
+  if (exactIds.length === 1) {
+    return { state: 'found', record: exactIds[0], matches: exactIds, matchedBy: 'employee-id' };
+  }
+  if (exactIds.length > 1) {
+    return { state: 'ambiguous', record: null, matches: exactIds, matchedBy: 'employee-id' };
+  }
+  const exactNames = records.filter((item) => (
+    String(item?.name ?? '').trim().toLowerCase() === normalized
+  ));
+  if (exactNames.length === 1) {
+    return { state: 'found', record: exactNames[0], matches: exactNames, matchedBy: 'employee-name' };
+  }
+  if (exactNames.length > 1) {
+    return { state: 'ambiguous', record: null, matches: exactNames, matchedBy: 'employee-name' };
+  }
+  return { state: 'not-found', record: null, matches: [] };
+}
+
+export function findEmployeeProfile(employeeProfiles = [], value = '') {
+  return resolveEmployeeProfileLookup(employeeProfiles, value).record;
 }
 
 export function getPayrollHistory(activeCase) {
@@ -138,58 +305,37 @@ export function getPayrollHistory(activeCase) {
     activeEmployeeCount: legacyRows[0].employeeCount ?? null,
     selectedDateRange: `${legacyRows.at(-1)?.period ?? 'Not supplied'} – ${legacyRows[0]?.period ?? 'Not supplied'}`,
   } : null);
-  const sourceRuns = records.payrollRuns?.length ? records.payrollRuns : legacyRows.map((row, index) => {
-    const total = amountValue(row.totalCompanyDebit ?? row.amount);
-    const employeeId = row.employeeId ?? `${activeCase.id}-LEGACY-EMP-${index + 1}`;
-    const paystubId = `${row.id}-STUB`;
-    const paymentDestination = {
-      id: `${paystubId}-PMT-1`,
-      method: row.paymentMethod ?? 'Preserved payroll payment',
-      bankCode: row.bankCode ?? 'Not supplied',
-      destinationId: row.destinationId ?? 'Not supplied',
-      amount: total,
-      status: row.fundingStatus ?? row.status ?? 'Recorded',
-      settlementDate: row.processedDate ?? row.period,
-      paymentRecordId: row.paymentRecordId ?? null,
-      checkNumber: 'Not applicable',
-      firstSeen: row.processedDate ?? row.period,
-    };
-    const paystub = {
-      id: paystubId,
-      employer: { legalName: row.employer, address: companyPayrollProfile?.address, maskedEin: companyPayrollProfile?.maskedEin },
-      employee: { legalName: row.employee ?? 'Employee detail not supplied', address: 'Not supplied', employeeId },
-      payPeriod: { start: row.payPeriodStart ?? row.period, end: row.payPeriodEnd ?? row.period, label: row.period },
-      payDate: row.processedDate ?? row.period,
-      payrollType: row.runType ?? 'Preserved payroll run',
-      earnings: [{ type: 'Preserved gross payroll', hours: 'Not supplied', rate: 'Not supplied', current: total, ytd: total }],
-      taxes: [],
-      deductions: [],
-      employerContributions: [],
-      reimbursements: [],
-      adjustments: [],
-      paymentDestinations: [paymentDestination],
-      summary: { grossPay: total, employeeTaxes: 0, employerTaxes: 0, employeeDeductions: 0, employerContributions: 0, reimbursements: 0, netPay: total, totalPayrollCost: total, totalDeductions: 0 },
-      ytdSnapshot: { grossPay: total, netPay: total },
-    };
+  const hasDetailedPayroll = Boolean(records.payrollRuns?.length);
+  const sourceRuns = hasDetailedPayroll ? records.payrollRuns : legacyRows.map((row) => {
+    const suppliedEmployees = Array.isArray(row.employees) ? row.employees : [];
     return {
       ...row,
-      payPeriod: paystub.payPeriod,
-      payDate: paystub.payDate,
-      runType: row.runType ?? 'Preserved payroll run',
-      status: row.status ?? 'Recorded',
-      employeeCount: row.employeeCount ?? 1,
-      grossWages: total,
-      employeeTaxes: 0,
-      employerTaxes: 0,
-      deductions: 0,
-      employerContributions: 0,
-      reimbursements: 0,
-      netPay: total,
-      totalPayrollCost: total,
-      totalCompanyDebit: total,
-      totalFundingAmount: total,
-      companyFunding: { bankCode: row.fundingSource ?? row.bankCode ?? 'Not supplied', accountUsed: row.fundingAccount ?? 'Not supplied', paymentRecordId: row.paymentRecordId ?? null },
-      employees: [{ employeeId, name: paystub.employee.legalName, department: 'Not supplied', payType: 'Not supplied', regularHours: 0, overtimeHours: 0, grossPay: total, taxes: 0, deductions: 0, netPay: total, paymentMethod: paymentDestination.method, paymentStatus: paymentDestination.status, paystub }],
+      payPeriod: row.payPeriod ?? {
+        start: row.payPeriodStart ?? null,
+        end: row.payPeriodEnd ?? null,
+        label: row.period ?? null,
+      },
+      payDate: row.payDate ?? row.processedDate ?? null,
+      runType: row.runType ?? null,
+      status: row.status ?? row.fundingStatus ?? 'Recorded',
+      employeeCount: row.employeeCount ?? (suppliedEmployees.length || null),
+      grossWages: amountValue(row.grossWages),
+      employeeTaxes: amountValue(row.employeeTaxes),
+      employerTaxes: amountValue(row.employerTaxes),
+      deductions: amountValue(row.deductions),
+      employerContributions: amountValue(row.employerContributions),
+      reimbursements: amountValue(row.reimbursements),
+      netPay: amountValue(row.netPay ?? row.netPayroll),
+      totalPayrollCost: amountValue(row.totalPayrollCost),
+      totalCompanyDebit: amountValue(row.totalCompanyDebit ?? row.amount),
+      totalFundingAmount: amountValue(row.totalFundingAmount),
+      companyFunding: row.companyFunding ?? {
+        bankCode: row.fundingSource ?? null,
+        accountUsed: row.fundingAccount ?? null,
+        paymentRecordId: row.fundingPaymentRecordId ?? null,
+      },
+      employees: suppliedEmployees,
+      legacySummaryOnly: !suppliedEmployees.length,
     };
   });
   const payrollRuns = sourceRuns.map((run) => {
@@ -235,78 +381,14 @@ export function getPayrollHistory(activeCase) {
   const data = { companyPayrollProfile, payrollRuns };
   return {
     ...data,
-    summary: summarizeCompanyPayroll(payrollRuns),
-    contractIssues: records.payrollRuns?.length ? payrollContractIssues(data) : [],
+    summary: hasDetailedPayroll
+      ? summarizeCompanyPayroll(payrollRuns)
+      : summarizeLegacyPayroll(payrollRuns),
+    contractIssues: hasDetailedPayroll ? payrollContractIssues(data) : [],
   };
 }
 
 export function employeePayrollHistory(payrollWorkspace, employeeId) {
   const company = payrollWorkspace.companyPayrollProfile;
-  const paychecks = payrollWorkspace.payrollRuns
-    .flatMap((run) => run.employees.map((employee) => ({
-      ...employee,
-      runId: run.id,
-      payDate: run.payDate,
-      payPeriod: run.payPeriod,
-      payrollType: run.runType,
-      company: company?.legalName,
-    })))
-    .filter((employee) => employee.employeeId === employeeId)
-    .sort((left, right) => new Date(right.payDate).getTime() - new Date(left.payDate).getTime());
-  return {
-    employee: paychecks[0] ?? null,
-    paychecks,
-    selectedYear: paychecks[0]?.payDate?.match(/\d{4}/)?.[0] ?? 'Not supplied',
-    paycheckCount: paychecks.length,
-    ytdGross: paychecks[0]?.paystub?.ytdSnapshot?.grossPay ?? 0,
-    ytdNet: paychecks[0]?.paystub?.ytdSnapshot?.netPay ?? 0,
-  };
-}
-
-export function findPayrollRecord(payrollWorkspace, value = '') {
-  const normalized = String(value).trim().toLowerCase();
-  if (!normalized) return null;
-  for (const run of payrollWorkspace.payrollRuns ?? []) {
-    if (run.id.toLowerCase() === normalized) return { type: 'run', run };
-    for (const employee of run.employees ?? []) {
-      if (employee.employeeId.toLowerCase() === normalized) return { type: 'employee', run, employee };
-      if (employee.paystub.id.toLowerCase() === normalized) return { type: 'paystub', run, employee, paystub: employee.paystub };
-      const destination = employee.paystub.paymentDestinations.find((item) => (
-        [item.bankCode, item.destinationId, item.paymentRecordId].some((candidate) => String(candidate ?? '').toLowerCase() === normalized)
-      ));
-      if (destination) return { type: 'paystub', run, employee, paystub: employee.paystub, destination };
-    }
-  }
-  return null;
-}
-
-export function getPayrollAccessContext(activeCase) {
-  if (activeCase.workflowType !== WORKFLOW_TYPES.PAYROLL_ACCOUNT_TAKEOVER) return null;
-  const parties = buildCaseParties(activeCase);
-  const login = activeCase.loginHistory?.[0] ?? {};
-  const businessRecords = getBusinessRecords(activeCase);
-  const financialRecords = getFinancialRecords(activeCase);
-  const payrollRecords = businessRecords.payrollRuns ?? [];
-  const destinationRecords = financialRecords.paymentVerification ?? [];
-  const initiator = parties.find((party) => /initiator/i.test(party.role ?? ''));
-  const approver = parties.find((party) => /approver/i.test(party.role ?? ''));
-  const administrator = parties.find((party) => /administrator/i.test(party.role ?? ''));
-  const recoveryDocument = (activeCase.documents ?? []).find((document) => /recover|recall|return/i.test(`${document.name ?? document.title} ${document.detail ?? ''}`));
-  const abnormalSamePerson = Boolean(initiator?.name && approver?.name && initiator.name === approver.name);
-
-  return {
-    initiator: initiator?.name ?? 'Initiator record not supplied',
-    approver: approver?.name ?? 'Approver record not supplied',
-    administrator: administrator?.name ?? 'Administrator record not supplied',
-    approvalSeparation: abnormalSamePerson
-      ? 'The same person initiated and approved; compare this with the business baseline.'
-      : 'Separate initiator and approver records are available.',
-    deviceId: login.deviceId ?? login.device ?? 'Device record not supplied',
-    ipAddress: login.ip ?? 'IP record not supplied',
-    sessionId: login.session ?? login.sessionReference ?? 'Session record not supplied',
-    payrollHistory: `${payrollRecords.length} payroll record${payrollRecords.length === 1 ? '' : 's'} available`,
-    destinationChanges: `${destinationRecords.length} payment or destination record${destinationRecords.length === 1 ? '' : 's'} available`,
-    fundsStatus: financialRecords.transactions?.[0]?.status ?? 'Funds status not supplied',
-    recoveryInformation: recoveryDocument?.detail ?? 'No recovery or recall result is recorded yet.',
-  };
-}
+  const paychecks = employeePayrollSnapshots(
+    payrollWorkspace.payrollRuns ?? 

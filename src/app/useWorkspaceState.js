@@ -102,13 +102,21 @@ function writeStorage(key, value) {
   }
 }
 
+function newestReviewPackageFirst(left = {}, right = {}) {
+  return Number(right.packageVersion ?? right.version ?? 0)
+    - Number(left.packageVersion ?? left.version ?? 0)
+    || String(right.savedAtIso ?? right.savedAt ?? '')
+      .localeCompare(String(left.savedAtIso ?? left.savedAt ?? ''));
+}
+
 function normalizePackagesByCase(saved = {}, cases = []) {
   const casesById = new Map(cases.map((item) => [item.id, item]));
   return Object.fromEntries(
     Object.entries(saved).map(([caseId, packages]) => [
       caseId,
       (Array.isArray(packages) ? packages : [])
-        .map((reviewPackage) => normalizeReviewPackage(reviewPackage, casesById.get(caseId) ?? {})),
+        .map((reviewPackage) => normalizeReviewPackage(reviewPackage, casesById.get(caseId) ?? {}))
+        .sort(newestReviewPackageFirst),
     ]),
   );
 }
@@ -226,7 +234,8 @@ export function useWorkspaceState() {
     activeCase,
   );
   const reviewPackages = caseEntry(packagesByCase, caseId, [])
-    .map((reviewPackage) => normalizeReviewPackage(reviewPackage, activeCase));
+    .map((reviewPackage) => normalizeReviewPackage(reviewPackage, activeCase))
+    .sort(newestReviewPackageFirst);
   const validReviewPackages = reviewPackages.filter((reviewPackage) => (
     isValidReviewPackage(activeCase, reviewPackage)
   ));
@@ -251,7 +260,8 @@ export function useWorkspaceState() {
     item.id,
     (packagesByCase[item.id] ?? [])
       .map((reviewPackage) => normalizeReviewPackage(reviewPackage, item))
-      .filter((reviewPackage) => isValidReviewPackage(item, reviewPackage)),
+      .filter((reviewPackage) => isValidReviewPackage(item, reviewPackage))
+      .sort(newestReviewPackageFirst),
   ]));
   const completedToolsByCase = Object.fromEntries(cases.map((item) => [
     item.id,

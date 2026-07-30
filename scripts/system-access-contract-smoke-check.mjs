@@ -1,6 +1,9 @@
 import {
+  buildSystemAccessSummary,
   buildNeutralSystemAccessRecords,
   getSystemAccessRecords,
+  searchSystemAccessRecords,
+  sortSystemAccessRecords,
   systemAccessRecordsByCase,
 } from '../src/data/systemAccessRecords.js';
 import { createGeneratedCase } from '../src/data/generatedCases.js';
@@ -57,6 +60,29 @@ assert(
   getSystemAccessRecords('FA-ATO-24018').length === 3,
   'Built-in System Access Lane records should remain available.',
 );
+const builtInRecords = getSystemAccessRecords('FA-ATO-24018');
+const exactRecord = searchSystemAccessRecords(builtInRecords, 'SYS-ATO-002');
+const broadRecords = searchSystemAccessRecords(builtInRecords, 'event');
+const builtInSummary = buildSystemAccessSummary(builtInRecords);
+assert(
+  exactRecord.length === 1
+    && exactRecord[0].id === 'SYS-ATO-002'
+    && broadRecords.length >= 2
+    && searchSystemAccessRecords(builtInRecords, '').length === 0,
+  'System Access search should prioritize an exact ID, support supplied terms, and keep blank searches locked.',
+);
+assert(
+  builtInSummary.total === builtInRecords.length
+    && builtInSummary.lanes === new Set(builtInRecords.map((item) => item.lane)).size
+    && builtInSummary.actors === new Set(builtInRecords.map((item) => item.actor)).size
+    && builtInSummary.latestObserved,
+  'System Access summary values should be derived only from the matched supplied records.',
+);
+assert(
+  sortSystemAccessRecords(builtInRecords).map((item) => item.id).join(',')
+    === 'SYS-ATO-002,SYS-ATO-001,SYS-ATO-003',
+  'System Access records should render in chronological order when supplied timestamps are parseable.',
+);
 assert(
   getSystemAccessRecords('NOT-A-GENERATED-CASE').length === 0,
   'Unknown non-generated case IDs should not receive invented records.',
@@ -76,4 +102,4 @@ assert(
   'Generated-case enrichment should expose the neutral System Access Lane and its records.',
 );
 
-console.log('System Access Lane contract smoke check passed for built-in and generated cases with neutral, deterministic records.');
+console.log('System Access Lane contract smoke check passed for neutral records, exact-first search, source-derived summaries, and chronological display.');

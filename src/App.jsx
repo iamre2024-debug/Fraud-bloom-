@@ -45,6 +45,28 @@ function ToolWorkspace({ state }) {
     navigate,
   } = state;
   const toolName = canonicalToolName(route.tool);
+  const isReferenceStructuredTool = [
+    'Financial Investigation',
+    'Payment Verification',
+    'Link Analysis',
+    'System Access Lane',
+    'Timeline',
+    'Merchant Intelligence',
+    'Document Viewer',
+    'Document Request',
+    'Transaction History',
+    'Payroll History',
+    'Customer 360',
+    'Identity Intel / People Search',
+    'Business 360',
+    'Employee Profile',
+    'Login History',
+    'Session History',
+    'Device Intelligence',
+    'IP Intelligence',
+  ].includes(toolName);
+  const toolIsAvailable = !Array.isArray(activeCase.availableTools)
+    || activeCase.availableTools.map(canonicalToolName).includes(toolName);
   const [query, setQuery] = useState(route.query ?? '');
 
   useEffect(() => {
@@ -86,40 +108,45 @@ function ToolWorkspace({ state }) {
     onMarkReviewed: markReviewed,
     onOpenTool: openTool,
     onNavigate: openTool,
+    onBackToWorkspace: () => navigate('workspace'),
     onAction: recordAction,
     completedTools,
     reviewed: completedTools.includes(toolName),
   };
 
   let toolContent = null;
-  if (isIdentityDigitalTool(toolName)) {
+  if (toolIsAvailable && isIdentityDigitalTool(toolName)) {
     toolContent = <IdentityDigitalTools toolName={toolName} {...sharedProps} />;
-  } else if (resolveFinancialBusinessTool(toolName)) {
+  } else if (toolIsAvailable && resolveFinancialBusinessTool(toolName)) {
     toolContent = <FinancialBusinessToolRouter toolName={toolName} {...sharedProps} />;
-  } else if (supportToolNames.has(toolName)) {
+  } else if (toolIsAvailable && supportToolNames.has(toolName)) {
     toolContent = <SupportToolRouter toolName={toolName} {...sharedProps} />;
   }
 
   return (
     <>
-      <SkyCard className="sky-tool-heading" tone="pink">
-        <SectionHeading
-          eyebrow="Investigation tool"
-          title={toolName}
-          description={`Case-scoped workspace for ${activeCase.id}. Searches and outputs remain inside this case.`}
-          action={(
-            <button className="sky-button-secondary" type="button" onClick={() => navigate('workspace')}>
-              ← Tool map
-            </button>
-          )}
-        />
-      </SkyCard>
+      {!isReferenceStructuredTool ? (
+        <SkyCard className="sky-tool-heading" tone="pink">
+          <SectionHeading
+            eyebrow="Investigation tool"
+            title={toolName}
+            description={`Case-scoped workspace for ${activeCase.id}. Searches and outputs remain inside this case.`}
+            action={(
+              <button className="sky-button-secondary" type="button" onClick={() => navigate('workspace')}>
+                ← Tool map
+              </button>
+            )}
+          />
+        </SkyCard>
+      ) : null}
       {toolContent ?? (
         <SkyCard>
           <SectionHeading
             eyebrow="Unavailable tool"
             title={toolName || 'No tool selected'}
-            description="This tool is not registered in the clean workspace."
+            description={toolIsAvailable
+              ? 'This tool is not registered in the clean workspace.'
+              : `This tool is not available for ${activeCase.id}.`}
           />
           <button className="sky-button" type="button" onClick={() => navigate('workspace')}>Return to tool map</button>
         </SkyCard>
@@ -129,6 +156,10 @@ function ToolWorkspace({ state }) {
         quickPad={quickPad}
         setQuickPad={setQuickPad}
         navigate={navigate}
+        activeCaseId={activeCase.id}
+        activeCaseTrainingId={activeCase.trainingId}
+        activeCaseAvailableTools={activeCase.availableTools}
+        variant={['Employee Profile', 'System Access Lane'].includes(toolName) ? 'floating' : 'card'}
       />
     </>
   );
@@ -138,19 +169,46 @@ function AppScreen({ state }) {
   switch (state.route.name) {
     case 'cases':
       return (
-        <CaseQueue
-          cases={state.cases}
-          activeCase={state.activeCase}
-          completedToolsByCase={state.completedToolsByCase}
-          reviewPackagesByCase={state.reviewPackagesByCase}
-          openCase={state.openCase}
-          createCase={state.createCase}
-        />
+        <>
+          <CaseQueue
+            cases={state.cases}
+            activeCase={state.activeCase}
+            completedToolsByCase={state.completedToolsByCase}
+            reviewPackagesByCase={state.reviewPackagesByCase}
+            openCase={state.openCase}
+            createCase={state.createCase}
+            navigate={state.navigate}
+          />
+          <QuickPad
+            tray={state.tray}
+            quickPad={state.quickPad}
+            setQuickPad={state.setQuickPad}
+            navigate={state.navigate}
+            activeCaseId={state.activeCase.id}
+            activeCaseTrainingId={state.activeCase.trainingId}
+            activeCaseAvailableTools={state.activeCase.availableTools}
+            variant="floating"
+          />
+        </>
       );
     case 'briefing':
       return <CaseBriefing {...state} />;
     case 'workspace':
-      return <Workspace {...state} />;
+      return (
+        <>
+          <Workspace {...state} />
+          <QuickPad
+            tray={state.tray}
+            quickPad={state.quickPad}
+            setQuickPad={state.setQuickPad}
+            navigate={state.navigate}
+            activeCaseId={state.activeCase.id}
+            activeCaseTrainingId={state.activeCase.trainingId}
+            activeCaseAvailableTools={state.activeCase.availableTools}
+            variant="floating"
+          />
+        </>
+      );
     case 'tool':
       return <ToolWorkspace state={state} />;
     case 'summary':

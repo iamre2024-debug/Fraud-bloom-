@@ -5,10 +5,27 @@ import { coreClaimTypes } from '../src/data/claimRegistry.js';
 import { createGeneratedCase } from '../src/data/generatedCases.js';
 import { getFinancialRecords } from '../src/data/caseToolData.js';
 import {
+  employeePayrollSnapshots,
   employeePayrollHistory,
+  filterPayrollRuns,
+  findEmployeeProfile,
+  findPayrollRecord,
   getBusiness360Workspace,
+  getEmployeeProfiles,
   getPayrollHistory,
+  payrollHistoryOverview,
+  resolveEmployeeProfileLookup,
+  sortEmployeePaymentHistoryNewestFirst,
+  sortPayrollRunsNewestFirst,
 } from '../src/data/businessPayrollWorkspace.js';
+import {
+  buildQuickPadDestinationRoute,
+  validateQuickPadDestinationPayload,
+} from '../src/data/quickPadController.js';
+import {
+  quickPadQueryForTool,
+  quickPadSourceRoute,
+} from '../src/data/quickPadRouting.js';
 import {
   businessResearchSections,
   lunaBusinessResearchStatuses,
@@ -117,16 +134,102 @@ for (const activeCase of cases.filter((item) => item.availableTools.includes('Bu
 const builtInPayrollCase = cases.find((item) => item.id === 'FA-CR-24003');
 const builtInPayroll = getPayrollHistory(builtInPayrollCase);
 assertPayrollContract('Built-in payroll', builtInPayroll);
+const builtInEmployeeProfiles = getEmployeeProfiles(builtInPayrollCase);
+const splitDepositProfile = builtInEmployeeProfiles.find((profile) => (
+  profile.currentDestinations?.length > 1
+));
+if (
+  !splitDepositProfile
+  || splitDepositProfile.currentDestinations.length !== 2
+  || new Set(splitDepositProfile.currentDestinations.map((item) => item.destinationId)).size !== 2
+) {
+  fail('Employee Profile collapses a supplied split direct-deposit instruction into one destination.');
+}
+const paperCheckProfile = builtInEmployeeProfiles.find((profile) => (
+  profile.currentPaymentPlan?.method === 'Paper check'
+));
+if (
+  !paperCheckProfile
+  || paperCheckProfile.currentDestinations.length
+  || !paperCheckProfile.currentPaymentPlan.checkNumber
+) {
+  fail('Employee Profile invents payment destination identifiers for a supplied paper-check instruction.');
+}
 if (builtInPayroll.payrollRuns.some((run) => run.employees.every((employee) => employee.name === builtInPayrollCase.person))) fail('Company payroll runs repeat only the case employee instead of listing the company workforce.');
 const firstRun = builtInPayroll.payrollRuns[0];
 const firstEmployee = firstRun.employees[0];
 const employeeHistory = employeePayrollHistory(builtInPayroll, firstEmployee.employeeId);
 if (!employeeHistory.paychecks.length || employeeHistory.paychecks.some((paycheck) => paycheck.employeeId !== firstEmployee.employeeId)) fail('Employee Payroll History includes another employee.');
+const newestBuiltInRuns = sortPayrollRunsNewestFirst(builtInPayroll.payrollRuns);
+if (newestBuiltInRuns[0]?.id !== builtInPayroll.payrollRuns.at(-1)?.id) fail('Payroll History does not sort source runs newest first.');
+if (newestBuiltInRuns.at(-1)?.id !== builtInPayroll.payrollRuns[0]?.id) fail('Payroll History newest-first ordering loses the oldest immutable run.');
+const builtInOverview = payrollHistoryOverview(builtInPayroll);
+if (
+  builtInOverview.latestRun?.id !== newestBuiltInRuns[0]?.id
+  || cents(builtInOverview.latestNetPayroll) !== cents(newestBuiltInRuns[0]?.netPay)
+  || builtInOverview.payrollRunCount !== builtInPayroll.payrollRuns.length
+  || builtInOverview.nextPayDate !== builtInPayroll.companyPayrollProfile.nextPayDate
+) {
+  fail('Payroll History overview is not derived from the latest supplied run and company payroll profile.');
+}
+const filterFixture = builtInPayroll.payrollRuns.map((run, index) => ({
+  ...run,
+  runType: index === 0 ? 'Bonus' : run.runType,
+  runStatus: index === 1 ? 'Pending' : run.runStatus,
+}));
+if (
+  filterPayrollRuns(filterFixture, { runType: 'Bonus' }).length !== 1
+  || filterPayrollRuns(filterFixture, { status: 'Pending' }).length !== 1
+  || filterPayrollRuns(filterFixture, { runType: 'No such type' }).length
+) {
+  fail('Payroll History run filters do not apply exact source run type and status values.');
+}
 if (!firstRun.companyFunding.bankCode || firstRun.companyFunding.bankCode === firstEmployee.paystub.paymentDestinations[0].bankCode) fail('Company funding Bank Code and employee payment Bank Code are not separated.');
 if (JSON.stringify(builtInPayroll.payrollRuns.filter((run) => /May|Jun/.test(run.payDate))).includes('DST-7740')) fail('A May or June payroll displays the destination introduced in July.');
 if (!builtInPayroll.payrollRuns.some((run) => run.employees.some((employee) => employee.paystub.paymentDestinations.length > 1))) fail('Built-in payroll lacks a split direct-deposit snapshot.');
+const splitEmployeeOccurrence = newestBuiltInRuns
+  .flatMap((run) => run.employees.map((employee) => ({ run, employee })))
+  .find(({ employee }) => employee.paystub.paymentDestinations.length > 1);
+if (splitEmployeeOccurrence) {
+  const splitDestinations = splitEmployeeOccurrence.employee.paystub.paymentDestinations;
+  if (sum(splitDestinations, 'amount') !== cents(splitEmployeeOccurrence.employee.paystub.summary.netPay)) {
+    fail('Split direct-deposit destinations do not preserve the immutable paystub net-pay total.');
+  }
+  for (const destination of splitDestinations) {
+    const matchedDestination = findPayrollRecord(builtInPayroll, destination.destinationId);
+    if (
+      matchedDestination?.identifierType !== 'destination-id'
+      || matchedDestination?.matchedIdentifier !== destination.destinationId
+    ) {
+      fail(`Split destination ${destination.destinationId} is not exactly searchable in Payroll History.`);
+    }
+  }
+}
 const paperCheck = builtInPayroll.payrollRuns.flatMap((run) => run.employees).find((employee) => employee.paymentMethod === 'Paper check')?.paystub.paymentDestinations[0];
 if (!paperCheck || paperCheck.bankCode !== 'Not applicable' || paperCheck.destinationId !== 'Not applicable' || !paperCheck.checkNumber) fail('Paper-check paystub does not use Not applicable identifiers and a check number.');
+if (findPayrollRecord(builtInPayroll, 'Not applicable')) fail('Payroll History treats a paper-check Not applicable placeholder as a searchable identifier.');
+
+const repeatedEmployeeMatches = newestBuiltInRuns.filter((run) => (
+  run.employees.some((employee) => employee.employeeId === firstEmployee.employeeId)
+));
+const repeatedEmployeeResult = findPayrollRecord(builtInPayroll, firstEmployee.employeeId);
+if (
+  repeatedEmployeeResult?.identifierType !== 'employee-id'
+  || repeatedEmployeeResult?.run?.id !== repeatedEmployeeMatches[0]?.id
+  || repeatedEmployeeResult?.matchCount !== repeatedEmployeeMatches.length
+  || repeatedEmployeeResult?.occurrences?.length !== repeatedEmployeeMatches.length
+) {
+  fail('Repeated Employee ID search does not select the newest occurrence while disclosing its full immutable history.');
+}
+const newestPaystub = repeatedEmployeeResult?.paystub;
+if (
+  !newestPaystub
+  || findPayrollRecord(builtInPayroll, newestPaystub.id)?.identifierType !== 'paystub-id'
+  || findPayrollRecord(builtInPayroll, builtInPayroll.companyPayrollProfile.payrollId)?.identifierType !== 'payroll-profile-id'
+  || findPayrollRecord(builtInPayroll, newestBuiltInRuns[0].id)?.identifierType !== 'payroll-run-id'
+) {
+  fail('Payroll profile, run, employee, and paystub exact identifier contracts are incomplete.');
+}
 
 const generatedPayrollCase = createGeneratedCase({ index: 12345678, claimTypeId: 'payroll-direct-deposit', difficulty: 'deep', evidenceDepth: 'deep' });
 const generatedPayroll = getPayrollHistory(generatedPayrollCase);
@@ -136,38 +239,43 @@ const laterDestination = generatedPayroll.payrollRuns.at(-1).employees[0].paystu
 for (const run of generatedPayroll.payrollRuns.filter((item) => new Date(item.payDate) < new Date(laterDestination.firstSeen))) {
   if (run.employees[0].paystub.paymentDestinations.some((destination) => destination.destinationId === laterDestination.destinationId)) fail('Generated historical payroll backfills a later destination.');
 }
-
-const businessCredit = createGeneratedCase({ index: 88119001, claimTypeId: 'business-loan-bust-out', scenarioId: 'blo-sleeper-llc-sudden-draw' });
-if (businessCredit.availableTools.some((tool) => ['Employee Profile', 'Payroll History'].includes(tool))) fail('Business-credit monitoring receives employee or payroll tools without explicit relevance.');
-for (const scenarioId of ['cr-new-business', 'cr-existing-business']) {
-  const generatedBusinessCredit = createGeneratedCase({ index: 88119002, claimTypeId: 'credit-risk', scenarioId });
-  if (generatedBusinessCredit.availableTools.some((tool) => ['Employee Profile', 'Payroll History'].includes(tool))) fail(`${scenarioId} receives employee or payroll tools without explicit relevance.`);
+const newestGeneratedRuns = sortPayrollRunsNewestFirst(generatedPayroll.payrollRuns);
+const newestGeneratedRun = newestGeneratedRuns[0];
+const newestGeneratedEmployee = newestGeneratedRun.employees[0];
+const newestGeneratedPaystub = newestGeneratedEmployee.paystub;
+const newestGeneratedDestination = newestGeneratedPaystub.paymentDestinations[0];
+const generatedExactLookups = [
+  [generatedPayroll.companyPayrollProfile.payrollId, 'payroll-profile-id'],
+  [newestGeneratedRun.id, 'payroll-run-id'],
+  [newestGeneratedEmployee.employeeId, 'employee-id'],
+  [newestGeneratedPaystub.id, 'paystub-id'],
+  [newestGeneratedDestination.id, 'payment-destination-record-id'],
+  [newestGeneratedDestination.destinationId, 'destination-id'],
+  [newestGeneratedDestination.bankCode, 'bank-code'],
+  [newestGeneratedDestination.paymentRecordId, 'payment-record-id'],
+  [newestGeneratedRun.companyFunding.bankCode, 'funding-bank-code'],
+  [newestGeneratedRun.companyFunding.paymentRecordId, 'funding-payment-record-id'],
+];
+for (const [identifier, expectedType] of generatedExactLookups) {
+  const match = findPayrollRecord(generatedPayroll, identifier);
+  if (
+    match?.identifierType !== expectedType
+    || match?.matchedIdentifier !== identifier
+    || match?.run?.id !== newestGeneratedRun.id
+  ) {
+    fail(`Payroll exact search does not preserve ${expectedType} identity for ${identifier}.`);
+  }
 }
-if (generatedPayrollCase.availableTools.includes('Transaction History')) fail('Payroll-direct-deposit claim incorrectly receives Transaction History.');
-
-const paymentRecords = getFinancialRecords(generatedPayrollCase).paymentVerification;
-const payment = paymentRecords[0];
-if (resolvePaymentLookup(paymentRecords, { bankCode: '', destinationId: '', ownerName: generatedPayrollCase.person }).state !== 'not-found') fail('Payment Verification exposes a result without exact identifiers.');
-if (resolvePaymentLookup(paymentRecords, { bankCode: payment.bankCode, destinationId: payment.destinationId, ownerName: generatedPayrollCase.person }).state !== 'found') fail('Payment Verification exact search does not reveal the matching result.');
-
-const payrollPanel = fs.readFileSync('src/tools/FinancialBusinessTools.jsx', 'utf8');
-for (const anchor of [
-  'export function PayrollHistoryTool',
-  'Run payroll search',
-  'Matched payroll run',
-  'Immutable paystub',
-  'Current and YTD snapshot',
-  'Immutable disbursement records',
-  'Open Payment Verification',
-  'buildPaymentLookupHint',
-]) {
-  if (!payrollPanel.includes(anchor)) fail(`Clean Payroll History is missing ${anchor}.`);
-}
-
-if (failures.length) {
-  console.error('Business 360 and Payroll History contract smoke check failed:');
-  for (const failure of failures) console.error(`- ${failure}`);
-  process.exit(1);
+for (const invalid of ['', ' ', 'Not supplied', 'Not applicable', 'Not recorded', 'none', 'PAYROLL-PARTIAL']) {
+  if (findPayrollRecord(generatedPayroll, invalid)) fail(`Payroll History accepted invalid or partial exact query "${invalid}".`);
 }
 
-console.log('Business 360 and Payroll History contract smoke check passed for migrations, neutral research, reconciled built-in/generated payroll, immutable destinations, split deposits, paper checks, tool scope, Quick Pad actions, and search-first Payment Verification.');
+const historicalDestination = generatedPayroll.payrollRuns[0].employees[0].paystub.paymentDestinations[0];
+const historicalDestinationResult = findPayrollRecord(generatedPayroll, historicalDestination.destinationId);
+const historicalOccurrences = newestGeneratedRuns.filter((run) => run.employees.some((employee) => (
+  employee.paystub.paymentDestinations.some((destination) => (
+    destination.destinationId === historicalDestination.destinationId
+  ))
+)));
+if (
+  historicalDestinationResult

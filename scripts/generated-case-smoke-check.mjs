@@ -82,6 +82,15 @@ if (!ids.has(legacyCase.id)) failures.push('Legacy localStorage case was not pre
 if (ids.size !== saved.length) failures.push('Generated case IDs are not unique.');
 if (accountIds.size !== enrichedSaved.length || enrichedSaved.some((item) => !item.accountId?.startsWith('ACCT-'))) failures.push('Every saved case must expose a unique Account ID after catalog enrichment.');
 if (enrichedSaved.some((item) => item.customer?.relationship?.find((entry) => entry.label === 'Account ID')?.value !== item.accountId)) failures.push('Every saved case must expose its Account ID in Customer 360.');
+if (saved.filter((item) => item.generatedPacketVersion).some((item) => (
+  item.generatedPacketVersion !== 8
+  || item.customer?.relationshipPacketVersion !== 1
+  || !item.customer?.identity?.sourceRecordId
+  || item.customer?.serviceContacts?.length !== 2
+  || !item.customer?.relationshipProfile?.sourceRecordId
+))) {
+  failures.push('The generated-case repository did not persist the versioned Customer 360 source packet.');
+}
 if (batch[batch.length - 1]?.id !== saved[0]?.id) failures.push('Newest generated batch case was not added to the front of the queue.');
 if (batch.length !== 5) failures.push('Batch generation did not return every requested fictional case.');
 
@@ -127,6 +136,83 @@ for (const [index, claimType] of coreClaimTypes.entries()) {
   }
   if (generated.customer?.profileChanges?.length < 3 || generated.customer.profileChanges.some((event) => !event.eventType || !event.oldValue || !event.newValue || !event.session || !event.notes)) {
     failures.push(`${claimType.label} is missing complete generated profile-maintenance history.`);
+  }
+  const persistedCustomerIdentity = generated.customer?.identity;
+  if (generated.generatedPacketVersion !== 8 || generated.customer?.relationshipPacketVersion !== 1) {
+    failures.push(`${claimType.label} is missing the generated packet or Customer 360 source-packet version.`);
+  }
+  for (const field of [
+    'sourceRecordId',
+    'legalName',
+    'dob',
+    'currentAddress',
+    'previousAddress',
+    'mobilePhone',
+    'email',
+    'customerSince',
+    'segment',
+    'preferredContact',
+    'verificationStatus',
+    'lastVerified',
+    'accountStanding',
+    'maskedMemberId',
+  ]) {
+    if (!persistedCustomerIdentity?.[field]) {
+      failures.push(`${claimType.label} is missing persisted Customer 360 identity field ${field}.`);
+    }
+  }
+  if (
+    persistedCustomerIdentity?.legalName !== generated.person
+    || persistedCustomerIdentity?.currentAddress !== generated.customer?.contact?.address
+  ) {
+    failures.push(`${claimType.label} Customer 360 identity does not preserve its generated persona source.`);
+  }
+  const persistedServiceContacts = generated.customer?.serviceContacts ?? [];
+  if (
+    persistedServiceContacts.length !== 2
+    || persistedServiceContacts.some((contact, contactIndex) => (
+      contact.id !== `${generated.id}-SVC-${contactIndex + 1}`
+      || !contact.sourceRecordId
+      || !contact.dateTime
+      || !contact.type
+      || !contact.channel
+      || !contact.notes
+      || !contact.relatedAccountId
+    ))
+  ) {
+    failures.push(`${claimType.label} is missing stable persisted Customer 360 service-contact rows.`);
+  }
+  for (const contact of persistedServiceContacts) {
+    const matchingProfileSource = generated.customer?.profileChanges?.find(
+      (event) => event.id === contact.sourceRecordId,
+    );
+    const matchingAccountSource = generated.toolResults?.relationshipAccounts?.find(
+      (account) => account.accountId === contact.sourceRecordId,
+    );
+    if (!matchingProfileSource && !matchingAccountSource) {
+      failures.push(`${claimType.label} service contact ${contact.id} does not trace to a persisted source row.`);
+      continue;
+    }
+    if (matchingProfileSource && (
+      contact.type !== matchingProfileSource.eventType
+      || contact.channel !== matchingProfileSource.channel
+    )) {
+      failures.push(`${claimType.label} service contact ${contact.id} does not preserve its profile-event semantics.`);
+    }
+    if (matchingAccountSource && contact.type !== 'Relationship account status review') {
+      failures.push(`${claimType.label} account-backed service contact ${contact.id} has the wrong semantic label.`);
+    }
+  }
+  const relationshipProfile = generated.customer?.relationshipProfile;
+  if (
+    relationshipProfile?.sourceRecordId !== `${generated.id}-C360-RELATIONSHIP`
+    || !relationshipProfile?.asOf
+    || !relationshipProfile?.normalDeposits
+    || !relationshipProfile?.normalSpending
+    || !relationshipProfile?.authorizedUsers
+    || !relationshipProfile?.digitalBanking
+  ) {
+    failures.push(`${claimType.label} is missing its persisted Customer 360 relationship profile.`);
   }
   const customerDossier = getCustomer360Dossier(generated);
   const identityReport = getIdentityIntelReport(generated);

@@ -419,7 +419,11 @@ for (const anchor of [
   'Return / NSF history',
   'Payment type',
   'resolvePaymentLookup(records, submitted, activeCase)',
-  "status={!result ? 'Verification result is hidden.' : ''}",
+  'sky-payment-reference-locked',
+  'Verification result is hidden',
+  'setResult(null);',
+  'lookupHistory',
+  'This case session only',
 ]) {
   if (!paymentWorkspace.includes(anchor)) fail(`Payment Verification UI is missing: ${anchor}`);
 }

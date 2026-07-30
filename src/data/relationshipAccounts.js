@@ -524,12 +524,27 @@ function generatedCompanionAccounts(activeCase, seed, primary) {
   }];
 }
 
-export function getRelationshipAccounts(activeCase = {}) {
+export function getPersistedRelationshipAccounts(activeCase = {}) {
   const snapshot = activeCase.toolResults?.relationshipAccounts ?? activeCase.relationshipAccounts;
   if (Array.isArray(snapshot) && snapshot.length) return snapshot.map(normalizedAccount);
   const preset = builtInAccounts[activeCase.id];
   if (preset) return preset.map(normalizedAccount);
-  if (activeCase.legacyDerivedEvidence === true) return [legacyCoverageAccount(activeCase)];
+  const suppliedAccount = activeCase.account && typeof activeCase.account === 'object'
+    ? activeCase.account
+    : null;
+  if (
+    activeCase.legacyDerivedEvidence === true
+    && (activeCase.accountId || (suppliedAccount && Object.keys(suppliedAccount).length))
+  ) {
+    return [legacyCoverageAccount(activeCase)];
+  }
+  return [];
+}
+
+export function getRelationshipAccounts(activeCase = {}) {
+  const persisted = getPersistedRelationshipAccounts(activeCase);
+  if (persisted.length) return persisted;
+  if (activeCase.legacyDerivedEvidence === true) return [];
   const seed = stableNumber(activeCase.id);
   const primary = generatedPrimaryAccount(activeCase, seed);
   return [primary, ...generatedCompanionAccounts(activeCase, seed, primary)].map(normalizedAccount);

@@ -6,7 +6,10 @@ import { getLoginRecords } from './data/loginRecords.js';
 import { getSessionRecords } from './data/sessionRecords.js';
 import { getDeviceProfiles } from './data/deviceRecords.js';
 import { getIpRecords } from './data/ipRecords.js';
+import { getCustomer360Dossier } from './data/customer360Dossier.js';
 import { buildCoreToolRecords } from './data/coreToolRecords.js';
+import { getBusinessRecords } from './data/caseToolData.js';
+import { getSystemAccessRecords } from './data/systemAccessRecords.js';
 import {
   filterToolsForCaseDomain,
   normalizeToolName,
@@ -38,6 +41,7 @@ function indexedRow(id, values, pin = id, label = 'Evidence record') {
 
 function rowsFor(tool, activeCase) {
   if (tool === 'Customer 360') {
+    const dossier = getCustomer360Dossier(activeCase);
     return {
       rows: [
         indexedRow(
@@ -51,11 +55,17 @@ function rowsFor(tool, activeCase) {
           activeCase.trainingId,
           'Customer relationship',
         ),
-        ...(activeCase.customer?.profileChanges ?? []).map((item) => indexedRow(
+        ...dossier.profileUpdates.map((item) => indexedRow(
           item.id,
-          [item.item, item.oldValue, item.newValue, item.date, item.time],
-          item.id,
+          [item.item, item.previousValue, item.newValue, item.dateTime, item.channel],
+          activeCase.trainingId,
           'Profile change',
+        )),
+        ...dossier.serviceContacts.map((item) => indexedRow(
+          item.id,
+          [item.type, item.dateTime, item.channel, item.notes, item.relatedAccountId],
+          activeCase.trainingId,
+          'Service contact',
         )),
       ],
     };
@@ -110,30 +120,84 @@ function rowsFor(tool, activeCase) {
       )),
     };
   }
+  if (tool === 'Employee Profile') {
+    return {
+      rows: (getBusinessRecords(activeCase).employeeProfile ?? []).map((item) => ({
+        ...indexedRow(
+          item.id,
+          [
+            item.name,
+            item.role ?? item.position,
+            item.department,
+            item.employmentStatus ?? item.status,
+            item.employer,
+          ],
+          item.id,
+          'Employee profile',
+        ),
+        identifierType: 'employee-id',
+      })),
+    };
+  }
+  if (tool === 'System Access Lane') {
+    return {
+      rows: getSystemAccessRecords(activeCase).map((item) => ({
+        ...indexedRow(
+          item.id,
+          [
+            item.lane,
+            item.actor,
+            item.event,
+            item.object,
+            item.observed,
+            item.status,
+            item.context,
+          ],
+          item.id,
+          'System access record',
+        ),
+        identifierType: 'system-access-record-id',
+      })),
+    };
+  }
   return buildCoreToolRecords(tool, activeCase) ?? { rows: [] };
 }
 
 const pinPrefixRoutes = [
+  [/^PAYROLL-|-(?:PR|STUB)(?:-|$)/i, 'Payroll History'],
+  [/^(?:EMP-.+|.+-EMP-\d+)$/i, 'Employee Profile'],
   [/^LOG-/i, 'Login History'],
   [/^SES-/i, 'Session History'],
   [/^(?:DEV|DFP)-/i, 'Device Intelligence'],
   [/^IP-/i, 'IP Intelligence'],
-  [/^(?:TXN|TRX|AUTH|ACH|WIRE)-/i, 'Transaction History'],
+  [/^(?:TXN|TRX|AUTH|ACH|WIRE)-|-(?:TXN|TRX|AUTH|ACH|WIRE)-/i, 'Transaction History'],
   [/^(?:FIN|FI|DEP|CASH)-/i, 'Financial Investigation'],
   [/^(?:PAY|PV|BNK|DST)-/i, 'Payment Verification'],
   [/^(?:MER|MRC|MCC|ORD|FUL|CBK)-/i, 'Merchant Intelligence'],
   [/^(?:BIZ|REL)-/i, 'Business 360'],
   [/^(?:KYB|REG|SOS|EIN)-/i, 'Business 360'],
-  [/^EMP-/i, 'Employee Profile'],
   [/^(?:PAYR|PR)-/i, 'Payroll History'],
   [/^DOC-/i, 'Document Viewer'],
   [/^(?:REQ|DRQ)-/i, 'Document Request'],
   [/^(?:IDR|PID|PEP)-/i, 'Identity Intel / People Search'],
-  [/^(?:C360|PCH|TRN)-/i, 'Customer 360'],
+  [/^(?:C360|PCH|PROFILE|SVC|TRN)-/i, 'Customer 360'],
   [/^LNK-/i, 'Link Analysis'],
   [/^(?:SYS|ACC)-/i, 'System Access Lane'],
   [/^(?:TML|EVT)-/i, 'Timeline'],
 ];
+
+function routedRowIdentifier(tool, row) {
+  if (tool === 'Payroll History') {
+    return text(row?.matchedIdentifier ?? row?.pin ?? row?.id);
+  }
+  return text(row?.id);
+}
+
+function routedRowQuery(tool, row, fallbackValue = '') {
+  if (tool === 'Customer 360') return text(row?.pin);
+  if (tool === 'IP Intelligence') return text(fallbackValue);
+  return routedRowIdentifier(tool, row);
+}
 
 function scoreRow(pinValue, identifier, row) {
   const pin = normalized(pinValue);
@@ -188,7 +252,13 @@ export function resolvePinnedEvidence(pinValue, activeCase, toolNames) {
   const value = text(pinValue);
   if (!value || !activeCase) return null;
 
-  const routedToolNames = filterToolsForCaseDomain(toolNames, activeCase);
+  const domainToolNames = filterToolsForCaseDomain(toolNames, activeCase);
+  const availableToolNames = Array.isArray(activeCase.availableTools)
+    ? new Set(filterToolsForCaseDomain(activeCase.availableTools, activeCase))
+    : null;
+  const routedToolNames = availableToolNames
+    ? domainToolNames.filter((toolName) => availableToolNames.has(toolName))
+    : domainToolNames;
   const linkPin = routedToolNames.includes('Link Analysis') ? parseLinkAnalysisPin(value) : null;
   if (linkPin) {
     return {
@@ -212,7 +282,40 @@ export function resolvePinnedEvidence(pinValue, activeCase, toolNames) {
       );
   let bestMatch = null;
 
-  if (routedToolNames.includes('Financial Investigation')) {
+  if (preferredTool && routedToolNames.includes(preferredTool)) {
+    const preferredRows = rowsForPinnedEvidence(preferredTool, activeCase).rows;
+    const exactPreferredRow = preferredRows.find((row) => (
+      normalized(row.id) === normalized(value)
+      || normalized(row.id) === normalized(identifier)
+      || normalized(row.pin) === normalized(value)
+      || normalized(row.pin) === normalized(identifier)
+    ));
+    if (exactPreferredRow) {
+      const recordId = routedRowIdentifier(preferredTool, exactPreferredRow);
+      return {
+        value,
+        tool: preferredTool,
+        row: exactPreferredRow,
+        query: routedRowQuery(preferredTool, exactPreferredRow, value),
+        recordId,
+        identifierType: exactPreferredRow.identifierType,
+      };
+    }
+    return {
+      value,
+      tool: preferredTool,
+      row: null,
+      query: preferredTool === 'Customer 360'
+        ? text(activeCase.trainingId) || identifier
+        : identifier,
+      recordId: identifier,
+    };
+  }
+
+  if (
+    preferredTool !== 'Transaction History'
+    && routedToolNames.includes('Financial Investigation')
+  ) {
     const financialRows = rowsForPinnedEvidence('Financial Investigation', activeCase).rows;
     const exactFinancialRow = financialRows.find((row) => (
       normalized(row.id) === normalized(value)
@@ -243,17 +346,14 @@ export function resolvePinnedEvidence(pinValue, activeCase, toolNames) {
   });
 
   if (bestMatch) {
-    const query = bestMatch.tool === 'IP Intelligence' && /^(?:\d{1,3}\.){3}\d{1,3}$/.test(value)
-      ? value
-      : bestMatch.tool === 'Customer 360' && bestMatch.row.id === 'C360-REL'
-        ? bestMatch.row.pin
-        : bestMatch.row.id;
+    const query = routedRowQuery(bestMatch.tool, bestMatch.row, value);
     return {
       value,
       tool: bestMatch.tool,
       row: bestMatch.row,
       query,
-      recordId: bestMatch.row.id,
+      recordId: routedRowIdentifier(bestMatch.tool, bestMatch.row),
+      identifierType: bestMatch.row.identifierType,
     };
   }
 
@@ -264,7 +364,9 @@ export function resolvePinnedEvidence(pinValue, activeCase, toolNames) {
     value,
     tool: fallbackTool,
     row: null,
-    query: identifier,
+    query: fallbackTool === 'Customer 360'
+      ? text(activeCase.trainingId) || identifier
+      : identifier,
     recordId: identifier,
   };
 }

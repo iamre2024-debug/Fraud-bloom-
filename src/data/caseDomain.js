@@ -152,12 +152,14 @@ export function filterToolsForCaseDomain(toolNames = [], domain = {}) {
   const isBusiness = domain.customerType === CUSTOMER_TYPES.BUSINESS;
   const hasLinkedBusiness = isPersonal && hasOwnershipLinkedBusinessRelationship(domain);
   const isPayrollReview = hasPayrollRelationship(domain);
+  const isPayrollWorkflow = payrollWorkflows.has(domain.workflowType);
 
   return normalizedTools.filter((toolName) => {
     if (isPersonal && toolName === 'Business 360' && !hasLinkedBusiness) return false;
     if (isPersonal && payrollOnlyTools.has(toolName)) return false;
     if (isBusiness && toolName === 'Customer 360') return false;
     if (!isPayrollReview && payrollOnlyTools.has(toolName)) return false;
+    if (isPayrollWorkflow && toolName === 'Transaction History') return false;
     return true;
   });
 }

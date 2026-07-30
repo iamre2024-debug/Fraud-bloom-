@@ -3,11 +3,16 @@ import { trainingCases as baseCases } from '../src/data/cases.js';
 import { enrichTrainingCases } from '../src/data/caseEnrichment.js';
 import { createGeneratedCase } from '../src/data/generatedCases.js';
 import {
+  formatLinkAnalysisPin,
   getLinkIdentifiersForCase,
   getLinkMapContext,
   normalizeLinkIdentifier,
+  parseLinkAnalysisPin,
   searchLinkRelationships,
 } from '../src/data/linkAnalysisRecords.js';
+import { buildQuickPadDestinationRoute } from '../src/data/quickPadController.js';
+import { workspaceTools } from '../src/investigationToolGroups.js';
+import { resolvePinnedEvidence } from '../src/pinnedEvidenceNavigation.js';
 
 const failures = [];
 const cases = enrichTrainingCases(baseCases);
@@ -54,6 +59,63 @@ for (const activeCase of cases) {
   }
   if (JSON.stringify(result).match(/\b(?:high risk|risk score|fraud score|confirmed current fraud)\b/i)) {
     fail(`${activeCase.id}: Link Analysis exposes an automatic risk conclusion.`);
+  }
+  if (result.matches.some((item) => item.fixture)) {
+    fail(`${activeCase.id}: Link Analysis returned a synthesized contextual account.`);
+  }
+
+  const currentAccountId = activeCase.accountId ?? activeCase.id;
+  const currentMatch = result.matches.find((item) => item.currentCase);
+  if (currentMatch?.accountId !== currentAccountId) {
+    fail(`${activeCase.id}: current-account marker does not identify ${currentAccountId}.`);
+  }
+  const expectedCustomerName = activeCase.profile?.business
+    ?? activeCase.businessProfile?.legalName
+    ?? activeCase.person;
+  if (currentMatch?.customerName !== expectedCustomerName) {
+    fail(`${activeCase.id}: current-account customer/business name is not source-backed.`);
+  }
+  if (!activeCase.accountStatus && currentMatch?.status !== 'Not supplied') {
+    fail(`${activeCase.id}: missing account status was replaced with ${currentMatch?.status}.`);
+  }
+
+  const pinValue = formatLinkAnalysisPin({
+    identifierType: result.identifierType,
+    value: result.searchedIdentifier,
+    accountId: currentMatch?.accountId,
+  });
+  const parsedPin = parseLinkAnalysisPin(pinValue);
+  if (
+    parsedPin?.identifierType !== result.identifierType
+    || parsedPin?.searchedIdentifier !== result.searchedIdentifier
+    || parsedPin?.accountId !== currentMatch?.accountId
+  ) {
+    fail(`${activeCase.id}: formatted Link Analysis pin did not preserve its exact search metadata.`);
+  }
+  const reopenedPin = resolvePinnedEvidence(pinValue, activeCase, workspaceTools);
+  if (
+    reopenedPin?.tool !== 'Link Analysis'
+    || reopenedPin?.query !== result.searchedIdentifier
+    || reopenedPin?.identifierType !== result.identifierType
+    || reopenedPin?.accountId !== currentMatch?.accountId
+  ) {
+    fail(`${activeCase.id}: formatted Link Analysis pin did not reopen its exact search and account.`);
+  }
+
+  const quickPadRoute = buildQuickPadDestinationRoute('Link Analysis', [{
+    id: `${currentMatch?.accountId}:quick-pad`,
+    label: result.identifierTypeLabel,
+    value: result.searchedIdentifier,
+    query: result.searchedIdentifier,
+    sourceTool: 'Link Analysis',
+    sourceRecordId: currentMatch?.identifier?.sourceRecordId ?? currentMatch?.accountId,
+    identifierType: result.identifierType,
+  }]);
+  if (
+    quickPadRoute?.payload?.query !== result.searchedIdentifier
+    || quickPadRoute?.payload?.identifierType !== result.identifierType
+  ) {
+    fail(`${activeCase.id}: a pinned Link Analysis result does not route the original exact identifier through Quick Pad.`);
   }
 
   const partial = searchLinkRelationships({
@@ -179,8 +241,19 @@ for (const identifier of getLinkIdentifiersForCase(generatedCase)) {
 }
 
 const component = fs.readFileSync('src/tools/SupportTools.jsx', 'utf8');
+const primitives = fs.readFileSync('src/components/SkyPrimitives.jsx', 'utf8');
+const quickPadComponent = fs.readFileSync('src/components/QuickPad.jsx', 'utf8');
+const quickPadController = fs.readFileSync('src/data/quickPadController.js', 'utf8');
 const app = fs.readFileSync('src/App.jsx', 'utf8');
 const styles = fs.readFileSync('src/styles/sky.css', 'utf8');
+const linkComponent = component.slice(
+  component.indexOf('export function LinkAnalysisTool'),
+  component.indexOf('export function SystemAccessTool'),
+);
+const linkPinHelper = component.slice(
+  component.indexOf('function linkPinRecord'),
+  component.indexOf('function LinkRelationshipMap'),
+);
 for (const anchor of [
   'export function LinkAnalysisTool',
   'Search one exact identifier',
@@ -191,10 +264,98 @@ for (const anchor of [
   'Exact identifier',
   'Account relationship',
   'relationshipToCurrentCase',
-  'onSelect={setSelected}',
+  'setSelected(match)',
   "toolActions(props, 'Link Analysis'",
+  "query: routedQuery = ''",
+  'initialPayload = null',
+  'prefilledQuery = clean(initialPayload?.query ?? routedQuery)',
+  'prefilledType = clean(initialPayload?.identifierType)',
+  'setQuery(prefilledQuery)',
+  'setType(prefilledType)',
+  'setResult(null)',
+  'setSelected(null)',
+  'setHasRun(false)',
+  'activeCase?.id, prefilledQuery, prefilledType',
+  'The routed identifier is ready. Run the exact search to reveal relationships.',
+  'Account relationships are hidden',
+  'disabled={!query.trim()}',
+  'clearResult()',
+  'Source-backed exact matches',
+  'Current account',
+  "match.status ?? 'Not supplied'",
 ]) {
-  if (!component.includes(anchor)) fail(`Clean Link Analysis workspace is missing: ${anchor}.`);
+  if (!linkComponent.includes(anchor)) fail(`Clean Link Analysis workspace is missing: ${anchor}.`);
+}
+if (/useState\(\s*true\s*\)/.test(linkComponent)) {
+  fail('Link Analysis reveals search output before the learner runs the exact search.');
+}
+const resetEffect = linkComponent.slice(
+  linkComponent.indexOf('useEffect(() => {'),
+  linkComponent.indexOf('function clearResult'),
+);
+if (resetEffect.includes('runSearch(') || resetEffect.includes('setHasRun(true)')) {
+  fail('A routed Link Analysis identifier auto-runs instead of remaining a prefill.');
+}
+if (!linkComponent.includes('{!hasRun ? (') || !linkComponent.includes('{result ? (')) {
+  fail('Link Analysis does not preserve its search-before-reveal render gate.');
+}
+for (const forbidden of [
+  'High Risk',
+  'Medium Risk',
+  'Low Risk',
+  'Risk score',
+  'Fraud score',
+  'Watchlist',
+  'Verified links',
+  'James Carter',
+  'Michael Reyes',
+  'Olivia Bennett',
+  'Daniel Kim',
+  'FA-CB-24007',
+  'C-88421',
+]) {
+  if (linkComponent.toLowerCase().includes(forbidden.toLowerCase())) {
+    fail(`Link Analysis UI restores forbidden reference-only content: ${forbidden}.`);
+  }
+}
+if (linkComponent.includes("'account-id'") || linkComponent.includes('"account-id"')) {
+  fail('Link Analysis restores the unsupported Account ID search option.');
+}
+for (const anchor of [
+  'formatLinkAnalysisPin({',
+  'identifierType: result.identifierType',
+  'value: result.searchedIdentifier',
+  'accountId: match.accountId',
+  'id: pinValue',
+  'label: pinValue',
+  'query: result.searchedIdentifier',
+  'recordId: match.accountId',
+  'sourceRecordId:',
+]) {
+  if (!linkPinHelper.includes(anchor)) {
+    fail(`Link Analysis pin payload is missing reopen metadata: ${anchor}.`);
+  }
+}
+const quickPadHasLinkPinAdapter = (
+  quickPadComponent.includes("pin.tool === 'Link Analysis'")
+  && quickPadComponent.includes('pin.query')
+  && quickPadComponent.includes('pin.identifierType')
+);
+const quickPadAcceptsTypedLinkLabels = (
+  quickPadController.includes("'phone'")
+  && quickPadController.includes("'destination-id'")
+);
+if (!quickPadHasLinkPinAdapter && !quickPadAcceptsTypedLinkLabels) {
+  fail('Quick Pad does not adapt Link Analysis pin metadata into a destination-valid exact identifier.');
+}
+for (const anchor of [
+  'const routed = record?.pinPayload ?? {}',
+  '...routed',
+  'onPin?.(pinPayload)',
+]) {
+  if (!primitives.includes(anchor)) {
+    fail(`EvidenceActions drops Link Analysis pin metadata: ${anchor}.`);
+  }
 }
 for (const anchor of [
   'supportToolNames.has(toolName)',
@@ -209,8 +370,18 @@ for (const anchor of [
     fail(`App is missing the Link Analysis integration boundary: ${anchor}.`);
   }
 }
-for (const anchor of ['sky-form-grid', 'sky-record-list', 'sky-data-row', 'sky-evidence-actions']) {
-  if (!styles.includes(anchor)) fail(`Link Analysis structural styling is missing: ${anchor}.`);
+for (const anchor of [
+  'sky-link-reference-page',
+  'sky-link-reference-search',
+  'sky-link-reference-map',
+  'sky-link-reference-account-list',
+  'sky-link-reference-detail',
+  'sky-link-reference-summary',
+]) {
+  if (!component.includes(anchor)) fail(`Link Analysis structural composition is missing: ${anchor}.`);
+}
+for (const anchor of ['sky-data-row', 'sky-evidence-actions']) {
+  if (!styles.includes(anchor)) fail(`Link Analysis shared structural styling is missing: ${anchor}.`);
 }
 
 if (failures.length) {

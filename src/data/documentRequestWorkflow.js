@@ -1,15 +1,8 @@
 import { buildCustomerDocumentResponse, getCustomerDocumentResponseOutcome } from './customerDocumentResponses.js';
 import { getCaseDocumentRequests, getCaseDocuments } from './documentRecords.js';
 
-const receivedStatuses = new Set(['Received', 'Incomplete', 'Received Late', 'Approved', 'Pending Review']);
-
-function normalizedDocumentStatus(status = '') {
-  if (status === 'Available') return 'Pending Review';
-  if (status === 'Pending') return 'Not Requested';
-  return status || 'Not Requested';
-}
-
 function requirementFor(document = {}) {
+  if (document.requirement) return document.requirement;
   return /optional/i.test(`${document.folder ?? ''} ${document.type ?? ''}`) ? 'Optional' : 'Required';
 }
 
@@ -48,22 +41,24 @@ export function createPaperworkAttempt({
     requestedDate,
     recipient: activeCase.person ?? 'Customer on the active case',
     requestDeliveryChannel: deliveryChannel,
-    responseOutcome: getCustomerDocumentResponseOutcome(activeCase, document),
     responseStatus: '',
     responseCheckedAt: '',
     responseChannel: '',
     receivedDate: 'Not received',
     customerSubmission: null,
     unread: false,
+    readAt: '',
     reviewerNotes: `Paperwork request sent through ${deliveryChannel}. Review any returned source document before documenting an outcome.`,
   };
 }
 
 export function applyCustomerResponse({ activeCase = {}, document = {}, attempt = {}, checkedAt }) {
+  const responseOutcome = attempt.responseOutcome
+    || getCustomerDocumentResponseOutcome(activeCase, document);
   const response = buildCustomerDocumentResponse({
     activeCase,
     document,
-    outcome: attempt.responseOutcome,
+    outcome: responseOutcome,
     receivedDate: checkedAt,
   });
   const responseId = response.customerSubmission?.pages?.length
@@ -71,6 +66,7 @@ export function applyCustomerResponse({ activeCase = {}, document = {}, attempt 
     : '';
   return {
     ...attempt,
+    responseOutcome: response.outcome,
     responseId,
     responseStatus: response.status,
     responseCheckedAt: response.responseCheckedAt,
@@ -78,13 +74,14 @@ export function applyCustomerResponse({ activeCase = {}, document = {}, attempt 
     receivedDate: response.receivedDate,
     customerSubmission: response.customerSubmission,
     unread: Boolean(response.customerSubmission?.pages?.length),
+    readAt: '',
     responseReason: response.reason,
     reviewerNotes: response.reviewerNotes,
   };
 }
 
 function receivedCaseRecord(activeCase, document) {
-  const status = normalizedDocumentStatus(document.requestStatus ?? document.status);
+  const status = document.requestStatus ?? document.status ?? 'Not supplied';
   return {
     id: document.id,
     sourceDocumentId: document.id,
@@ -101,7 +98,7 @@ function receivedCaseRecord(activeCase, document) {
     reviewerNotes: document.summary,
     linkedCase: activeCase.id,
     linkedTool: 'Document Viewer',
-    receivedDate: receivedStatuses.has(status) ? document.received : 'Not received',
+    receivedDate: document.pages?.length ? document.received : 'Not received',
     requestedDate: 'No agent request required',
     recipient: activeCase.person ?? 'Customer on the active case',
     sender: document.source ?? activeCase.person ?? 'Customer on the active case',
@@ -111,7 +108,8 @@ function receivedCaseRecord(activeCase, document) {
     fields: fieldsText(document.fields),
     responseOutcome: '',
     responseCheckedAt: '',
-    unread: false,
+    unread: Boolean(document.unread),
+    readAt: document.readAt ?? '',
   };
 }
 
@@ -142,9 +140,9 @@ function outboundRecord(activeCase, document, attempt) {
     deliveryChannel: attempt.requestDeliveryChannel,
     pagesAvailable: false,
     fields: `Requested document: ${document.title} | Delivery: ${attempt.requestDeliveryChannel} | Due: ${attempt.dueDate}`,
-    responseOutcome: attempt.responseOutcome,
     responseCheckedAt: attempt.responseCheckedAt,
     unread: false,
+    readAt: '',
   };
 }
 
@@ -177,7 +175,37 @@ function inboundResponseRecord(activeCase, document, attempt) {
     responseOutcome: attempt.responseOutcome,
     responseCheckedAt: attempt.responseCheckedAt,
     unread: Boolean(attempt.unread),
+    readAt: attempt.readAt ?? '',
   };
+}
+
+export function markPaperworkResponseRead(requestUpdates = {}, recordId = '', readAt = '') {
+  const targetId = String(recordId ?? '').trim();
+  if (!targetId || !requestUpdates || typeof requestUpdates !== 'object') {
+    return requestUpdates;
+  }
+
+  let changed = false;
+  const next = Object.fromEntries(Object.entries(requestUpdates).map(([documentId, saved]) => {
+    if (!Array.isArray(saved?.attempts)) return [documentId, saved];
+    let documentChanged = false;
+    const attempts = saved.attempts.map((attempt) => {
+      if (attempt?.responseId !== targetId || !attempt.unread) return attempt;
+      changed = true;
+      documentChanged = true;
+      return {
+        ...attempt,
+        unread: false,
+        readAt: readAt || new Date().toLocaleString(),
+      };
+    });
+    return [
+      documentId,
+      documentChanged ? { ...saved, attempts } : saved,
+    ];
+  }));
+
+  return changed ? next : requestUpdates;
 }
 
 export function buildPaperworkInboxRecords(activeCase = {}, requestUpdates = {}) {
@@ -222,6 +250,8 @@ export function buildCustomerResponseDocuments(activeCase = {}, requestUpdates =
       requestDueDate: attempt.dueDate,
       requestDeliveryChannel: attempt.requestDeliveryChannel,
       responseChannel: attempt.responseChannel,
+      unread: Boolean(attempt.unread),
+      readAt: attempt.readAt ?? '',
       investigatorNote: 'Review the customer-supplied page itself. Record what is visible, what is missing, and how its dates compare with the claim and merchant records.',
     })));
 }

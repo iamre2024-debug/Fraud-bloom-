@@ -1,12 +1,33 @@
 import { getBusinessRecords, getFinancialRecords } from './caseToolData.js';
+import { getPayrollHistory } from './businessPayrollWorkspace.js';
 import { getCaseDocuments } from './documentRecords.js';
-import { getMerchantIntelligence } from './merchantIntelligenceRecords.js';
 import { isPaymentProfileEvent, paymentChangeMetadata } from './paymentVerification.js';
-import { WORKFLOW_TYPES } from './caseDomain.js';
 
 function row(id, values, pin = id, label = 'Record') {
   const normalized = values.map((value) => value ?? 'Not recorded');
   return { id, values: normalized, pin, label, detail: normalized.join(' ') };
+}
+
+function payrollIdentifierRow({
+  rowId,
+  identifier,
+  identifierType,
+  identifierLabel,
+  values = [],
+}) {
+  const exactIdentifier = String(identifier ?? '').trim();
+  if (!exactIdentifier) return null;
+  return {
+    ...row(
+      rowId,
+      [exactIdentifier, identifierLabel, ...values],
+      exactIdentifier,
+      identifierLabel,
+    ),
+    identifierType,
+    identifierLabel,
+    matchedIdentifier: exactIdentifier,
+  };
 }
 
 function joinIds(items = []) {
@@ -32,24 +53,205 @@ function profileChangeDetail(item, paymentRecords) {
     .join(' · ');
 }
 
-function timelineTimestamp(value, fallbackDate) {
-  let display = String(value ?? '').trim();
-  if (/^\d{1,2}:\d{2}\s*[AP]M$/i.test(display)) display = `${fallbackDate} · ${display}`;
-  display = display.replace(/\s+[·-]\s+/, ' ');
-  const parsed = new Date(display);
-  return Number.isNaN(parsed.getTime()) ? Number.MAX_SAFE_INTEGER : parsed.getTime();
+const timelineMonthNames = Object.freeze([
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+]);
+
+const timelineMonthIndex = Object.freeze(Object.fromEntries(
+  timelineMonthNames.map((month, index) => [month.toLowerCase(), index]),
+));
+
+const timelineDatePattern = /\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{1,2})(?:,\s*(\d{4}))?/gi;
+const timelineTimePattern = /\b(\d{1,2}):(\d{2})\s*([AP]M)\b/gi;
+
+function timelineDateTokens(value) {
+  const text = String(value ?? '').trim();
+  const dates = [...text.matchAll(timelineDatePattern)].map((match) => ({
+    month: timelineMonthIndex[match[1].slice(0, 3).toLowerCase()],
+    day: Number(match[2]),
+    year: match[3] ? Number(match[3]) : null,
+  }));
+  const isoDate = text.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
+  if (!dates.length && isoDate) {
+    dates.push({
+      year: Number(isoDate[1]),
+      month: Number(isoDate[2]) - 1,
+      day: Number(isoDate[3]),
+    });
+  }
+  return dates;
+}
+
+function timelineTimeToken(value) {
+  const matches = [...String(value ?? '').matchAll(timelineTimePattern)];
+  if (!matches.length) return null;
+  const match = matches.at(-1);
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (hour < 1 || hour > 12 || minute < 0 || minute > 59) return null;
+  const period = match[3].toUpperCase();
+  return {
+    hour: (hour % 12) + (period === 'PM' ? 12 : 0),
+    minute,
+  };
+}
+
+function timelineFallbackDate(value) {
+  const [date] = timelineDateTokens(value);
+  return date?.year ? date : null;
+}
+
+function validTimelineDate({ year, month, day, hour = 0, minute = 0 }) {
+  if (
+    !Number.isInteger(year)
+    || !Number.isInteger(month)
+    || !Number.isInteger(day)
+    || month < 0
+    || month > 11
+    || day < 1
+    || day > 31
+  ) {
+    return false;
+  }
+  const parsed = new Date(Date.UTC(year, month, day, hour, minute));
+  return (
+    parsed.getUTCFullYear() === year
+    && parsed.getUTCMonth() === month
+    && parsed.getUTCDate() === day
+    && parsed.getUTCHours() === hour
+    && parsed.getUTCMinutes() === minute
+  );
+}
+
+function formatTimelineTime(hour, minute) {
+  const period = hour >= 12 ? 'PM' : 'AM';
+  const displayHour = hour % 12 || 12;
+  return `${displayHour}:${String(minute).padStart(2, '0')} ${period}`;
+}
+
+function normalizeTimelineDate(value, fallbackDate) {
+  const raw = String(value ?? '').trim();
+  if (!raw || /^(?:not recorded|not received|pending|training date)$/i.test(raw)) return null;
+
+  const fallback = timelineFallbackDate(fallbackDate);
+  const dates = timelineDateTokens(raw);
+  const explicitYear = dates.find((date) => date.year)?.year ?? fallback?.year;
+  const normalizedDates = dates.map((date) => ({
+    ...date,
+    year: date.year ?? explicitYear,
+  }));
+
+  let date = null;
+  if (normalizedDates.length) {
+    const uniqueDates = new Map(normalizedDates.map((item) => [
+      `${item.year}-${item.month}-${item.day}`,
+      item,
+    ]));
+    if (uniqueDates.size !== 1) return null;
+    [date] = uniqueDates.values();
+  } else if (fallback && timelineTimeToken(raw)) {
+    date = fallback;
+  }
+  if (!date?.year) return null;
+
+  const time = timelineTimeToken(raw);
+  const hour = time?.hour ?? 0;
+  const minute = time?.minute ?? 0;
+  if (!validTimelineDate({ ...date, hour, minute })) return null;
+
+  const occurredAt = new Date(Date.UTC(
+    date.year,
+    date.month,
+    date.day,
+    hour,
+    minute,
+  )).toISOString();
+  const displayDate = `${timelineMonthNames[date.month]} ${date.day}, ${date.year}`;
+  const displayTime = time ? formatTimelineTime(hour, minute) : '';
+  return {
+    occurredAt,
+    sortTime: Date.parse(occurredAt),
+    displayDate,
+    displayTime,
+    display: displayTime ? `${displayDate} · ${displayTime}` : displayDate,
+  };
+}
+
+function timelineRow({
+  id,
+  time,
+  event,
+  source,
+  linkedObject,
+  caseId,
+  detail,
+  pin,
+  label,
+  sourceCollection,
+  sourceRecordId,
+  temporalKind = 'occurred',
+}) {
+  return {
+    ...row(
+      id,
+      [id, time, event, source, linkedObject, caseId, detail],
+      pin ?? sourceRecordId ?? id,
+      label,
+    ),
+    rawTime: String(time ?? '').trim(),
+    sourceCollection,
+    sourceRecordId: sourceRecordId ?? pin ?? id,
+    requestedTemporalKind: temporalKind,
+  };
 }
 
 function normalizedTimelineRows(rows, fallbackDate) {
   const seen = new Set();
-  return rows
-    .filter((item) => {
-      const key = `${item.values[1]}|${item.values[2]}|${item.values[4]}`.toLowerCase();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    })
-    .sort((left, right) => timelineTimestamp(left.values[1], fallbackDate) - timelineTimestamp(right.values[1], fallbackDate));
+  const occurredRows = [];
+  const scheduledRows = [];
+  const undatedRows = [];
+
+  rows.forEach((item, sequence) => {
+    const normalizedDate = normalizeTimelineDate(item.rawTime, fallbackDate);
+    const temporalKind = normalizedDate
+      ? item.requestedTemporalKind === 'scheduled' ? 'scheduled' : 'occurred'
+      : 'undated';
+    const provenanceKey = [
+      item.sourceCollection,
+      item.sourceRecordId,
+      normalizedDate?.occurredAt ?? item.rawTime,
+      item.values[2],
+    ].map((value) => String(value ?? '').trim().toLowerCase()).join('|');
+    if (seen.has(provenanceKey)) return;
+    seen.add(provenanceKey);
+
+    const values = [...item.values];
+    if (normalizedDate) values[1] = normalizedDate.display;
+    const normalized = {
+      ...item,
+      values,
+      detail: values.join(' '),
+      occurredAt: normalizedDate?.occurredAt ?? null,
+      displayDate: normalizedDate?.displayDate ?? '',
+      displayTime: normalizedDate?.displayTime ?? '',
+      temporalKind,
+      sequence,
+    };
+    delete normalized.requestedTemporalKind;
+
+    if (temporalKind === 'scheduled') scheduledRows.push(normalized);
+    else if (temporalKind === 'undated') undatedRows.push(normalized);
+    else occurredRows.push(normalized);
+  });
+
+  const chronological = (left, right) => (
+    Date.parse(left.occurredAt) - Date.parse(right.occurredAt)
+    || left.sequence - right.sequence
+  );
+  occurredRows.sort(chronological);
+  scheduledRows.sort(chronological);
+  return { rows: occurredRows, scheduledRows, undatedRows };
 }
 
 export function buildCoreToolRecords(tool, activeCase, fallbackData = { rows: [] }) {
@@ -59,6 +261,166 @@ export function buildCoreToolRecords(tool, activeCase, fallbackData = { rows: []
   const financial = getFinancialRecords(activeCase);
   const business = getBusinessRecords(activeCase);
   const documents = getCaseDocuments(activeCase);
+
+  if (tool === 'Transaction History') return {
+    columns: ['Transaction', 'Date', 'Merchant', 'Amount', 'Instrument', 'Channel', 'Status', 'Context'],
+    rows: financial.transactions.map((item) => row(
+      item.id,
+      [
+        item.id,
+        [item.posted, item.time].filter(Boolean).join(' · '),
+        item.merchant,
+        item.amount,
+        item.instrument,
+        item.channel,
+        item.status,
+        item.context,
+      ],
+      item.id,
+      'Transaction record',
+    )),
+  };
+
+  if (tool === 'Payroll History') {
+    const payroll = getPayrollHistory(activeCase);
+    const profile = payroll.companyPayrollProfile;
+    const rows = [
+      payrollIdentifierRow({
+        rowId: `PAYROLL-PROFILE:${profile?.payrollId ?? 'missing'}`,
+        identifier: profile?.payrollId,
+        identifierType: 'payroll-profile-id',
+        identifierLabel: 'Payroll Profile ID',
+        values: [
+          profile?.legalName,
+          profile?.paySchedule,
+          profile?.selectedDateRange,
+        ],
+      }),
+      ...(payroll.payrollRuns ?? []).flatMap((run) => [
+        payrollIdentifierRow({
+          rowId: `PAYROLL-RUN:${run.id}`,
+          identifier: run.id,
+          identifierType: 'payroll-run-id',
+          identifierLabel: 'Payroll Run ID',
+          values: [
+            run.payDate,
+            run.runType,
+            run.runStatus ?? run.status,
+            run.netPayroll ?? run.netPay,
+          ],
+        }),
+        payrollIdentifierRow({
+          rowId: `PAYROLL-FUNDING-BANK:${run.id}`,
+          identifier: run.companyFunding?.bankCode,
+          identifierType: 'funding-bank-code',
+          identifierLabel: 'Funding Bank Code',
+          values: [
+            run.id,
+            run.payDate,
+            run.companyFunding?.accountUsed,
+          ],
+        }),
+        payrollIdentifierRow({
+          rowId: `PAYROLL-FUNDING-PAYMENT:${run.id}`,
+          identifier: run.companyFunding?.paymentRecordId,
+          identifierType: 'funding-payment-record-id',
+          identifierLabel: 'Funding Payment Record ID',
+          values: [
+            run.id,
+            run.payDate,
+            run.companyFunding?.bankCode,
+          ],
+        }),
+        ...(run.employees ?? []).flatMap((employee) => {
+          const paystub = employee.paystub ?? {};
+          return [
+            payrollIdentifierRow({
+              rowId: `PAYROLL-EMPLOYEE:${run.id}:${employee.employeeId}`,
+              identifier: employee.employeeId,
+              identifierType: 'employee-id',
+              identifierLabel: 'Employee ID',
+              values: [
+                run.id,
+                run.payDate,
+                employee.name,
+                employee.netPay,
+              ],
+            }),
+            payrollIdentifierRow({
+              rowId: `PAYROLL-PAYSTUB:${run.id}:${paystub.id ?? 'missing'}`,
+              identifier: paystub.id,
+              identifierType: 'paystub-id',
+              identifierLabel: 'Paystub ID',
+              values: [
+                run.id,
+                run.payDate,
+                employee.employeeId,
+                employee.name,
+              ],
+            }),
+            ...(paystub.paymentDestinations ?? []).flatMap((destination, destinationIndex) => [
+              payrollIdentifierRow({
+                rowId: `PAYROLL-DESTINATION-RECORD:${run.id}:${employee.employeeId}:${destinationIndex}`,
+                identifier: destination.id,
+                identifierType: 'payment-destination-record-id',
+                identifierLabel: 'Payment Destination Record ID',
+                values: [
+                  run.id,
+                  employee.employeeId,
+                  paystub.id,
+                  destination.bankCode,
+                  destination.destinationId,
+                ],
+              }),
+              payrollIdentifierRow({
+                rowId: `PAYROLL-DESTINATION:${run.id}:${employee.employeeId}:${destinationIndex}`,
+                identifier: destination.destinationId,
+                identifierType: 'destination-id',
+                identifierLabel: 'Destination ID',
+                values: [
+                  run.id,
+                  employee.employeeId,
+                  paystub.id,
+                  destination.bankCode,
+                  destination.paymentRecordId,
+                ],
+              }),
+              payrollIdentifierRow({
+                rowId: `PAYROLL-BANK:${run.id}:${employee.employeeId}:${destinationIndex}`,
+                identifier: destination.bankCode,
+                identifierType: 'bank-code',
+                identifierLabel: 'Bank Code',
+                values: [
+                  run.id,
+                  employee.employeeId,
+                  paystub.id,
+                  destination.destinationId,
+                  destination.paymentRecordId,
+                ],
+              }),
+              payrollIdentifierRow({
+                rowId: `PAYROLL-PAYMENT:${run.id}:${employee.employeeId}:${destinationIndex}`,
+                identifier: destination.paymentRecordId,
+                identifierType: 'payment-record-id',
+                identifierLabel: 'Payment Record ID',
+                values: [
+                  run.id,
+                  employee.employeeId,
+                  paystub.id,
+                  destination.bankCode,
+                  destination.destinationId,
+                ],
+              }),
+            ]),
+          ];
+        }),
+      ]),
+    ].filter(Boolean);
+    return {
+      columns: ['Record', 'Identifier type', 'Run / date', 'Employee / account', 'Related record', 'Status / value'],
+      rows,
+    };
+  }
 
   if (tool === 'Payment Verification') return {
     columns: ['Record', 'Payment Object / Bank Code / Destination ID', 'Status', 'Last Seen', 'Linked Transactions', 'Linked Digital Objects', 'Context'],
@@ -101,37 +463,4 @@ export function buildCoreToolRecords(tool, activeCase, fallbackData = { rows: []
   };
 
   if (tool === 'Timeline') {
-    const fallbackDate = activeCase.reportedDate ?? activeCase.opened ?? 'Training date';
-    const chargeback = [
-      WORKFLOW_TYPES.UNAUTHORIZED_CARD_TRANSACTION_CLAIM,
-      WORKFLOW_TYPES.MERCHANT_NON_FRAUD_DISPUTE,
-    ].includes(activeCase.workflowType ?? activeCase.claimTypeId)
-      || Boolean(activeCase.chargebackDecision);
-    const transactionRows = financial.transactions.map((item) => row(`TML-${item.id}`, [`TML-${item.id}`, `${item.posted} · ${item.time}`, item.merchant, 'Transaction History', item.id, activeCase.id, `${item.amount} · ${item.status}`], item.id, 'Transaction timeline'));
-    const rows = chargeback
-      ? [
-        ...transactionRows,
-        ...getMerchantIntelligence(activeCase).timeline.map((item, index) => row(
-          `TML-${activeCase.id}-CB-${index + 1}`,
-          [`TML-${activeCase.id}-CB-${index + 1}`, item.date, item.label, 'Merchant Intelligence', activeCase.id, activeCase.id, item.detail],
-          activeCase.id,
-          'Chargeback lifecycle event',
-        )),
-      ]
-      : [
-        row('TML-OPEN', ['TML-OPEN', activeCase.reportedDate ?? activeCase.opened, 'Case opened', 'Case Summary', activeCase.id, activeCase.id, activeCase.queueReason], activeCase.id, 'Timeline event'),
-        ...profileChanges.map((item) => row(`TML-${item.id}`, [`TML-${item.id}`, `${item.date}${item.time ? ` · ${item.time}` : ''}`, item.item, 'Customer 360', item.session ?? item.id, activeCase.id, profileChangeDetail(item, financial.paymentVerification)], item.id, 'Profile change timeline')),
-        ...events.map((item) => row(`TML-${item.id}`, [`TML-${item.id}`, item.time, item.label, item.chip, item.object, activeCase.id, item.detail], item.id, 'Timeline event')),
-        ...logins.map((item) => row(`TML-${item.id}`, [`TML-${item.id}`, item.time, item.result, 'Login History', item.session, activeCase.id, `${item.deviceId ?? item.device} · ${item.ip}`], item.session, 'Login timeline')),
-        ...transactionRows,
-        ...(activeCase.availableTools?.includes('Payment Verification') ? financial.paymentVerification.map((item) => row(`TML-${item.id}`, [`TML-${item.id}`, item.lastSeen, item.type, 'Payment Verification', item.id, activeCase.id, paymentRecordDetail(item)], item.id, 'Payment timeline')) : []),
-        ...documents.map((item) => row(`TML-${item.id}`, [`TML-${item.id}`, item.received, item.title, 'Document Viewer', item.id, activeCase.id, item.status], item.id, 'Document timeline')),
-      ];
-    return {
-      columns: ['Timeline', 'Time', 'Event', 'Source', 'Linked Object', 'Case', 'Detail'],
-      rows: normalizedTimelineRows(rows, fallbackDate),
-    };
-  }
-
-  return null;
-}
+  

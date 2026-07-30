@@ -58,6 +58,44 @@ export const workflowReviewGroup = {
   tools: ['Timeline'],
 };
 
+export const workspaceMapBlueprints = Object.freeze([
+  {
+    key: 'identity',
+    label: 'Identity & Customer',
+    icon: 'user',
+    sourceGroups: ['identity'],
+    tone: 'violet',
+  },
+  {
+    key: 'digital',
+    label: 'Login, Session, Device & IP',
+    icon: 'channel',
+    sourceGroups: ['digital'],
+    tone: 'cyan',
+  },
+  {
+    key: 'financial',
+    label: 'Transactions, Merchant & Financial',
+    icon: 'payment',
+    sourceGroups: ['financial', 'merchant'],
+    tone: 'amber',
+  },
+  {
+    key: 'business',
+    label: 'Business & Payment Verification',
+    icon: 'merchant',
+    sourceGroups: ['business'],
+    tone: 'mint',
+  },
+  {
+    key: 'evidence',
+    label: 'Evidence, Links & Workflow',
+    icon: 'evidence',
+    sourceGroups: ['evidence', 'connections', 'workflow'],
+    tone: 'pink',
+  },
+]);
+
 export const workspaceTools = [
   ...investigationToolGroups.flatMap((group) => group.tools),
   ...workflowReviewGroup.tools,
@@ -66,6 +104,7 @@ export const workspaceTools = [
 export const legacyToolAliases = {
   'Evidence Center': 'Document Viewer',
   'Financial Intelligence': 'Financial Investigation',
+  'Identity Intelligence': 'Identity Intel / People Search',
   'Business Intelligence': 'Business 360',
   'KYB Review': 'Business 360',
 };

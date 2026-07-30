@@ -301,14 +301,6 @@ export function getLinkIdentifiersForCase(activeCase = {}) {
   return identifiers;
 }
 
-function stableHash(value) {
-  return [...String(value ?? '')].reduce((total, character) => ((total * 31) + character.charCodeAt(0)) >>> 0, 2166136261);
-}
-
-function numericSuffix(value, length = 5) {
-  return String(stableHash(value) % (10 ** length)).padStart(length, '0');
-}
-
 function isBusinessCase(activeCase = {}) {
   return Boolean(activeCase.profile?.business)
     || /business|payroll|merchant|company/i.test(`${activeCase.type ?? ''} ${activeCase.lane ?? ''} ${activeCase.customer?.segment ?? ''}`);
@@ -336,7 +328,7 @@ function caseAccount(activeCase = {}) {
     customerName: caseCustomerName(activeCase),
     customerType: isBusinessCase(activeCase) ? 'Business' : 'Personal',
     productType: caseProduct(activeCase),
-    status: activeCase.accountStatus ?? 'Open · Current review',
+    status: activeCase.accountStatus ?? 'Not supplied',
     statusSource: 'Current relationship record',
     firstUse: activeCase.customer?.relationshipSince ?? activeCase.issueStartDate ?? activeCase.opened ?? 'Not recorded',
     lastUse: opened,
@@ -348,149 +340,6 @@ function caseAccount(activeCase = {}) {
   };
 }
 
-const relatedNames = [
-  'Michael Reyes',
-  'Olivia Bennett',
-  'Daniel Kim',
-  'Avery Monroe',
-  'Cameron Lee',
-  'Riley Morgan',
-];
-
-const relatedBusinesses = [
-  'Juniper Field Services LLC',
-  'Pine Trail Commerce LLC',
-  'Bluebird Office Supply LLC',
-  'North Loop Studio LLC',
-];
-
-function identifiersOfType(identifiers, type) {
-  return identifiers.filter((item) => item.type === type);
-}
-
-function contextualFixtureAccounts(activeCase = {}) {
-  const identifiers = getLinkIdentifiersForCase(activeCase);
-  const seed = stableHash(activeCase.id);
-  const suffix = numericSuffix(activeCase.id);
-  const ownerName = caseCustomerName(activeCase);
-  const phone = identifiersOfType(identifiers, 'phone')[0];
-  const email = identifiersOfType(identifiers, 'email')[0];
-  const trainingId = identifiersOfType(identifiers, 'training-id')[0];
-  const device = identifiersOfType(identifiers, 'device')[0];
-  const ip = identifiersOfType(identifiers, 'ip')[0];
-  const bankCode = identifiersOfType(identifiers, 'bank-code')[0];
-  const destinationId = identifiersOfType(identifiers, 'destination-id')[0];
-  const relatedName = relatedNames[seed % relatedNames.length];
-  const secondRelatedName = relatedNames[(seed + 2) % relatedNames.length];
-  const relatedBusiness = relatedBusinesses[seed % relatedBusinesses.length];
-  const relationshipYear = Number.parseInt(String(activeCase.customer?.relationshipSince ?? ''), 10);
-  const historicalYear = Number.isFinite(relationshipYear) ? Math.max(2016, relationshipYear - 2) : 2021;
-  const fixtures = [];
-
-  const historicalIdentifiers = [trainingId, phone, email].filter(Boolean).map((item) => ({
-    ...item,
-    source: 'Archived relationship index',
-    sourceRecordId: `REL-${suffix}-HIST`,
-    firstUse: `Apr 14, ${historicalYear}`,
-    lastUse: 'Jun 28, 2026',
-  }));
-  if (historicalIdentifiers.length) {
-    fixtures.push({
-      accountId: `ACCT-${suffix}-HIST`,
-      customerName: ownerName,
-      customerType: isBusinessCase(activeCase) ? 'Business' : 'Personal',
-      productType: isBusinessCase(activeCase) ? 'Business checking' : 'Personal checking',
-      status: 'Open · Good standing',
-      statusSource: 'Archived servicing record',
-      firstUse: `Apr 14, ${historicalYear}`,
-      lastUse: 'Jun 28, 2026',
-      caseId: '',
-      relatedCaseId: '',
-      currentCase: false,
-      fixture: true,
-      identifiers: historicalIdentifiers,
-    });
-  }
-
-  const contactIdentifiers = [phone, email].filter(Boolean).map((item) => ({
-    ...item,
-    source: 'Verified contact directory',
-    sourceRecordId: `REL-${suffix}-CONTACT`,
-    firstUse: 'Jan 9, 2025',
-    lastUse: activeCase.reportedDate ?? activeCase.opened ?? 'Training date',
-  }));
-  if (contactIdentifiers.length) {
-    fixtures.push({
-      accountId: `ACCT-${numericSuffix(`${activeCase.id}-contact`)}-REL`,
-      customerName: relatedName,
-      customerType: 'Personal',
-      productType: seed % 2 ? 'Credit card' : 'Personal checking',
-      status: seed % 3 ? 'On Hold · Paperwork required' : 'Closed · Other',
-      statusSource: 'Linked account servicing record',
-      firstUse: 'Jan 9, 2025',
-      lastUse: activeCase.reportedDate ?? activeCase.opened ?? 'Training date',
-      caseId: '',
-      relatedCaseId: '',
-      currentCase: false,
-      fixture: true,
-      identifiers: contactIdentifiers,
-    });
-  }
-
-  const accessIdentifiers = [device, ip].filter(Boolean).map((item) => ({
-    ...item,
-    source: 'Authentication relationship index',
-    sourceRecordId: `REL-${suffix}-ACCESS`,
-    firstUse: item.firstUse,
-    lastUse: item.lastUse,
-  }));
-  if (accessIdentifiers.length) {
-    fixtures.push({
-      accountId: `ACCT-${numericSuffix(`${activeCase.id}-access`)}-DIG`,
-      customerName: isBusinessCase(activeCase) ? secondRelatedName : relatedBusiness,
-      customerType: isBusinessCase(activeCase) ? 'Personal' : 'Business',
-      productType: isBusinessCase(activeCase) ? 'Personal deposit account' : 'Business account',
-      status: 'Open · Good standing',
-      statusSource: 'Linked account servicing record',
-      firstUse: device?.firstUse ?? ip?.firstUse ?? 'Not recorded',
-      lastUse: device?.lastUse ?? ip?.lastUse ?? 'Not recorded',
-      caseId: '',
-      relatedCaseId: '',
-      currentCase: false,
-      fixture: true,
-      identifiers: accessIdentifiers,
-    });
-  }
-
-  const paymentIdentifiers = [bankCode, destinationId].filter(Boolean).map((item) => ({
-    ...item,
-    source: 'Prior payment-destination index',
-    sourceRecordId: `REL-${suffix}-PAYMENT`,
-    firstUse: item.firstUse,
-    lastUse: item.lastUse,
-  }));
-  if (paymentIdentifiers.length) {
-    const priorConfirmedStatus = [bankCode?.value, destinationId?.value].some((value) => /^(?:BC-204|DST-7740)$/i.test(value ?? ''));
-    fixtures.push({
-      accountId: `ACCT-${numericSuffix(`${activeCase.id}-payment`)}-PAY`,
-      customerName: relatedBusiness,
-      customerType: 'Business',
-      productType: 'Business payment account',
-      status: priorConfirmedStatus ? 'Closed · Prior confirmed fraud' : 'On Hold · NSF',
-      statusSource: priorConfirmedStatus ? 'Completed prior linked-account investigation' : 'Linked account servicing record',
-      firstUse: bankCode?.firstUse ?? destinationId?.firstUse ?? 'Not recorded',
-      lastUse: bankCode?.lastUse ?? destinationId?.lastUse ?? 'Not recorded',
-      caseId: priorConfirmedStatus ? 'FA-REL-7740' : '',
-      relatedCaseId: '',
-      currentCase: false,
-      fixture: true,
-      identifiers: paymentIdentifiers,
-    });
-  }
-
-  return fixtures;
-}
-
 export function buildLinkAccountIndex(cases = [], activeCase = {}) {
   const actualAccounts = cases.map(caseAccount);
   const currentAccountId = activeCase.accountId ?? activeCase.id;
@@ -498,10 +347,8 @@ export function buildLinkAccountIndex(cases = [], activeCase = {}) {
     ...account,
     currentCase: account.accountId === currentAccountId,
     status: account.accountId === currentAccountId
-      ? activeCase.accountStatus ?? 'Open · Current review'
-      : account.status === 'Open · Current review'
-        ? 'Open · Good standing'
-        : account.status,
+      ? activeCase.accountStatus ?? account.status ?? 'Not supplied'
+      : account.status ?? 'Not supplied',
   }));
 }
 
@@ -594,7 +441,9 @@ export function searchLinkRelationships({
     if (left.fixture !== right.fixture) return left.fixture ? 1 : -1;
     return left.accountId.localeCompare(right.accountId);
   });
-  const restricted = matches.filter((item) => !/open · (?:good standing|current review)/i.test(item.status)).length;
+  const restricted = matches.filter((item) => (
+    /closed|on hold|restricted|suspended|blocked|frozen|nsf/i.test(item.status ?? '')
+  )).length;
   const relatedCases = new Set(matches.map((item) => item.relatedCaseId).filter((id) => id && id !== activeCase.id)).size;
 
   return {

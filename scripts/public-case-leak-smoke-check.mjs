@@ -19,7 +19,7 @@ import {
   publicScenarioLabel,
 } from '../src/data/publicCaseView.js';
 
-const forbiddenPublicAnswer = /\b(synthetic identity|synthetic fraud|bust[- ]out(?: fraud)?|first[- ]party fraud|mule activity|money mule|spoofed email|compromised mailbox|email compromise|business email compromise|\bbec\b|stolen identity|fabricated business information|linked prior fraud)\b/i;
+const forbiddenPublicAnswer = /\b(synthetic[-_ ]identity|synthetic[-_ ]fraud|bust[-_ ]out(?:[-_ ]fraud)?|first[-_ ]party[-_ ]fraud|mule[-_ ]activity|money[-_ ]mule|spoofed[-_ ]email|compromised[-_ ]mailbox|email[-_ ]compromise|business[-_ ]email[-_ ]compromise|\bbec\b|stolen[-_ ]identity|fabricated[-_ ]business[-_ ]information|linked[-_ ]prior[-_ ]fraud)\b/i;
 
 function compatibleDomain(claimType, scenario) {
   for (const customerType of scenario.customerTypes ?? claimType.customerTypes) {
@@ -81,6 +81,32 @@ function publicSurface(item) {
 
 const postSubmissionPatterns = new Set();
 let generatedCount = 0;
+
+for (const hiddenWorkflow of [
+  'synthetic identity',
+  'synthetic-identity',
+  'synthetic_identity',
+  'business-email-compromise',
+]) {
+  const malformedLegacyCase = {
+    id: 'LEGACY-UNSAFE-1',
+    person: 'Training Person',
+    customerType: 'personal',
+    productType: 'credit-card',
+    workflowType: hiddenWorkflow,
+    type: hiddenWorkflow,
+    alertReason: 'Neutral intake alert',
+    reportedAllegation: 'The customer reported an unfamiliar event.',
+  };
+  assert.doesNotMatch(
+    JSON.stringify({
+      taxonomy: publicCaseTaxonomy(malformedLegacyCase),
+      searchText: publicCaseSearchText(malformedLegacyCase),
+    }),
+    forbiddenPublicAnswer,
+    `Legacy workflow ${hiddenWorkflow} leaks through public taxonomy or search`,
+  );
+}
 
 for (const [claimIndex, claimType] of coreClaimTypes.entries()) {
   assert.doesNotMatch(

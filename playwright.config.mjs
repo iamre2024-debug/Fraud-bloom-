@@ -27,7 +27,7 @@ export default defineConfig({
     { name: 'desktop-chromium', use: { ...devices['Desktop Chrome'] } },
     {
       name: 'mobile-chromium',
-      testMatch: /(?:mobile-mission-deck-v3-browser|mobile-workspace-pages-browser|mobile-tool-map-browser|mobile-360-reference-browser|mobile-case-review-browser|customer-360-browser|business-360-browser|identity-business-intel-browser|financial-investigation-browser|financial-kyb-browser|document-request-browser|document-viewer-browser|decision-luna-browser|final-responsive-browser|payment-verification-browser|login-history-browser|device-intelligence-browser|mobile-device-ip-reference-browser|merchant-intelligence-browser|link-analysis-browser|quick-pad-browser|cloud-persistence-browser)\.spec\.mjs$/,
+      testMatch: /(?:mobile-mission-deck-v3-browser|mobile-workspace-pages-browser|mobile-tool-map-browser|mobile-360-reference-browser|mobile-case-review-browser|customer-360-browser|business-360-browser|identity-business-intel-browser|financial-investigation-browser|financial-kyb-browser|document-request-browser|document-viewer-browser|merchant-document-browser|decision-luna-browser|final-responsive-browser|payment-verification-browser|login-history-browser|device-intelligence-browser|mobile-device-ip-reference-browser|merchant-intelligence-browser|link-analysis-browser|transaction-history-browser|payroll-history-browser|employee-profile-browser|system-access-lane-browser|quick-pad-browser|cloud-persistence-browser)\.spec\.mjs$/,
       use: { ...devices['Pixel 7'] },
     },
   ],

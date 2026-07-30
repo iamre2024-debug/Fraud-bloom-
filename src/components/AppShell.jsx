@@ -1,10 +1,13 @@
+import { SkyIcon } from './SkyPrimitives.jsx';
+import { canonicalToolName } from '../investigationToolGroups.js';
+
 const primaryNavigation = [
-  { name: 'dashboard', icon: '⌂', label: 'Home' },
-  { name: 'cases', icon: '▣', label: 'Cases' },
-  { name: 'workspace', icon: '⌘', label: 'Workspace' },
-  { name: 'indicators', icon: '◇', label: 'Review' },
-  { name: 'luna', icon: '✦', label: 'Luna' },
-  { name: 'report', icon: '▤', label: 'Report' },
+  { name: 'dashboard', icon: 'home', label: 'Home' },
+  { name: 'cases', icon: 'cases', label: 'Cases' },
+  { name: 'workspace', icon: 'workspace', label: 'Workspace' },
+  { name: 'indicators', icon: 'review', label: 'Review' },
+  { name: 'luna', icon: 'luna', label: 'Luna' },
+  { name: 'report', icon: 'report', label: 'Report' },
 ];
 
 const workflowStages = [
@@ -23,6 +26,37 @@ function routeFamily(route = {}) {
   if (route.name === 'tool') return 'workspace';
   return route.name;
 }
+
+function primaryRouteFamily(route = {}) {
+  if (route.name === 'briefing' || route.name === 'cases') return 'cases';
+  if (['tool', 'workspace', 'summary'].includes(route.name)) return 'workspace';
+  if (['indicators', 'determination', 'submit'].includes(route.name)) return 'indicators';
+  return route.name;
+}
+
+const pageTitles = {
+  cases: 'Case Queue',
+  briefing: 'Case Briefing',
+  workspace: 'Workspace',
+  summary: 'Investigation Summary',
+  indicators: 'Case Indicators',
+  determination: 'Determination',
+  submit: 'Submit Decision',
+  luna: 'Luna Debrief',
+  report: 'Case Report',
+};
+
+const backRoutes = {
+  cases: 'dashboard',
+  briefing: 'cases',
+  workspace: 'briefing',
+  summary: 'workspace',
+  indicators: 'summary',
+  determination: 'indicators',
+  submit: 'determination',
+  luna: 'dashboard',
+  report: 'luna',
+};
 
 const orderedWorkflowRequirements = [
   { completion: 'Case Briefing', message: 'After briefing' },
@@ -71,42 +105,131 @@ export default function AppShell({
   children,
 }) {
   const activeName = routeFamily(route);
+  const primaryActiveName = primaryRouteFamily(route);
+  const isDashboard = activeName === 'dashboard';
+  const isReviewRoute = ['indicators', 'determination'].includes(route.name);
+  const isReferenceStructuredScreen = ['cases', 'workspace', 'submit', 'luna'].includes(route.name);
+  const routeToolName = route.name === 'tool'
+    ? canonicalToolName(route.tool)
+    : route.tool;
+  const isReferenceStructuredTool = route.name === 'tool' && [
+    'Financial Investigation',
+    'Payment Verification',
+    'Link Analysis',
+    'System Access Lane',
+    'Timeline',
+    'Merchant Intelligence',
+    'Document Viewer',
+    'Document Request',
+    'Transaction History',
+    'Payroll History',
+    'Customer 360',
+    'Identity Intel / People Search',
+    'Business 360',
+    'Employee Profile',
+    'Login History',
+    'Session History',
+    'Device Intelligence',
+    'IP Intelligence',
+  ].includes(routeToolName);
+  const toolPageTitle = routeToolName === 'Financial Investigation'
+    ? 'Financial Intelligence'
+    : routeToolName === 'Identity Intel / People Search'
+      ? 'Identity Intelligence'
+      : routeToolName === 'Business 360'
+        ? 'Business Intelligence'
+        : routeToolName;
+  const pageTitle = route.name === 'tool'
+    ? toolPageTitle || 'Investigation Tool'
+    : isReviewRoute && activeCase?.id
+      ? `Case ${activeCase.id}`
+      : pageTitles[route.name] || 'Fraud Bloom';
+  const pageSubtitle = isReviewRoute
+    ? 'Active'
+    : activeCase?.id ?? 'Select a case';
+  const backRoute = route.name === 'tool'
+    ? 'workspace'
+    : backRoutes[route.name] || 'dashboard';
   const workflowCompletedTools = completedTools.length
     ? completedTools
     : activeCase?.workflowCompletedTools ?? [];
   const workspaceLock = stageLock('workspace', workflowCompletedTools, latestPackage);
   return (
-    <div className="sky-app">
+    <div
+      className="sky-app"
+      data-route={route.name}
+      data-tool={route.name === 'tool' ? routeToolName : undefined}
+      data-reference-screen={isReferenceStructuredScreen || undefined}
+    >
       <div className="sky-shell">
-        <header className="sky-header">
-          <button
-            type="button"
-            className="sky-brand sky-brand-button"
-            onClick={() => navigate('dashboard')}
-            aria-label="Open Fraud Bloom dashboard"
+        {!isReferenceStructuredScreen ? (
+          <header
+            className="sky-header"
+            data-context={isDashboard ? 'dashboard' : 'page'}
+            data-reference-tool={isReferenceStructuredTool || undefined}
           >
-            <span className="sky-brand-mark" aria-hidden="true" />
-            <span>
-              <strong>Fraud Bloom <em>v1</em></strong>
-              <small>Investigate. Learn. Prevent.</small>
-            </span>
-          </button>
-          <div className="sky-header-case">
-            <strong>{activeCase?.id ?? 'Select a case'}</strong>
-            <span>{activeCase?.person ?? 'Case workspace'}</span>
-          </div>
-          <button
-            type="button"
-            className="sky-icon-button"
-            aria-label={workspaceLock.locked ? 'Complete the case briefing to open the workspace' : 'Open workspace'}
-            onClick={() => !workspaceLock.locked && navigate('workspace')}
-            disabled={workspaceLock.locked}
-          >
-            ✦
-          </button>
-        </header>
+            {isDashboard ? (
+              <>
+                <button
+                  type="button"
+                  className="sky-brand sky-brand-button"
+                  onClick={() => navigate('dashboard')}
+                  aria-label="Open Fraud Bloom dashboard"
+                >
+                  <span className="sky-brand-mark" aria-hidden="true">
+                    <SkyIcon name="shield" size={32} />
+                    <span className="sky-brand-star">✦</span>
+                  </span>
+                  <span>
+                    <strong>Fraud Bloom <em>v1</em></strong>
+                    <small>Investigate. Learn. Prevent.</small>
+                  </span>
+                </button>
+                <div className="sky-header-case">
+                  <strong>{activeCase?.id ?? 'Select a case'}</strong>
+                  <span>{activeCase?.person ?? 'Case workspace'}</span>
+                </div>
+                <button
+                  type="button"
+                  className="sky-icon-button"
+                  aria-label="Open case queue"
+                  onClick={() => navigate('cases')}
+                >
+                  <SkyIcon name="cases" size={21} />
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="sky-icon-button sky-page-back"
+                  aria-label={`Back to ${pageTitles[backRoute] || 'previous screen'}`}
+                  onClick={() => navigate(backRoute)}
+                >
+                  <SkyIcon name="back" size={22} />
+                </button>
+                <div className="sky-page-title" data-case-context={isReviewRoute || undefined}>
+                  <strong>{pageTitle}</strong>
+                  <span>{pageSubtitle}</span>
+                </div>
+                {workspaceLock.locked ? (
+                  <span className="sky-page-slot" aria-hidden="true" />
+                ) : (
+                  <button
+                    type="button"
+                    className="sky-icon-button sky-page-workspace"
+                    aria-label="Open workspace"
+                    onClick={() => navigate('workspace')}
+                  >
+                    <SkyIcon name="workspace" size={20} />
+                  </button>
+                )}
+              </>
+            )}
+          </header>
+        ) : null}
 
-        {activeCase?.id && activeName !== 'dashboard' ? (
+        {!isReferenceStructuredScreen && activeCase?.id && activeName !== 'dashboard' ? (
           <nav className="sky-workflow-shell" aria-label="Case workflow">
             <div className="sky-workflow">
               {workflowStages.map((stage, index) => {
@@ -140,12 +263,15 @@ export default function AppShell({
               type="button"
               className="sky-nav-button"
               key={item.name}
-              aria-current={activeName === item.name ? 'page' : undefined}
+              aria-current={primaryActiveName === item.name ? 'page' : undefined}
               onClick={() => !lock.locked && navigate(item.name)}
               disabled={lock.locked}
               title={lock.locked ? lock.message : undefined}
             >
-              <span aria-hidden="true">{item.icon}</span>
+              <span className="sky-nav-icon" aria-hidden="true">
+                <SkyIcon name={item.icon} size={21} />
+                {item.name === 'luna' && latestPackage ? <i className="sky-nav-dot" /> : null}
+              </span>
               <strong>{item.label}</strong>
             </button>
           );

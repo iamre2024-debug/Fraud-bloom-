@@ -1,8 +1,55 @@
 import { publicCaseSummary } from '../data/publicCaseView.js';
-import { SkyCard, SectionHeading, StatusChip } from '../components/SkyPrimitives.jsx';
+import { getWorkspaceProgress } from '../data/workspaceProgress.js';
+import {
+  SkyCard,
+  SkyCharm,
+  SkyIcon,
+  SkyProgressRing,
+  StatusChip,
+} from '../components/SkyPrimitives.jsx';
 
-function reviewedCount(completedTools = []) {
-  return completedTools.filter((tool) => !['Case Briefing', 'Submit Decision'].includes(tool)).length;
+function DashboardMetric({
+  icon,
+  label,
+  value,
+  suffix,
+  detail,
+  tone,
+  progress,
+  onClick,
+}) {
+  return (
+    <button
+      className="sky-dashboard-tile"
+      data-tone={tone}
+      type="button"
+      onClick={onClick}
+    >
+      <span className="sky-tile-heading">
+        <span className="sky-tile-icon" aria-hidden="true"><SkyIcon name={icon} size={19} /></span>
+        <small>{label}</small>
+      </span>
+      {progress === undefined ? (
+        <span className="sky-tile-value">
+          <strong>{value}</strong>
+          {suffix ? <span>{suffix}</span> : null}
+        </span>
+      ) : (
+        <SkyProgressRing value={progress} label="Workspace" size="micro" />
+      )}
+      <em>{detail}</em>
+      <span className="sky-tile-arrow" aria-hidden="true"><SkyIcon name="arrow" size={17} /></span>
+    </button>
+  );
+}
+
+function AcademyStat({ icon, value, label }) {
+  return (
+    <div className="sky-academy-stat">
+      <SkyIcon name={icon} size={20} />
+      <span><strong>{value}</strong><small>{label}</small></span>
+    </div>
+  );
 }
 
 export default function Dashboard({
@@ -13,7 +60,10 @@ export default function Dashboard({
   latestPackage,
   navigate,
 }) {
-  const progress = Math.min(100, Math.round((completedTools.length / 8) * 100));
+  const {
+    reviewed: reviewedTools,
+    percent: progress,
+  } = getWorkspaceProgress(activeCase, completedTools);
   const openCases = cases.filter((item) => !/complete|closed/i.test(item.status ?? '')).length;
   const briefingComplete = completedTools.includes('Case Briefing');
   const summaryComplete = completedTools.includes('Investigation Summary');
@@ -30,145 +80,150 @@ export default function Dashboard({
           : !latestPackage
             ? { route: 'submit', label: 'Review submission' }
             : { route: 'luna', label: 'Open Luna debrief' };
-  const summaryRoute = briefingComplete ? 'summary' : 'briefing';
-  const indicatorsRoute = !briefingComplete
-    ? 'briefing'
-    : summaryComplete
-      ? 'indicators'
-      : 'summary';
-
   return (
-    <>
-      <SkyCard className="sky-hero" tone="pink">
+    <div className="sky-dashboard">
+      <SkyCard
+        className="sky-hero"
+        tone="pink"
+        shape="ribbon"
+        sparkle
+        charm={<SkyCharm name="bow" />}
+      >
         <div className="sky-hero-copy">
-          <span className="sky-charm sky-charm-bow" aria-hidden="true">🎀</span>
-          <p className="sky-eyebrow">Evidence First</p>
-          <h1>Good morning — let’s investigate with clarity ✨</h1>
-          <p>
-            Every record you connect makes the final decision easier to explain.
-            Luna waits until after submission before revealing any coaching answer.
+          <p className="sky-eyebrow">Evidence First · Good morning, investigator</p>
+          <h1>Let’s stop fraud with evidence ✨</h1>
+          <p className="sky-hero-promise">
+            <span aria-hidden="true">♥</span>
+            Every case you solve helps build a safer world.
           </p>
-          <div className="sky-action-row">
-            <button className="sky-button" type="button" onClick={() => navigate(nextWorkflow.route)}>
-              {nextWorkflow.label}
-            </button>
-            <button className="sky-button-secondary" type="button" onClick={() => navigate('cases')}>
-              Open case queue
-            </button>
-          </div>
         </div>
-        <div className="sky-luna sky-hero-luna">
-          <div className="sky-luna-art">
+        <div className="sky-hero-luna">
+          <div className="sky-luna-art sky-luna-orbit">
             <img src="/assets/luna-sky-vector-v1.svg" alt="Luna, the Fraud Bloom assistant" />
+            <span className="sky-luna-heart" aria-hidden="true">♥</span>
           </div>
           <div>
             <strong>Luna ✨</strong>
-            <span>Your post-submission coach</span>
+            <span>AI assistant</span>
           </div>
         </div>
       </SkyCard>
 
       <div className="sky-dashboard-metrics">
-        <button className="sky-dashboard-tile" type="button" onClick={() => navigate('cases')}>
-          <span className="sky-tile-icon">▣</span>
-          <small>Active cases</small>
-          <strong>{openCases}</strong>
-          <em>Open queue</em>
-        </button>
-        <button
-          className="sky-dashboard-tile"
-          data-tone="pink"
-          type="button"
+        <DashboardMetric
+          icon="cases"
+          label="Active cases"
+          value={openCases}
+          suffix="cases"
+          detail="Open queue"
+          onClick={() => navigate('cases')}
+        />
+        <DashboardMetric
+          icon="check"
+          label="Tools reviewed"
+          value={reviewedTools}
+          detail="Current case"
+          tone="pink"
           onClick={() => navigate(briefingComplete ? 'workspace' : 'briefing')}
-        >
-          <span className="sky-tile-icon">✦</span>
-          <small>Tools reviewed</small>
-          <strong>{reviewedCount(completedTools)}</strong>
-          <em>Current case</em>
-        </button>
-        <button className="sky-dashboard-tile" type="button" onClick={() => navigate(summaryRoute)}>
-          <span className="sky-tile-icon">◇</span>
-          <small>Saved evidence</small>
-          <strong>{tray.length}</strong>
-          <em>View progress</em>
-        </button>
+        />
+        <DashboardMetric
+          icon="workspace"
+          label="Workspace progress"
+          progress={progress}
+          detail={`${reviewedTools} tools reviewed`}
+          onClick={() => navigate(briefingComplete ? 'workspace' : 'briefing')}
+        />
       </div>
 
-      <div className="sky-grid">
-        <SkyCard className="span-8">
-          <SectionHeading
-            eyebrow="Active case"
-            title={activeCase.id}
-            description={publicCaseSummary(activeCase)}
-            action={<StatusChip tone="pink">{activeCase.status ?? 'In review'}</StatusChip>}
-          />
-          <div className="sky-case-progress">
-            <div>
-              <strong>{progress}%</strong>
-              <span>Workspace progress</span>
+      <SkyCard className="sky-dashboard-academy" shape="shield" sparkle>
+        <div className="sky-academy-layout">
+          <div className="sky-academy-badge" aria-hidden="true">
+            <SkyIcon name="shield" size={44} />
+            <span>✦</span>
+          </div>
+          <div className="sky-academy-copy">
+            <div className="sky-academy-heading">
+              <div>
+                <p className="sky-eyebrow">Academy progress</p>
+                <h2>{activeCase.id}</h2>
+                <span>{publicCaseSummary(activeCase)}</span>
+              </div>
+              <StatusChip tone="pink">{activeCase.status ?? 'In review'}</StatusChip>
             </div>
             <div className="sky-progress-track" aria-label={`${progress}% complete`}>
               <span style={{ width: `${progress}%` }} />
             </div>
+            <div className="sky-academy-stats">
+              <AcademyStat icon="workspace" value={reviewedTools} label="Tools" />
+              <AcademyStat icon="evidence" value={tray.length} label="Evidence" />
+              <AcademyStat icon="report" value={latestPackage ? 1 : 0} label="Packages" />
+            </div>
           </div>
-          <div className="sky-action-row">
+          <div className="sky-academy-action">
             <button
-              className="sky-button"
+              className="sky-icon-button"
               type="button"
-              onClick={() => navigate(briefingComplete ? 'workspace' : 'briefing')}
+              onClick={() => navigate(nextWorkflow.route)}
+              aria-label={nextWorkflow.label}
             >
-              {briefingComplete ? 'Open workspace' : 'Review briefing first'}
-            </button>
-            <button className="sky-button-secondary" type="button" onClick={() => navigate(indicatorsRoute)}>
-              {summaryComplete ? 'Review indicators' : briefingComplete ? 'Review summary first' : 'Review briefing first'}
+              <SkyIcon name="arrow" size={20} />
             </button>
           </div>
-        </SkyCard>
+        </div>
+      </SkyCard>
 
-        <SkyCard className="span-4" tone="pink">
-          <SectionHeading
-            eyebrow="Academy progress"
-            title="Evidence First"
-            description="Complete the required review stages in order; open only the investigation tools the case needs."
-          />
-          <div className="sky-academy-orbit">
-            <strong>{progress}%</strong>
+      <div className="sky-dashboard-lower">
+        <SkyCard className="sky-agent-card" shape="notched" sparkle>
+          <div className="sky-agent-card-heading">
+            <div>
+              <p className="sky-eyebrow">Agent panel</p>
+              <h2>Luna</h2>
+            </div>
+            <StatusChip tone={latestPackage ? undefined : 'pink'}>
+              {latestPackage ? 'Debrief ready' : 'After submission'}
+            </StatusChip>
           </div>
-          <p>{completedTools.length} workspace stage{completedTools.length === 1 ? '' : 's'} reviewed.</p>
-        </SkyCard>
-
-        <SkyCard className="span-6">
-          <SectionHeading
-            eyebrow="Agent panel"
-            title="Luna is ready when you are"
-            description={latestPackage
-              ? 'Your frozen package is ready for a post-submission debrief.'
-              : 'Investigate first. Luna will not reveal the expected answer before submission.'}
-          />
           <div className="sky-agent-panel">
             <img src="/assets/luna-sky-vector-v1.svg" alt="" aria-hidden="true" />
-            <button
-              className="sky-button-secondary"
-              type="button"
-              onClick={() => navigate(latestPackage ? 'luna' : nextWorkflow.route)}
-            >
-              {latestPackage ? 'Open Luna debrief' : nextWorkflow.label}
-            </button>
+            <div>
+              <p>
+                {latestPackage
+                  ? 'Your frozen package is ready for evidence-based coaching.'
+                  : 'Finish the investigation first. Luna will not reveal the answer early.'}
+              </p>
+              <button
+                className="sky-button-secondary sky-agent-action"
+                type="button"
+                onClick={() => navigate(latestPackage ? 'luna' : nextWorkflow.route)}
+              >
+                <SkyIcon name="sparkle" size={18} />
+                <span>{latestPackage ? 'Open Luna debrief' : nextWorkflow.label}</span>
+              </button>
+            </div>
           </div>
         </SkyCard>
 
-        <SkyCard className="span-6" tone="pink">
-          <span className="sky-charm sky-charm-quote" aria-hidden="true">❝</span>
-          <SectionHeading
-            eyebrow="Case practice"
-            title="“Fraud is clever, but so are we.”"
-            description="A strong result connects exact records to a clear rationale."
-          />
-          <button className="sky-button-secondary" type="button" onClick={() => navigate('report')} disabled={!latestPackage}>
-            {latestPackage ? 'Open case report' : 'Report unlocks after submit'}
+        <SkyCard
+          className="sky-quote-card"
+          tone="pink"
+          shape="ribbon"
+          sparkle
+          charm={<SkyCharm name="quote" />}
+        >
+          <p className="sky-eyebrow">Case practice</p>
+          <blockquote>“Fraud is clever,<br />but so are we.”</blockquote>
+          <p>A strong result connects exact records to a clear rationale.</p>
+          <button
+            className="sky-button-secondary sky-quote-action"
+            type="button"
+            onClick={() => navigate('report')}
+            disabled={!latestPackage}
+          >
+            <span>{latestPackage ? 'Open case report' : 'Unlocks after submit'}</span>
+            <SkyIcon name="arrow" size={17} />
           </button>
         </SkyCard>
       </div>
-    </>
+    </div>
   );
 }

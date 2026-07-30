@@ -105,6 +105,66 @@ function safeIdPart(caseId = '') {
   return String(caseId).replace(/[^A-Z0-9]+/gi, '-').replace(/^-|-$/g, '').toUpperCase();
 }
 
+function normalizedSearchText(value = '') {
+  return String(value).trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function observedTimestamp(value = '') {
+  const timestamp = Date.parse(String(value).replace(/\s+·\s+/, ' '));
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+export function searchSystemAccessRecords(records = [], query = '') {
+  const normalizedQuery = normalizedSearchText(query);
+  if (!normalizedQuery || !Array.isArray(records)) return [];
+
+  const exactIdMatches = records.filter((record) => (
+    normalizedSearchText(record?.id) === normalizedQuery
+  ));
+  if (exactIdMatches.length) return exactIdMatches;
+
+  return records.filter((record) => (
+    [
+      record?.id,
+      record?.lane,
+      record?.actor,
+      record?.event,
+      record?.object,
+      record?.observed,
+      record?.status,
+      record?.context,
+    ].some((value) => normalizedSearchText(value).includes(normalizedQuery))
+  ));
+}
+
+export function sortSystemAccessRecords(records = []) {
+  return [...(Array.isArray(records) ? records : [])].sort((left, right) => {
+    const leftTime = observedTimestamp(left?.observed);
+    const rightTime = observedTimestamp(right?.observed);
+    if (leftTime === null && rightTime === null) return 0;
+    if (leftTime === null) return 1;
+    if (rightTime === null) return -1;
+    return leftTime - rightTime;
+  });
+}
+
+export function buildSystemAccessSummary(records = []) {
+  const safeRecords = Array.isArray(records) ? records.filter(Boolean) : [];
+  const datedRecords = safeRecords
+    .map((record) => ({ record, timestamp: observedTimestamp(record.observed) }))
+    .filter((item) => item.timestamp !== null)
+    .sort((left, right) => right.timestamp - left.timestamp);
+
+  return {
+    total: safeRecords.length,
+    lanes: new Set(safeRecords.map((record) => record.lane).filter(Boolean)).size,
+    actors: new Set(safeRecords.map((record) => record.actor).filter(Boolean)).size,
+    latestObserved: datedRecords[0]?.record.observed
+      ?? safeRecords.at(-1)?.observed
+      ?? 'Not supplied',
+  };
+}
+
 export function buildNeutralSystemAccessRecords(activeCaseOrId = {}) {
   const activeCase = activeCaseOrId && typeof activeCaseOrId === 'object'
     ? activeCaseOrId
