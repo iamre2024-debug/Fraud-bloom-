@@ -1,0 +1,6014 @@
+@media (max-width: 900px) {
+  .sky-shell {
+    padding: 12px 12px 112px;
+  }
+
+  .sky-header {
+    top: 0;
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 66px;
+    padding: 8px 2px 10px;
+    border-color: transparent;
+    border-radius: 0;
+    background: linear-gradient(180deg, rgba(2, 10, 31, 0.9), rgba(2, 10, 31, 0.25));
+    box-shadow: none;
+    backdrop-filter: blur(12px);
+  }
+
+  .sky-header[data-context="page"] {
+    grid-template-columns: 46px minmax(0, 1fr) 46px;
+  }
+
+  .sky-brand-mark {
+    width: 44px;
+  }
+
+  .sky-brand small,
+  .sky-header-case {
+    display: none;
+  }
+
+  .sky-grid > [class*="span-"] {
+    grid-column: span 12;
+  }
+
+  .sky-workflow {
+    grid-template-columns: repeat(9, minmax(126px, 1fr));
+  }
+
+  .sky-hero .sky-card-inner {
+    grid-template-columns: minmax(0, 1.3fr) minmax(190px, 0.7fr);
+  }
+
+  .sky-tool-map {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-dashboard-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .sky-dashboard-lower {
+    grid-template-columns: minmax(0, 1.15fr) minmax(240px, 0.85fr);
+  }
+
+  .sky-briefing-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Employee Profile reference layout. */
+@media (max-width: 900px) {
+  .sky-employee-facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .sky-employee-search > .sky-card-inner,
+  .sky-employee-hero > .sky-card-inner,
+  .sky-employee-paycheck > .sky-card-inner,
+  .sky-employee-deposit > .sky-card-inner,
+  .sky-employee-rate-history > .sky-card-inner,
+  .sky-employee-profile-history > .sky-card-inner {
+    padding: 12px;
+  }
+
+  .sky-employee-search-form {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .sky-employee-search-form .sky-button {
+    min-width: 44px;
+    padding-inline: 12px;
+  }
+
+  .sky-employee-search-form .sky-button > span {
+    display: none;
+  }
+
+  .sky-employee-identity {
+    grid-template-columns: 62px minmax(0, 1fr) auto;
+    gap: 9px;
+  }
+
+  .sky-employee-avatar {
+    width: 58px;
+  }
+
+  .sky-employee-avatar .sky-icon {
+    width: 29px;
+    height: 29px;
+  }
+
+  .sky-employee-identity h2 {
+    font-size: 1.12rem;
+  }
+
+  .sky-employee-identity > div > span {
+    font-size: 0.64rem;
+  }
+
+  .sky-employee-statuses {
+    display: grid;
+    justify-items: end;
+  }
+
+  .sky-employee-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sky-employee-pay-grid,
+  .sky-employee-history-grid {
+    gap: 9px;
+  }
+
+  .sky-employee-paycheck header,
+  .sky-employee-deposit > .sky-card-inner > header,
+  .sky-employee-rate-history > .sky-card-inner > header,
+  .sky-employee-profile-history > .sky-card-inner > header {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .sky-employee-paycheck header > span,
+  .sky-employee-deposit > .sky-card-inner > header > span,
+  .sky-employee-rate-history > .sky-card-inner > header > span,
+  .sky-employee-profile-history > .sky-card-inner > header > span {
+    width: 34px;
+  }
+
+  .sky-employee-paycheck header > em,
+  .sky-employee-deposit header > em,
+  .sky-employee-rate-history header > em,
+  .sky-employee-profile-history header > em {
+    grid-column: 2;
+    width: max-content;
+    max-width: 100%;
+  }
+
+  .sky-employee-paycheck .sky-data-row,
+  .sky-employee-destination-list .sky-data-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3px;
+  }
+
+  .sky-employee-paycheck .sky-data-row dd,
+  .sky-employee-destination-list .sky-data-row dd {
+    text-align: left;
+  }
+
+  .sky-employee-paycheck .sky-button-secondary,
+  .sky-employee-destination-list .sky-button-secondary,
+  .sky-employee-newest-instruction .sky-button-secondary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 390px) {
+  .sky-employee-search > .sky-card-inner,
+  .sky-employee-hero > .sky-card-inner,
+  .sky-employee-paycheck > .sky-card-inner,
+  .sky-employee-deposit > .sky-card-inner,
+  .sky-employee-rate-history > .sky-card-inner,
+  .sky-employee-profile-history > .sky-card-inner {
+    padding: 10px;
+  }
+
+  .sky-employee-facts > article {
+    grid-template-columns: 27px minmax(0, 1fr);
+    gap: 6px;
+    padding: 9px 8px;
+  }
+
+  .sky-employee-facts > article > span {
+    width: 26px;
+  }
+
+  .sky-employee-pay-grid,
+  .sky-employee-history-grid {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  .sky-employee-search-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sky-employee-search-form .sky-button {
+    width: 100%;
+  }
+
+  .sky-employee-search-form .sky-button > span {
+    display: inline;
+  }
+
+  .sky-employee-pay-grid,
+  .sky-employee-history-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 320px) {
+  .sky-employee-identity {
+    grid-template-columns: 54px minmax(0, 1fr);
+  }
+
+  .sky-employee-avatar {
+    width: 50px;
+  }
+
+  .sky-employee-statuses {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-start;
+    padding-top: 7px;
+  }
+
+  .sky-employee-facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sky-employee-newest-instruction > header {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sky-employee-newest-instruction > header span {
+    text-align: left;
+  }
+}
+
+@media (max-width: 680px) {
+  .sky-transaction-summary > .sky-card-inner,
+  .sky-transaction-search > .sky-card-inner {
+    padding: 10px;
+  }
+
+  .sky-transaction-summary > .sky-card-inner > header {
+    margin-bottom: 8px;
+  }
+
+  .sky-transaction-summary header small,
+  .sky-transaction-results-heading small {
+    font-size: 0.58rem;
+  }
+
+  .sky-transaction-summary header h2,
+  .sky-transaction-results-heading h2 {
+    font-size: 0.76rem;
+  }
+
+  .sky-transaction-summary header > span,
+  .sky-transaction-results-heading > span {
+    padding: 4px 7px;
+    font-size: 0.6rem;
+  }
+
+  .sky-transaction-summary-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .sky-transaction-summary-grid > article {
+    min-height: 88px;
+    padding: 7px 6px;
+    border-right: 1px solid rgba(91, 172, 255, 0.17);
+  }
+
+  .sky-transaction-summary-grid > article:last-child {
+    border-right: 0;
+  }
+
+  .sky-transaction-summary-grid > article > span {
+    width: 27px;
+    border-radius: 8px 8px 12px 8px;
+  }
+
+  .sky-transaction-summary-grid > article > span .sky-icon {
+    width: 16px;
+  }
+
+  .sky-transaction-summary-grid small,
+  .sky-transaction-summary-grid p {
+    font-size: 0.5rem;
+    line-height: 1.25;
+  }
+
+  .sky-transaction-summary-grid strong {
+    font-size: clamp(0.62rem, 2.8vw, 0.78rem);
+    white-space: nowrap;
+  }
+
+  .sky-transaction-search-form {
+    grid-template-columns: minmax(0, 1fr) 42px minmax(68px, auto);
+    gap: 6px;
+  }
+
+  .sky-transaction-search-form > label {
+    grid-column: auto;
+  }
+
+  .sky-transaction-search-form > label > span {
+    display: none;
+  }
+
+  .sky-transaction-search-form .sky-button,
+  .sky-transaction-search-form .sky-button-secondary {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 7px 8px;
+    font-size: 0.66rem;
+    white-space: normal;
+  }
+
+  .sky-transaction-search-form .sky-button > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .sky-transaction-search-form input,
+  .sky-transaction-custom-range input,
+  .sky-transaction-filters select {
+    min-height: 42px;
+    padding: 7px 9px;
+    border-radius: 11px 11px 16px 11px;
+    font-size: 0.7rem;
+  }
+
+  .sky-transaction-ranges {
+    gap: 5px;
+  }
+
+  .sky-transaction-ranges button {
+    min-height: 36px;
+    padding: 5px 4px;
+    font-size: 0.64rem;
+  }
+
+  .sky-transaction-ranges .sky-icon {
+    width: 13px;
+  }
+
+  .sky-transaction-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .sky-transaction-filters .sky-button-secondary {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 42px;
+    padding: 7px;
+    font-size: 0.66rem;
+  }
+
+  .sky-transaction-results {
+    gap: 7px;
+  }
+
+  .sky-transaction-list {
+    gap: 7px;
+  }
+
+  .sky-transaction-record-toggle {
+    grid-template-columns: 48px minmax(0, 1fr) minmax(92px, auto) 17px;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .sky-transaction-record-icon {
+    width: 46px;
+    border-radius: 13px 13px 19px 13px;
+  }
+
+  .sky-transaction-record-icon .sky-icon {
+    width: 20px;
+  }
+
+  .sky-transaction-record-copy > strong {
+    font-size: 0.76rem;
+  }
+
+  .sky-transaction-record-copy > small,
+  .sky-transaction-record-copy > span,
+  .sky-transaction-record-value > small {
+    font-size: 0.58rem;
+  }
+
+  .sky-transaction-record-copy > i {
+    gap: 3px;
+    margin-top: 5px;
+  }
+
+  .sky-transaction-record-copy > i > em,
+  .sky-transaction-record-value > em {
+    padding: 3px 5px;
+    font-size: 0.54rem;
+  }
+
+  .sky-transaction-record-value > strong {
+    font-size: 0.76rem;
+  }
+
+  .sky-transaction-record-detail {
+    padding: 0 10px 10px;
+  }
+
+  .sky-transaction-record-detail .sky-data-row {
+    grid-template-columns: minmax(88px, 0.7fr) minmax(0, 1.3fr);
+    gap: 6px;
+    padding: 7px;
+    font-size: 0.63rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .sky-transaction-ranges {
+    gap: 3px;
+  }
+
+  .sky-transaction-ranges button {
+    min-height: 34px;
+    padding: 4px 2px;
+    font-size: 0.58rem;
+  }
+
+  .sky-transaction-ranges .sky-icon {
+    display: none;
+  }
+
+  .sky-transaction-custom-range,
+  .sky-transaction-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sky-transaction-filters .sky-button-secondary {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 330px) {
+  .sky-transaction-record-toggle {
+    grid-template-areas:
+      "icon copy arrow"
+      "value value value";
+    grid-template-columns: 44px minmax(0, 1fr) 17px;
+    gap: 7px;
+  }
+
+  .sky-transaction-record-icon {
+    grid-area: icon;
+    width: 42px;
+  }
+
+  .sky-transaction-record-copy {
+    grid-area: copy;
+  }
+
+  .sky-transaction-record-value {
+    grid-area: value;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 5px 8px;
+    padding-top: 7px;
+    border-top: 1px solid rgba(89, 181, 255, 0.13);
+    text-align: left;
+  }
+
+  .sky-transaction-record-value > small {
+    grid-column: 1;
+  }
+
+  .sky-transaction-record-value > em {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    margin-top: 0;
+  }
+
+  .sky-transaction-record-chevron {
+    grid-area: arrow;
+  }
+
+  .sky-transaction-record-detail .sky-data-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3px;
+  }
+}
+
+@media (max-width: 680px) {
+  .sky-customer-reference-dashboard {
+    gap: 8px;
+  }
+
+  .sky-customer-reference-profile > .sky-card-inner,
+  .sky-customer-section-card > .sky-card-inner {
+    padding: 10px;
+  }
+
+  .sky-customer-profile-heading {
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .sky-customer-profile-mark {
+    width: 48px;
+    font-size: 0.78rem;
+  }
+
+  .sky-customer-profile-heading small {
+    font-size: 0.62rem;
+  }
+
+  .sky-customer-profile-heading h2 {
+    font-size: 0.9rem;
+  }
+
+  .sky-customer-profile-heading p {
+    font-size: 0.68rem;
+  }
+
+  .sky-customer-profile-heading .sky-chip {
+    min-height: 25px;
+    padding: 3px 6px;
+    font-size: 0.62rem;
+  }
+
+  .sky-customer-profile-id-strip {
+    gap: 5px;
+    margin-top: 9px;
+  }
+
+  .sky-customer-profile-id-strip > div {
+    gap: 5px;
+    padding: 7px;
+    border-radius: 10px 10px 15px 10px;
+  }
+
+  .sky-customer-profile-id-strip .sky-icon {
+    width: 16px;
+  }
+
+  .sky-customer-profile-id-strip small {
+    font-size: 0.58rem;
+  }
+
+  .sky-customer-profile-id-strip strong {
+    font-size: 0.67rem;
+  }
+
+  .sky-customer-profile-details {
+    gap: 6px;
+    margin-top: 6px;
+    padding: 7px;
+    border-radius: 11px 16px 11px 16px;
+  }
+
+  .sky-customer-profile-details .sky-data-row {
+    grid-template-columns: minmax(78px, 0.72fr) minmax(0, 1.28fr);
+    gap: 5px;
+    padding: 6px;
+    font-size: 0.67rem;
+  }
+
+  .sky-customer-profile-actions {
+    margin-top: 7px;
+  }
+
+  .sky-customer-profile-actions .sky-button-secondary {
+    flex: 1 1 130px;
+    min-height: 44px;
+    padding: 7px 8px;
+    font-size: 0.66rem;
+  }
+
+  .sky-customer-reference-middle,
+  .sky-customer-reference-lower {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .sky-customer-section-heading {
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 7px;
+    margin-bottom: 8px;
+  }
+
+  .sky-customer-section-heading > span:first-child {
+    width: 32px;
+    border-radius: 10px 10px 15px 10px;
+  }
+
+  .sky-customer-section-heading > span:first-child .sky-icon {
+    width: 17px;
+  }
+
+  .sky-customer-section-heading small {
+    font-size: 0.58rem;
+  }
+
+  .sky-customer-section-heading h2 {
+    font-size: 0.78rem;
+  }
+
+  .sky-customer-section-heading p {
+    font-size: 0.62rem;
+  }
+
+  .sky-customer-section-heading em {
+    grid-column: 2;
+    justify-self: start;
+    min-width: 25px;
+    min-height: 25px;
+    padding: 2px 6px;
+    font-size: 0.61rem;
+  }
+
+  .sky-customer-record-list,
+  .sky-customer-device-list,
+  .sky-customer-contact-list {
+    gap: 5px;
+  }
+
+  .sky-customer-record-list > article,
+  .sky-customer-device-list > article,
+  .sky-customer-contact-list > article {
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 6px;
+    padding: 7px;
+    border-radius: 10px 10px 15px 10px;
+  }
+
+  .sky-customer-record-list > article > span,
+  .sky-customer-device-list > article > span,
+  .sky-customer-contact-list > article > span {
+    width: 28px;
+  }
+
+  .sky-customer-record-list small,
+  .sky-customer-device-list small,
+  .sky-customer-contact-list small,
+  .sky-customer-record-list p,
+  .sky-customer-device-list p,
+  .sky-customer-contact-list p {
+    font-size: 0.6rem;
+  }
+
+  .sky-customer-record-list strong,
+  .sky-customer-device-list strong,
+  .sky-customer-contact-list strong {
+    font-size: 0.68rem;
+  }
+
+  .sky-customer-record-list > article > .sky-button-secondary,
+  .sky-customer-contact-list > article > .sky-button-secondary,
+  .sky-customer-record-actions {
+    grid-column: 2;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .sky-customer-record-list .sky-button-secondary,
+  .sky-customer-contact-list .sky-button-secondary,
+  .sky-customer-record-actions .sky-button-secondary {
+    width: 100%;
+    min-height: 44px;
+    padding: 7px 6px;
+    font-size: 0.61rem;
+  }
+
+  .sky-customer-record-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sky-customer-devices-card .sky-data-row,
+  .sky-customer-relationship-card .sky-data-row {
+    grid-template-columns: minmax(74px, 0.8fr) minmax(0, 1.2fr);
+    gap: 5px;
+    padding: 6px;
+    font-size: 0.64rem;
+  }
+
+  .sky-customer-account-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 5px;
+  }
+
+  .sky-customer-account-grid > article {
+    padding: 7px;
+    border-radius: 10px 10px 15px 10px;
+  }
+
+  .sky-customer-account-grid > article > span {
+    width: 31px;
+  }
+
+  .sky-customer-account-grid small {
+    font-size: 0.58rem;
+  }
+
+  .sky-customer-account-grid strong,
+  .sky-customer-account-grid p {
+    font-size: 0.67rem;
+  }
+
+  .sky-customer-account-grid details .sky-data-row {
+    grid-template-columns: minmax(70px, 0.82fr) minmax(0, 1.18fr);
+    font-size: 0.62rem;
+  }
+
+  .sky-customer-contact-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .sky-customer-profile-heading {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .sky-customer-profile-heading .sky-chip {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .sky-customer-profile-mark {
+    width: 44px;
+  }
+
+  .sky-customer-profile-id-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sky-customer-profile-id-strip > div:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .sky-customer-profile-details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sky-customer-contact-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 360px) {
+  .sky-customer-reference-middle,
+  .sky-customer-reference-lower {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sky-customer-profile-id-strip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sky-customer-profile-id-strip > div:last-child {
+    grid-column: auto;
+  }
+
+  .sky-customer-profile-details .sky-data-row,
+  .sky-customer-devices-card .sky-data-row,
+  .sky-customer-relationship-card .sky-data-row,
+  .sky-customer-account-grid details .sky-data-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .sky-business-reference-search-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sky-business-reference-search-form .sky-button {
+    width: 100%;
+  }
+
+  .sky-business-reference-profile-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 680px) {
+  .sky-intel-reference-grid,
+  .sky-intel-reference-results,
+  .sky-business-reference-dashboard {
+    gap: 8px;
+  }
+
+  .sky-intel-record-count {
+    margin: -5px 2px -2px;
+    font-size: 0.68rem;
+  }
+
+  .sky-intel-reference-search .sky-card-inner {
+    gap: 8px;
+    padding: 11px;
+  }
+
+  .sky-intel-reference-search .sky-tabs {
+    width: 100%;
+  }
+
+  .sky-intel-reference-search .sky-tab {
+    flex: 1;
+    min-height: 44px;
+    padding: 7px 9px;
+    font-size: 0.72rem;
+  }
+
+  .sky-intel-reference-dual-fields {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .sky-intel-exact-search {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px;
+  }
+
+  .sky-intel-exact-search .sky-field input {
+    min-height: 44px;
+    padding: 7px 9px;
+    border-radius: 11px 11px 16px 11px;
+    font-size: 0.74rem;
+  }
+
+  .sky-intel-exact-search .sky-field > span {
+    font-size: 0.68rem;
+  }
+
+  .sky-intel-exact-search .sky-button {
+    min-height: 44px;
+    padding: 7px 10px;
+    font-size: 0.7rem;
+  }
+
+  .sky-intel-profile-hero .sky-card-inner,
+  .sky-access-event-card .sky-card-inner,
+  .sky-session-summary-card .sky-card-inner,
+  .sky-device-primary-card .sky-card-inner,
+  .sky-device-spec-card .sky-card-inner,
+  .sky-device-history-card .sky-card-inner,
+  .sky-device-links-card .sky-card-inner,
+  .sky-ip-primary-card .sky-card-inner,
+  .sky-ip-context-card .sky-card-inner,
+  .sky-ip-history-card .sky-card-inner,
+  .sky-ip-links-card .sky-card-inner,
+  .sky-session-path-card .sky-card-inner,
+  .sky-session-profile-card .sky-card-inner,
+  .sky-intel-source-section .sky-card-inner,
+  .sky-business-reference-dashboard .sky-card-inner {
+    padding: 11px;
+  }
+
+  .sky-intel-profile-heading,
+  .sky-access-event-heading,
+  .sky-business-reference-profile header {
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    gap: 7px;
+  }
+
+  .sky-intel-profile-mark,
+  .sky-access-event-icon,
+  .sky-business-reference-mark {
+    width: 40px;
+    border-radius: 12px 12px 18px 12px;
+  }
+
+  .sky-intel-profile-mark .sky-icon,
+  .sky-access-event-icon .sky-icon,
+  .sky-business-reference-mark .sky-icon {
+    width: 21px;
+  }
+
+  .sky-intel-profile-heading p,
+  .sky-access-event-heading small,
+  .sky-business-reference-profile header small {
+    font-size: 0.68rem;
+  }
+
+  .sky-intel-profile-heading h3,
+  .sky-access-event-heading h2,
+  .sky-business-reference-profile header h2 {
+    font-size: 0.88rem;
+  }
+
+  .sky-intel-profile-heading > div > span,
+  .sky-access-event-heading p,
+  .sky-business-reference-profile header p {
+    font-size: 0.7rem;
+  }
+
+  .sky-intel-profile-heading .sky-chip,
+  .sky-access-event-heading .sky-chip,
+  .sky-business-reference-profile header .sky-chip {
+    min-height: 25px;
+    padding: 3px 6px;
+    font-size: 0.65rem;
+  }
+
+  .sky-intel-hero-facts {
+    grid-template-columns: minmax(0, 1fr) 82px;
+    gap: 7px;
+    margin-top: 9px;
+  }
+
+  .sky-intel-hero-facts .sky-data-list {
+    gap: 5px;
+  }
+
+  .sky-intel-hero-facts .sky-data-row {
+    grid-template-columns: minmax(72px, 0.8fr) minmax(0, 1.2fr);
+    gap: 7px;
+    padding: 7px 8px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+  }
+
+  .sky-intel-source-count {
+    min-height: 82px;
+    padding: 8px;
+    border-radius: 13px 19px 13px 19px;
+  }
+
+  .sky-intel-source-count strong {
+    font-size: 1.18rem;
+  }
+
+  .sky-intel-source-count span {
+    font-size: 0.68rem;
+  }
+
+  .sky-intel-source-section .sky-section-heading,
+  .sky-device-spec-card .sky-section-heading,
+  .sky-device-history-card .sky-section-heading,
+  .sky-device-links-card .sky-section-heading,
+  .sky-ip-context-card .sky-section-heading,
+  .sky-ip-history-card .sky-section-heading,
+  .sky-ip-links-card .sky-section-heading,
+  .sky-session-path-card .sky-section-heading,
+  .sky-session-profile-card .sky-section-heading,
+  .sky-business-reference-relationships .sky-section-heading {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 7px;
+    margin-bottom: 9px;
+  }
+
+  .sky-intel-source-section .sky-section-heading > .sky-chip,
+  .sky-device-history-card .sky-section-heading > .sky-chip,
+  .sky-ip-context-card .sky-section-heading > .sky-chip,
+  .sky-ip-history-card .sky-section-heading > .sky-chip,
+  .sky-session-path-card .sky-section-heading > .sky-chip,
+  .sky-session-profile-card .sky-section-heading > .sky-chip,
+  .sky-business-reference-relationships .sky-section-heading > .sky-chip {
+    grid-column: 2;
+    justify-self: start;
+    min-height: 24px;
+    padding: 3px 6px;
+    font-size: 0.65rem;
+  }
+
+  .sky-intel-section-icon,
+  .sky-business-reference-section-icon {
+    width: 34px;
+    border-radius: 10px 10px 15px 10px;
+  }
+
+  .sky-intel-section-icon .sky-icon,
+  .sky-business-reference-section-icon .sky-icon {
+    width: 18px;
+  }
+
+  .sky-intel-source-section .sky-section-heading p,
+  .sky-device-spec-card .sky-section-heading p,
+  .sky-device-history-card .sky-section-heading p,
+  .sky-device-links-card .sky-section-heading p,
+  .sky-ip-context-card .sky-section-heading p,
+  .sky-ip-history-card .sky-section-heading p,
+  .sky-ip-links-card .sky-section-heading p,
+  .sky-session-path-card .sky-section-heading p,
+  .sky-session-profile-card .sky-section-heading p,
+  .sky-business-reference-relationships .sky-section-heading p {
+    font-size: 0.65rem;
+  }
+
+  .sky-intel-source-section .sky-section-heading h3,
+  .sky-device-spec-card .sky-section-heading h3,
+  .sky-device-history-card .sky-section-heading h3,
+  .sky-device-links-card .sky-section-heading h3,
+  .sky-ip-context-card .sky-section-heading h3,
+  .sky-ip-history-card .sky-section-heading h3,
+  .sky-ip-links-card .sky-section-heading h3,
+  .sky-session-path-card .sky-section-heading h3,
+  .sky-session-profile-card .sky-section-heading h3,
+  .sky-business-reference-relationships .sky-section-heading h2 {
+    font-size: 0.88rem;
+  }
+
+  .sky-intel-source-section .sky-section-heading div > span,
+  .sky-device-spec-card .sky-section-heading div > span,
+  .sky-device-history-card .sky-section-heading div > span,
+  .sky-device-links-card .sky-section-heading div > span,
+  .sky-ip-context-card .sky-section-heading div > span,
+  .sky-ip-history-card .sky-section-heading div > span,
+  .sky-ip-links-card .sky-section-heading div > span,
+  .sky-session-path-card .sky-section-heading div > span,
+  .sky-session-profile-card .sky-section-heading div > span,
+  .sky-business-reference-relationships .sky-section-heading div > span {
+    font-size: 0.72rem;
+  }
+
+  .sky-intel-source-grid {
+    gap: 6px;
+  }
+
+  .sky-intel-source-tile {
+    padding: 8px;
+    border-radius: 11px 11px 16px 11px;
+  }
+
+  .sky-intel-source-icon {
+    width: 32px;
+    border-radius: 9px;
+  }
+
+  .sky-intel-source-tile small {
+    font-size: 0.68rem;
+  }
+
+  .sky-intel-source-tile strong {
+    font-size: 0.76rem;
+  }
+
+  .sky-intel-source-tile div > span,
+  .sky-intel-source-tile p {
+    font-size: 0.7rem;
+  }
+
+  .sky-intel-boundary-note {
+    gap: 7px;
+    padding: 8px 9px;
+    border-radius: 11px 16px 11px 16px;
+    font-size: 0.7rem;
+  }
+
+  .sky-device-primary-card > .sky-card-inner {
+    grid-template-columns: minmax(0, 1fr) 84px;
+    gap: 9px;
+    min-height: 132px;
+  }
+
+  .sky-device-primary-copy > small {
+    font-size: 0.68rem;
+  }
+
+  .sky-device-primary-title {
+    grid-template-columns: 55px minmax(0, 1fr);
+    gap: 8px;
+    margin-top: 7px;
+  }
+
+  .sky-device-visual {
+    width: 55px;
+    min-height: 76px;
+    border-radius: 15px 15px 21px 15px;
+  }
+
+  .sky-device-visual .sky-icon {
+    width: 31px;
+  }
+
+  .sky-device-visual i {
+    bottom: 6px;
+    width: 20px;
+  }
+
+  .sky-device-primary-title h2 {
+    font-size: 0.9rem;
+  }
+
+  .sky-device-primary-title p,
+  .sky-device-primary-title div > span {
+    font-size: 0.7rem;
+  }
+
+  .sky-device-primary-meta {
+    min-height: 84px;
+    padding: 8px;
+  }
+
+  .sky-device-primary-orbit .sky-icon {
+    width: 23px;
+  }
+
+  .sky-device-primary-meta strong {
+    font-size: 1rem;
+  }
+
+  .sky-device-primary-meta small {
+    font-size: 0.68rem;
+  }
+
+  .sky-device-spec-card .sky-data-list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 5px;
+  }
+
+  .sky-device-spec-card .sky-data-row,
+  .sky-access-event-layout .sky-data-row,
+  .sky-session-summary-layout .sky-data-row {
+    grid-template-columns: minmax(94px, 0.8fr) minmax(0, 1.2fr);
+    gap: 7px;
+    padding: 7px 8px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+  }
+
+  .sky-device-history-list,
+  .sky-session-path,
+  .sky-session-profile-events {
+    gap: 6px;
+  }
+
+  .sky-device-history-list > li,
+  .sky-session-path > li {
+    gap: 7px;
+    padding: 8px;
+    border-radius: 11px 11px 16px 11px;
+  }
+
+  .sky-device-history-list > li > span,
+  .sky-session-path > li > span {
+    width: 30px;
+  }
+
+  .sky-device-history-list small,
+  .sky-session-path small {
+    font-size: 0.68rem;
+  }
+
+  .sky-device-history-list strong,
+  .sky-session-path strong {
+    font-size: 0.74rem;
+  }
+
+  .sky-ip-primary-card,
+  .sky-ip-primary-card > .sky-card-inner {
+    min-height: 145px;
+  }
+
+  .sky-ip-primary-card > .sky-card-inner {
+    padding-right: 42%;
+  }
+
+  .sky-ip-primary-heading {
+    display: block;
+  }
+
+  .sky-ip-primary-heading .sky-chip {
+    width: max-content;
+    min-height: 24px;
+    margin-top: 8px;
+    padding: 3px 6px;
+    font-size: 0.65rem;
+  }
+
+  .sky-ip-primary-heading small {
+    font-size: 0.68rem;
+  }
+
+  .sky-ip-primary-heading h2 {
+    margin: 5px 0 3px;
+    font-size: 1.15rem;
+  }
+
+  .sky-ip-primary-heading div > span {
+    font-size: 0.7rem;
+  }
+
+  .sky-ip-globe {
+    right: 2%;
+    bottom: -21%;
+    width: 43%;
+  }
+
+  .sky-ip-globe .sky-icon {
+    width: 56px;
+  }
+
+  .sky-ip-context-card .sky-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .sky-ip-context-card .sky-metric {
+    min-height: 74px;
+    padding: 8px;
+    border-radius: 11px 11px 16px 11px;
+  }
+
+  .sky-ip-context-card .sky-metric span,
+  .sky-ip-context-card .sky-metric small {
+    font-size: 0.68rem;
+  }
+
+  .sky-ip-context-card .sky-metric strong {
+    margin: 4px 0 2px;
+    font-size: 1rem;
+  }
+
+  .sky-ip-event-list::before {
+    left: 14px;
+  }
+
+  .sky-ip-event-list > li {
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 7px;
+    padding: 8px;
+    border-radius: 11px 11px 16px 11px;
+  }
+
+  .sky-ip-event-marker {
+    width: 28px;
+    font-size: 0.68rem;
+  }
+
+  .sky-ip-event-list > li > .sky-action-row {
+    grid-column: 2;
+  }
+
+  .sky-ip-event-list small,
+  .sky-ip-event-list div > span {
+    font-size: 0.7rem;
+  }
+
+  .sky-ip-event-list strong {
+    font-size: 0.75rem;
+  }
+
+  .sky-ip-event-list .sky-button-secondary {
+    min-height: 44px;
+    padding: 7px 8px;
+    font-size: 0.68rem;
+  }
+
+  .sky-access-event-layout,
+  .sky-session-summary-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 7px;
+    margin-top: 9px;
+  }
+
+  .sky-access-time-rail,
+  .sky-session-activity-summary {
+    grid-template-columns: auto auto auto minmax(0, 1fr);
+    justify-items: start;
+    align-items: center;
+    gap: 7px;
+    min-height: 58px;
+    padding: 8px;
+    border-radius: 12px 18px 12px 18px;
+    text-align: left;
+  }
+
+  .sky-access-time-rail strong,
+  .sky-session-activity-summary strong {
+    margin: 0;
+    font-size: 0.82rem;
+  }
+
+  .sky-access-time-rail small,
+  .sky-session-activity-summary small {
+    font-size: 0.68rem;
+  }
+
+  .sky-session-activity-summary p {
+    margin: 0;
+    font-size: 0.7rem;
+  }
+
+  .sky-access-route-actions {
+    margin-top: 8px;
+  }
+
+  .sky-access-route-actions .sky-button-secondary {
+    flex: 1 1 120px;
+    min-height: 44px;
+    padding: 7px 8px;
+    font-size: 0.68rem;
+  }
+
+  .sky-session-path::before {
+    left: 22px;
+  }
+
+  .sky-session-profile-events > li {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 7px;
+    padding: 8px;
+    border-radius: 11px 11px 16px 11px;
+  }
+
+  .sky-session-profile-events .sky-button-secondary {
+    grid-column: 2;
+    width: max-content;
+  }
+
+  .sky-session-profile-events strong {
+    font-size: 0.74rem;
+  }
+
+  .sky-session-profile-events div > span {
+    font-size: 0.7rem;
+  }
+
+  .sky-business-reference-search .sky-card-inner {
+    padding: 11px;
+  }
+
+  .sky-business-reference-search-form {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .sky-business-reference-search-form input,
+  .sky-business-reference-search-form select {
+    min-height: 44px;
+    padding: 7px 9px;
+    border-radius: 11px 11px 16px 11px;
+    font-size: 0.72rem;
+  }
+
+  .sky-business-reference-search-form label > span {
+    font-size: 0.68rem;
+  }
+
+  .sky-business-reference-search-form .sky-button {
+    min-height: 44px;
+    padding: 7px 10px;
+    font-size: 0.7rem;
+  }
+
+  .sky-business-reference-profile-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 7px;
+  }
+
+  .sky-business-reference-lower,
+  .sky-business-reference-account-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .sky-business-reference-registration header,
+  .sky-business-reference-owners header,
+  .sky-business-reference-access header {
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    gap: 7px;
+    margin-bottom: 8px;
+  }
+
+  .sky-business-reference-registration header > span:first-child,
+  .sky-business-reference-owners header > span:first-child,
+  .sky-business-reference-access header > span:first-child {
+    width: 34px;
+  }
+
+  .sky-business-reference-registration header h2,
+  .sky-business-reference-owners header h2,
+  .sky-business-reference-access header h2 {
+    font-size: 0.82rem;
+  }
+
+  .sky-business-reference-account-list > article {
+    padding: 8px;
+    border-radius: 11px 11px 16px 11px;
+  }
+
+  .sky-business-reference-account-list small,
+  .sky-business-reference-account-list p,
+  .sky-business-reference-account-list em {
+    font-size: 0.68rem;
+  }
+
+  .sky-business-reference-account-list strong {
+    font-size: 0.74rem;
+  }
+
+  .sky-business-reference-payroll {
+    padding: 8px;
+  }
+
+  .sky-business-reference-person-list {
+    gap: 6px;
+  }
+
+  .sky-business-reference-person-list > article {
+    padding: 8px;
+  }
+
+  .sky-business-reference-person-list > article > span {
+    width: 34px;
+  }
+
+  .sky-business-reference-person-list strong {
+    font-size: 0.74rem;
+  }
+
+  .sky-business-reference-person-list small,
+  .sky-business-reference-person-list p {
+    font-size: 0.68rem;
+  }
+
+  .sky-business-reference-coverage > .sky-card-inner {
+    grid-template-columns: 27px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .sky-business-reference-coverage .sky-icon {
+    width: 27px;
+  }
+
+  .sky-business-reference-coverage small {
+    font-size: 0.68rem;
+  }
+
+  .sky-business-reference-coverage h2 {
+    font-size: 0.82rem;
+  }
+
+  .sky-business-reference-coverage p {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .sky-intel-exact-search {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sky-intel-exact-search .sky-button {
+    width: 100%;
+  }
+
+  .sky-intel-profile-heading,
+  .sky-access-event-heading,
+  .sky-business-reference-profile header {
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+
+  .sky-intel-profile-heading > .sky-chip,
+  .sky-access-event-heading > .sky-chip,
+  .sky-business-reference-profile header > .sky-chip {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .sky-intel-profile-mark,
+  .sky-access-event-icon,
+  .sky-business-reference-mark {
+    width: 36px;
+  }
+
+  .sky-intel-source-tile {
+    grid-template-columns: 30px minmax(0, 1fr);
+  }
+
+  .sky-intel-source-tile > .sky-button-secondary {
+    grid-column: 2;
+    width: max-content;
+  }
+
+  .sky-device-primary-card > .sky-card-inner {
+    grid-template-columns: minmax(0, 1fr) 70px;
+  }
+
+  .sky-device-primary-meta {
+    min-height: 70px;
+  }
+
+  .sky-device-primary-title {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+
+  .sky-device-visual {
+    width: 48px;
+    min-height: 68px;
+  }
+
+  .sky-ip-globe {
+    bottom: -12%;
+    width: 40%;
+  }
+
+  .sky-ip-event-list > li > .sky-action-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .sky-ip-event-list > li > .sky-action-row > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .sky-ip-event-list .sky-button-secondary {
+    width: 100%;
+  }
+
+  .sky-device-spec-card .sky-data-row,
+  .sky-access-event-layout .sky-data-row,
+  .sky-session-summary-layout .sky-data-row,
+  .sky-business-reference-dashboard .sky-data-row {
+    grid-template-columns: minmax(82px, 0.8fr) minmax(0, 1.2fr);
+    font-size: 0.7rem;
+  }
+
+  .sky-access-time-rail,
+  .sky-session-activity-summary {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .sky-access-time-rail small,
+  .sky-session-activity-summary small,
+  .sky-session-activity-summary p {
+    grid-column: 2;
+  }
+
+  .sky-business-reference-account-list > article {
+    grid-template-columns: 20px minmax(0, 1fr);
+  }
+
+  .sky-business-reference-account-list > article > em {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 360px) {
+  .sky-intel-source-grid,
+  .sky-business-reference-lower,
+  .sky-business-reference-account-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sky-intel-hero-facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sky-intel-source-count {
+    min-height: 62px;
+    grid-template-columns: auto auto;
+    place-content: center;
+    gap: 6px;
+  }
+
+  .sky-intel-source-count span {
+    margin-top: 4px;
+  }
+
+  .sky-device-primary-card > .sky-card-inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sky-device-primary-meta {
+    grid-template-columns: auto auto auto;
+    justify-content: center;
+    gap: 6px;
+    min-height: 54px;
+    border-radius: 14px 20px 14px 20px;
+  }
+
+  .sky-device-primary-meta strong {
+    margin: 0;
+  }
+
+  .sky-ip-primary-card > .sky-card-inner {
+    padding-right: 37%;
+  }
+
+  .sky-ip-globe {
+    right: -3%;
+    width: 39%;
+  }
+
+  .sky-access-route-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sky-access-route-actions .sky-button-secondary {
+    width: 100%;
+  }
+
+  .sky-intel-hero-facts .sky-data-row,
+  .sky-device-spec-card .sky-data-row,
+  .sky-access-event-layout .sky-data-row,
+  .sky-session-summary-layout .sky-data-row,
+  .sky-business-reference-dashboard .sky-data-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3px;
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 680px) {
+  .sky-main {
+    gap: 15px;
+    margin-top: 15px;
+  }
+
+  .sky-card {
+    border-radius: 22px;
+  }
+
+  .sky-card-inner {
+    padding: 16px;
+  }
+
+  .sky-header[data-context="page"] {
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    gap: 9px;
+  }
+
+  .sky-header[data-context="page"] .sky-icon-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .sky-page-title strong {
+    font-size: 0.96rem;
+  }
+
+  .sky-page-title span {
+    display: none;
+  }
+
+  .sky-page-title[data-case-context="true"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .sky-page-title[data-case-context="true"] strong {
+    min-width: 0;
+    flex: 0 1 auto;
+    font-size: 0.76rem;
+  }
+
+  .sky-page-title[data-case-context="true"] span {
+    display: inline-flex;
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 3px 6px;
+    border: 1px solid rgba(82, 194, 255, 0.3);
+    border-radius: 999px;
+    color: var(--cyan);
+    background: rgba(14, 93, 158, 0.18);
+    font-size: 0.65rem;
+    font-weight: 800;
+  }
+
+  .sky-app[data-route="briefing"] .sky-workflow-shell,
+  .sky-app[data-route="indicators"] .sky-workflow-shell,
+  .sky-app[data-route="determination"] .sky-workflow-shell {
+    display: none;
+  }
+
+  .sky-header[data-reference-tool="true"],
+  .sky-app[data-tool="Financial Investigation"] .sky-workflow-shell,
+  .sky-app[data-tool="Payment Verification"] .sky-workflow-shell,
+  .sky-app[data-tool="Link Analysis"] .sky-workflow-shell,
+  .sky-app[data-tool="System Access Lane"] .sky-workflow-shell,
+  .sky-app[data-tool="Timeline"] .sky-workflow-shell,
+  .sky-app[data-tool="Merchant Intelligence"] .sky-workflow-shell,
+  .sky-app[data-tool="Document Viewer"] .sky-workflow-shell,
+  .sky-app[data-tool="Document Request"] .sky-workflow-shell,
+  .sky-app[data-tool="Transaction History"] .sky-workflow-shell,
+  .sky-app[data-tool="Payroll History"] .sky-workflow-shell,
+  .sky-app[data-tool="Customer 360"] .sky-workflow-shell,
+  .sky-app[data-tool="Identity Intel / People Search"] .sky-workflow-shell,
+  .sky-app[data-tool="Business 360"] .sky-workflow-shell,
+  .sky-app[data-tool="Employee Profile"] .sky-workflow-shell,
+  .sky-app[data-tool="Login History"] .sky-workflow-shell,
+  .sky-app[data-tool="Session History"] .sky-workflow-shell,
+  .sky-app[data-tool="Device Intelligence"] .sky-workflow-shell,
+  .sky-app[data-tool="IP Intelligence"] .sky-workflow-shell {
+    display: none;
+  }
+
+  .sky-app[data-tool="Financial Investigation"] .sky-main,
+  .sky-app[data-tool="Payment Verification"] .sky-main,
+  .sky-app[data-tool="Link Analysis"] .sky-main,
+  .sky-app[data-tool="System Access Lane"] .sky-main,
+  .sky-app[data-tool="Timeline"] .sky-main,
+  .sky-app[data-tool="Merchant Intelligence"] .sky-main,
+  .sky-app[data-tool="Document Viewer"] .sky-main,
+  .sky-app[data-tool="Document Request"] .sky-main,
+  .sky-app[data-tool="Transaction History"] .sky-main,
+  .sky-app[data-tool="Payroll History"] .sky-main,
+  .sky-app[data-tool="Customer 360"] .sky-main,
+  .sky-app[data-tool="Identity Intel / People Search"] .sky-main,
+  .sky-app[data-tool="Business 360"] .sky-main,
+  .sky-app[data-tool="Employee Profile"] .sky-main,
+  .sky-app[data-tool="Login History"] .sky-main,
+  .sky-app[data-tool="Session History"] .sky-main,
+  .sky-app[data-tool="Device Intelligence"] .sky-main,
+  .sky-app[data-tool="IP Intelligence"] .sky-main {
+    margin-top: 0;
+  }
+
+  .sky-reference-tool-page {
+    gap: 10px;
+  }
+
+  .sky-reference-tool-page > .sky-grid {
+    gap: 9px;
+  }
+
+  .sky-reference-tool-hero {
+    overflow: visible;
+    grid-template-columns: 44px 40px minmax(0, 1fr) 64px;
+    gap: 7px;
+    min-height: 82px;
+    padding: 5px 2px 7px;
+  }
+
+  .sky-reference-tool-back {
+    display: grid;
+    width: 44px;
+    min-height: 44px;
+  }
+
+  .sky-reference-tool-icon {
+    width: 40px;
+    border-radius: 12px 12px 17px 12px;
+  }
+
+  .sky-reference-tool-icon .sky-icon {
+    width: 20px;
+  }
+
+  .sky-reference-tool-copy small {
+    font-size: 0.68rem;
+  }
+
+  .sky-reference-tool-copy h1 {
+    margin: 1px 0 2px;
+    font-size: 0.92rem;
+  }
+
+  .sky-reference-tool-copy p {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 0.72rem;
+    line-height: 1.25;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .sky-reference-tool-copy span {
+    margin-top: 2px;
+    font-size: 0.68rem;
+  }
+
+  .sky-reference-tool-luna {
+    width: 62px;
+  }
+
+  .sky-reference-search {
+    border-radius: 17px 22px 17px 22px;
+  }
+
+  .sky-reference-search .sky-card-inner {
+    gap: 8px;
+    padding: 11px;
+  }
+
+  .sky-reference-search-heading {
+    grid-template-columns: 31px minmax(0, 1fr);
+    gap: 7px;
+  }
+
+  .sky-reference-search-heading > span {
+    width: 31px;
+    border-radius: 9px 9px 13px 9px;
+  }
+
+  .sky-reference-search-heading > span .sky-icon {
+    width: 17px;
+  }
+
+  .sky-reference-search-heading small {
+    font-size: 0.68rem;
+  }
+
+  .sky-reference-search-heading strong {
+    font-size: 0.78rem;
+  }
+
+  .sky-reference-search-heading p {
+    font-size: 0.7rem;
+    line-height: 1.28;
+  }
+
+  .sky-reference-search-row {
+    gap: 6px;
+  }
+
+  .sky-reference-search-row label > span,
+  .sky-payment-reference-form label > span {
+    font-size: 0.65rem;
+  }
+
+  .sky-reference-search-row input,
+  .sky-payment-reference-form input {
+    min-height: 44px;
+    padding: 7px 9px;
+    border-radius: 11px 11px 16px 11px;
+    font-size: 0.75rem;
+  }
+
+  .sky-reference-search-row .sky-button,
+  .sky-payment-reference-form .sky-button {
+    min-height: 44px;
+    padding: 7px 10px;
+    font-size: 0.72rem;
+  }
+
+  .sky-reference-search-message {
+    padding: 7px 8px;
+    font-size: 0.7rem;
+  }
+
+  .sky-reference-result-rail .sky-card-inner {
+    padding: 10px;
+  }
+
+  .sky-reference-result-rail header {
+    margin-bottom: 7px;
+  }
+
+  .sky-reference-result-rail header small {
+    font-size: 0.68rem;
+  }
+
+  .sky-reference-result-rail header strong {
+    font-size: 0.74rem;
+  }
+
+  .sky-reference-result-rail header > span {
+    font-size: 0.68rem;
+  }
+
+  .sky-reference-result-scroll {
+    grid-auto-columns: minmax(132px, 0.72fr);
+    gap: 6px;
+  }
+
+  .sky-reference-result-scroll button {
+    min-height: 68px;
+    padding: 8px;
+    border-radius: 11px 11px 16px 11px;
+  }
+
+  .sky-reference-result-scroll small {
+    font-size: 0.68rem;
+  }
+
+  .sky-reference-result-scroll strong {
+    margin: 3px 0;
+    font-size: 0.72rem;
+  }
+
+  .sky-reference-result-scroll span {
+    font-size: 0.65rem;
+  }
+
+  .sky-financial-reference-dashboard {
+    gap: 8px;
+  }
+
+  .sky-financial-reference-kpis,
+  .sky-financial-reference-support,
+  .sky-financial-reference-lower,
+  .sky-payment-reference-details {
+    gap: 7px;
+  }
+
+  .sky-financial-reference-kpis article {
+    min-height: 104px;
+    padding: 10px;
+    border-radius: 13px 13px 19px 13px;
+  }
+
+  .sky-financial-reference-kpis small {
+    font-size: 0.68rem;
+  }
+
+  .sky-financial-reference-kpis strong {
+    margin: 6px 0 4px;
+    font-size: 0.92rem;
+  }
+
+  .sky-financial-reference-kpis span {
+    font-size: 0.67rem;
+  }
+
+  .sky-financial-reference-analysis .sky-card-inner,
+  .sky-financial-reference-fields .sky-card-inner,
+  .sky-financial-reference-lower .sky-card-inner {
+    padding: 10px;
+  }
+
+  .sky-financial-reference-analysis header,
+  .sky-financial-reference-fields header,
+  .sky-financial-reference-lower header {
+    gap: 7px;
+    margin-bottom: 8px;
+  }
+
+  .sky-financial-reference-analysis small,
+  .sky-financial-reference-fields small,
+  .sky-financial-reference-lower small {
+    font-size: 0.68rem;
+  }
+
+  .sky-financial-reference-analysis h2,
+  .sky-financial-reference-fields h2,
+  .sky-financial-reference-lower h2 {
+    font-size: 0.76rem;
+  }
+
+  .sky-financial-reference-analysis p,
+  .sky-financial-reference-fields > .sky-card-inner > p,
+  .sky-financial-reference-lower > article p {
+    font-size: 0.66rem;
+    line-height: 1.28;
+  }
+
+  .sky-financial-reference-analysis header > strong {
+    font-size: 0.78rem;
+  }
+
+  .sky-financial-reference-bars {
+    gap: 5px;
+  }
+
+  .sky-financial-reference-bars button {
+    grid-template-columns: minmax(88px, 0.9fr) minmax(60px, 1.1fr) auto;
+    gap: 6px;
+    min-height: 44px;
+  }
+
+  .sky-financial-reference-bars strong {
+    font-size: 0.67rem;
+  }
+
+  .sky-financial-reference-bars small {
+    font-size: 0.68rem;
+  }
+
+  .sky-financial-reference-bars em {
+    font-size: 0.65rem;
+  }
+
+  .sky-financial-reference-support article {
+    min-height: 76px;
+    padding: 9px;
+    gap: 4px 6px;
+    border-radius: 12px 12px 17px 12px;
+  }
+
+  .sky-financial-reference-support article > span .sky-icon {
+    width: 16px;
+  }
+
+  .sky-financial-reference-support small {
+    font-size: 0.68rem;
+  }
+
+  .sky-financial-reference-support strong {
+    font-size: 0.7rem;
+  }
+
+  .sky-financial-reference-fields .sky-data-row,
+  .sky-payment-reference-details .sky-data-row,
+  .sky-payment-reference-attempts .sky-data-row {
+    grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+    gap: 7px;
+  }
+
+  .sky-financial-reference-fields .sky-data-row dt,
+  .sky-financial-reference-fields .sky-data-row dd,
+  .sky-payment-reference-details .sky-data-row dt,
+  .sky-payment-reference-details .sky-data-row dd,
+  .sky-payment-reference-attempts .sky-data-row dt,
+  .sky-payment-reference-attempts .sky-data-row dd {
+    font-size: 0.64rem;
+  }
+
+  .sky-financial-source-links {
+    gap: 5px;
+  }
+
+  .sky-financial-source-links button,
+  .sky-financial-source-links > span {
+    min-height: 44px;
+    padding: 6px;
+  }
+
+  .sky-financial-source-links span,
+  .sky-financial-source-links strong {
+    font-size: 0.68rem;
+  }
+
+  .sky-payment-reference-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .sky-payment-reference-name,
+  .sky-payment-reference-form .sky-button {
+    grid-column: 1 / -1;
+  }
+
+  .sky-payment-reference-form .sky-button {
+    grid-row: auto;
+    min-width: 0;
+  }
+
+  .sky-payment-reference-locked .sky-card-inner,
+  .sky-payment-reference-not-found .sky-card-inner,
+  .sky-payment-reference-summary .sky-card-inner {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .sky-payment-reference-locked strong,
+  .sky-payment-reference-not-found strong {
+    font-size: 0.72rem;
+  }
+
+  .sky-payment-reference-locked p,
+  .sky-payment-reference-not-found p {
+    font-size: 0.65rem;
+  }
+
+  .sky-payment-reference-primary .sky-card-inner {
+    padding: 11px;
+  }
+
+  .sky-payment-reference-account {
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    gap: 8px;
+    padding-bottom: 9px;
+  }
+
+  .sky-payment-reference-avatar {
+    width: 44px;
+    font-size: 0.7rem;
+  }
+
+  .sky-payment-reference-account small {
+    font-size: 0.68rem;
+  }
+
+  .sky-payment-reference-account h2 {
+    font-size: 0.82rem;
+  }
+
+  .sky-payment-reference-account p,
+  .sky-payment-reference-account span {
+    font-size: 0.65rem;
+  }
+
+  .sky-payment-reference-match {
+    max-width: 88px;
+    padding: 4px 6px;
+    font-size: 0.68rem;
+  }
+
+  .sky-payment-reference-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 9px;
+  }
+
+  .sky-payment-reference-metrics article {
+    min-height: 88px;
+    padding: 8px;
+    border-radius: 11px 11px 16px 11px;
+  }
+
+  .sky-payment-reference-metrics article > span .sky-icon {
+    width: 15px;
+  }
+
+  .sky-payment-reference-metrics small {
+    font-size: 0.68rem;
+  }
+
+  .sky-payment-reference-metrics strong {
+    font-size: 0.68rem;
+  }
+
+  .sky-payment-reference-metrics p {
+    font-size: 0.68rem;
+  }
+
+  .sky-payment-reference-details .sky-card-inner,
+  .sky-payment-reference-attempts .sky-card-inner {
+    padding: 9px;
+  }
+
+  .sky-payment-reference-details header,
+  .sky-payment-reference-attempts header {
+    gap: 6px;
+    margin-bottom: 7px;
+  }
+
+  .sky-payment-reference-details header > span .sky-icon {
+    width: 17px;
+  }
+
+  .sky-payment-reference-details header small,
+  .sky-payment-reference-attempts header small,
+  .sky-payment-reference-summary small {
+    font-size: 0.68rem;
+  }
+
+  .sky-payment-reference-details header h2,
+  .sky-payment-reference-attempts header h2,
+  .sky-payment-reference-summary h2 {
+    font-size: 0.74rem;
+  }
+
+  .sky-payment-reference-summary p {
+    font-size: 0.65rem;
+    line-height: 1.3;
+  }
+
+  .sky-reference-evidence-actions .sky-card-inner {
+    padding: 10px;
+  }
+
+  .sky-support-reference-hero[data-luna="false"] {
+    grid-template-columns: 44px 40px minmax(0, 1fr);
+  }
+
+  .sky-support-reference-hero[data-luna="true"] {
+    grid-template-columns: 44px 40px minmax(0, 1fr) 64px;
+  }
+
+  .sky-support-reference-locked .sky-card-inner,
+  .sky-timeline-reference-empty .sky-card-inner {
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .sky-support-reference-locked > .sky-card-inner > .sky-icon,
+  .sky-timeline-reference-empty > .sky-card-inner > .sky-icon {
+    width: 38px;
+    height: 38px;
+    padding: 8px;
+    border-radius: 11px 11px 16px 11px;
+  }
+
+  .sky-support-reference-locked strong,
+  .sky-timeline-reference-empty strong {
+    font-size: 0.72rem;
+  }
+
+  .sky-support-reference-locked p,
+  .sky-timeline-reference-empty p {
+    font-size: 0.68rem;
+    line-height: 1.32;
+  }
+
+  .sky-link-reference-form,
+  .sky-timeline-reference-form {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .sky-link-reference-form label,
+  .sky-timeline-reference-query {
+    grid-column: 1 / -1;
+  }
+
+  .sky-link-reference-form label:first-child {
+    grid-column: 1;
+  }
+
+  .sky-link-reference-form label:nth-child(2) {
+    grid-column: 2;
+  }
+
+  .sky-link-reference-form .sky-button,
+  .sky-timeline-reference-form .sky-button {
+    min-width: 0;
+    min-height: 44px;
+    padding: 7px 10px;
+    font-size: 0.71rem;
+  }
+
+  .sky-link-reference-form .sky-button {
+    grid-column: 1 / -1;
+  }
+
+  .sky-link-reference-form label > span,
+  .sky-timeline-reference-form label > span {
+    font-size: 0.68rem;
+  }
+
+  .sky-link-reference-form input,
+  .sky-link-reference-form select,
+  .sky-timeline-reference-form input,
+  .sky-timeline-reference-form select {
+    min-height: 44px;
+    padding: 7px 9px;
+    border-radius: 11px 11px 16px 11px;
+    font-size: 0.75rem;
+  }
+
+  .sky-link-reference-focus > .sky-card-inner {
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .sky-link-reference-focus-icon {
+    width: 42px;
+    border-radius: 13px 13px 18px 13px;
+  }
+
+  .sky-link-reference-focus small {
+    font-size: 0.68rem;
+  }
+
+  .sky-link-reference-focus h2 {
+    font-size: 0.78rem;
+  }
+
+  .sky-link-reference-focus p {
+    font-size: 0.68rem;
+    line-height: 1.3;
+  }
+
+  .sky-link-reference-focus > .sky-card-inner > strong:last-child {
+    min-width: 46px;
+    min-height: 44px;
+    padding: 6px 8px;
+    border-radius: 13px 17px 13px 17px;
+    font-size: 1rem;
+  }
+
+  .sky-link-reference-graph-card > .sky-card-inner,
+  .sky-link-reference-accounts > .sky-card-inner,
+  .sky-link-reference-summary > .sky-card-inner,
+  .sky-timeline-reference-supplement > .sky-card-inner {
+    padding: 10px;
+  }
+
+  .sky-link-reference-section-heading {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .sky-link-reference-section-heading small {
+    font-size: 0.68rem;
+  }
+
+  .sky-link-reference-section-heading h2 {
+    font-size: 0.76rem;
+  }
+
+  .sky-link-reference-section-heading p {
+    font-size: 0.68rem;
+    line-height: 1.3;
+  }
+
+  .sky-link-reference-section-heading > span {
+    padding: 5px 8px;
+    font-size: 0.68rem;
+  }
+
+  .sky-link-reference-section-heading .sky-button-secondary {
+    min-height: 44px;
+    padding: 7px 9px;
+    font-size: 0.68rem;
+  }
+
+  .sky-link-reference-map-canvas {
+    min-height: 350px;
+    border-radius: 17px 23px 17px 23px;
+  }
+
+  .sky-link-reference-center {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 1px 6px;
+    width: min(168px, 47%);
+    min-height: 76px;
+    padding: 8px 9px;
+    border-radius: 17px 17px 24px 17px;
+    box-shadow:
+      0 0 0 5px rgba(34, 134, 240, 0.08),
+      0 0 25px rgba(30, 164, 255, 0.36);
+  }
+
+  .sky-link-reference-center > span {
+    width: 34px;
+  }
+
+  .sky-link-reference-center small,
+  .sky-link-reference-center em {
+    font-size: 0.68rem;
+  }
+
+  .sky-link-reference-center strong {
+    font-size: 0.7rem;
+  }
+
+  .sky-link-reference-node {
+    grid-template-columns: 27px minmax(0, 1fr);
+    gap: 1px 5px;
+    width: min(126px, 35%);
+    min-height: 65px;
+    padding: 7px;
+    border-radius: 14px 14px 19px 14px;
+  }
+
+  .sky-link-reference-node > span {
+    width: 27px;
+  }
+
+  .sky-link-reference-node strong,
+  .sky-link-reference-node small,
+  .sky-link-reference-node em {
+    font-size: 0.68rem;
+    line-height: 1.15;
+  }
+
+  .sky-link-reference-node[data-slot="1"],
+  .sky-link-reference-node[data-slot="2"] {
+    top: 5%;
+  }
+
+  .sky-link-reference-node[data-slot="1"] {
+    left: 2%;
+  }
+
+  .sky-link-reference-node[data-slot="2"] {
+    right: 2%;
+  }
+
+  .sky-link-reference-node[data-slot="3"] {
+    bottom: 7%;
+    left: 2%;
+  }
+
+  .sky-link-reference-node[data-slot="4"] {
+    right: 2%;
+    bottom: 7%;
+  }
+
+  .sky-link-reference-node[data-slot="5"] {
+    bottom: 1%;
+  }
+
+  .sky-link-reference-map > p,
+  .sky-link-reference-map-empty {
+    font-size: 0.68rem;
+  }
+
+  .sky-link-reference-account-list {
+    gap: 6px;
+  }
+
+  .sky-link-reference-account-list > button {
+    grid-template-columns: 34px minmax(0, 1fr) minmax(88px, 0.62fr) 16px;
+    gap: 7px;
+    min-height: 68px;
+    padding: 8px;
+    border-radius: 13px 13px 18px 13px;
+  }
+
+  .sky-link-reference-account-list > button > span:first-child {
+    width: 34px;
+  }
+
+  .sky-link-reference-account-list small,
+  .sky-link-reference-account-list em {
+    font-size: 0.68rem;
+    line-height: 1.2;
+  }
+
+  .sky-link-reference-account-list strong {
+    font-size: 0.7rem;
+    line-height: 1.2;
+  }
+
+  .sky-link-reference-detail .sky-data-row,
+  .sky-timeline-reference-inline-detail .sky-data-row {
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+    gap: 7px;
+    padding: 8px;
+  }
+
+  .sky-link-reference-detail .sky-data-row dt,
+  .sky-link-reference-detail .sky-data-row dd,
+  .sky-timeline-reference-inline-detail .sky-data-row dt,
+  .sky-timeline-reference-inline-detail .sky-data-row dd {
+    font-size: 0.68rem;
+  }
+
+  .sky-link-reference-summary > .sky-card-inner {
+    gap: 9px;
+  }
+
+  .sky-link-reference-summary header {
+    gap: 8px;
+  }
+
+  .sky-link-reference-summary header > span {
+    width: 38px;
+    border-radius: 11px 11px 16px 11px;
+  }
+
+  .sky-link-reference-summary header small {
+    font-size: 0.68rem;
+  }
+
+  .sky-link-reference-summary header h2 {
+    font-size: 0.74rem;
+  }
+
+  .sky-link-reference-summary-metrics {
+    gap: 6px;
+  }
+
+  .sky-link-reference-summary-metrics article {
+    min-height: 76px;
+    padding: 8px 6px;
+    border-radius: 12px 12px 17px 12px;
+  }
+
+  .sky-link-reference-summary-metrics strong {
+    font-size: 1rem;
+  }
+
+  .sky-link-reference-summary-metrics span,
+  .sky-link-reference-summary > .sky-card-inner > p {
+    font-size: 0.68rem;
+  }
+
+  .sky-timeline-reference-search-status {
+    gap: 7px;
+    padding: 7px 8px;
+  }
+
+  .sky-timeline-reference-search-status span,
+  .sky-timeline-reference-search-status small {
+    font-size: 0.68rem;
+  }
+
+  .sky-timeline-reference {
+    gap: 11px;
+  }
+
+  .sky-timeline-reference-group > header {
+    gap: 6px;
+    margin: 0 0 6px 54px;
+  }
+
+  .sky-timeline-reference-group > header strong,
+  .sky-timeline-reference-group > header span {
+    min-height: 28px;
+    padding: 4px 8px;
+    font-size: 0.68rem;
+  }
+
+  .sky-timeline-reference-group > div {
+    gap: 7px;
+  }
+
+  .sky-timeline-reference-group > div::before {
+    left: 70px;
+  }
+
+  .sky-timeline-reference-event {
+    grid-template-columns: 54px 20px minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .sky-timeline-reference-event > time {
+    font-size: 0.68rem;
+    line-height: 1.15;
+  }
+
+  .sky-timeline-reference-dot {
+    width: 11px;
+  }
+
+  .sky-timeline-reference-event > button {
+    grid-template-columns: minmax(0, 1fr) 42px;
+    gap: 8px;
+    min-height: 72px;
+    padding: 9px 9px 9px 11px;
+    border-radius: 14px 14px 20px 14px;
+  }
+
+  .sky-timeline-reference-event > button small,
+  .sky-timeline-reference-event > button em {
+    font-size: 0.68rem;
+    line-height: 1.25;
+  }
+
+  .sky-timeline-reference-event > button strong {
+    font-size: 0.72rem;
+    line-height: 1.2;
+  }
+
+  .sky-timeline-reference-event > button > i {
+    width: 42px;
+    border-radius: 12px 12px 17px 12px;
+  }
+
+  .sky-timeline-reference-inline-detail {
+    grid-column: 3;
+    gap: 8px;
+    padding: 9px;
+  }
+
+  .sky-timeline-reference-inline-detail > header {
+    gap: 6px;
+  }
+
+  .sky-timeline-reference-inline-detail > header small,
+  .sky-timeline-reference-inline-detail > header strong {
+    font-size: 0.68rem;
+  }
+
+  .sky-timeline-reference-inline-detail .sky-chip {
+    min-height: 28px;
+    padding: 4px 8px;
+    font-size: 0.68rem;
+  }
+
+  .sky-timeline-reference-inline-detail .sky-evidence-actions {
+    gap: 7px;
+  }
+
+  .sky-timeline-reference-supplement .sky-section-heading {
+    margin-bottom: 8px;
+  }
+
+  .sky-timeline-reference-supplement-list {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .sky-timeline-reference-supplement-list > article > button {
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 8px;
+    min-height: 68px;
+    padding: 8px 9px;
+  }
+
+  .sky-timeline-reference-supplement-list > article > button > span:first-child {
+    width: 36px;
+    border-radius: 11px 11px 15px 11px;
+  }
+
+  .sky-timeline-reference-supplement-list small,
+  .sky-timeline-reference-supplement-list em {
+    font-size: 0.68rem;
+  }
+
+  .sky-timeline-reference-supplement-list strong {
+    font-size: 0.71rem;
+  }
+
+  .sky-section-heading {
+    display: grid;
+    gap: 8px;
+  }
+
+  .sky-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-field,
+  .sky-field.wide {
+    grid-column: 1;
+  }
+
+  .sky-data-row {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .sky-luna {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-luna-art {
+    width: min(230px, 70vw);
+    min-height: auto;
+    aspect-ratio: 1;
+    margin: 0 auto;
+  }
+
+  .sky-bottom-nav {
+    width: calc(100% - 18px);
+    bottom: max(8px, env(safe-area-inset-bottom));
+    border-radius: 22px;
+  }
+
+  .sky-nav-button {
+    min-height: 58px;
+    font-size: 0.72rem;
+  }
+
+  .sky-workflow-shell {
+    margin-top: 7px;
+    padding: 5px;
+    border-radius: 15px;
+  }
+
+  .sky-workflow {
+    grid-template-columns: repeat(9, minmax(78px, 1fr));
+    gap: 5px;
+  }
+
+  .sky-stage {
+    min-height: 52px;
+    padding: 7px;
+    border-radius: 11px;
+    text-align: center;
+  }
+
+  .sky-stage strong {
+    font-size: 0.65rem;
+  }
+
+  .sky-stage small {
+    margin-top: 3px;
+    font-size: 0.56rem;
+  }
+
+  .sky-hero {
+    min-height: 0;
+  }
+
+  .sky-hero .sky-card-inner {
+    grid-template-columns: minmax(0, 1.35fr) minmax(112px, 0.65fr);
+    gap: 10px;
+    padding: 17px 15px 15px;
+  }
+
+  .sky-hero h1 {
+    margin-bottom: 8px;
+    font-size: clamp(1.45rem, 7.2vw, 2.15rem);
+    line-height: 1.08;
+  }
+
+  .sky-hero-luna {
+    text-align: center;
+  }
+
+  .sky-hero-copy {
+    padding-top: 12px;
+  }
+
+  .sky-hero .sky-eyebrow {
+    padding-left: 31px;
+  }
+
+  .sky-hero-promise {
+    gap: 6px;
+    margin-bottom: 10px;
+    font-size: 0.73rem;
+    line-height: 1.42;
+  }
+
+  .sky-button-compact {
+    max-width: calc(100% - 47px);
+    min-height: 44px;
+    padding: 7px 10px;
+    font-size: 0.72rem;
+  }
+
+  .sky-button-compact > span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .sky-hero-queue {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .sky-luna-orbit {
+    width: min(122px, 100%);
+  }
+
+  .sky-hero-luna strong {
+    font-size: 0.92rem;
+  }
+
+  .sky-hero-luna > div:last-child span {
+    font-size: 0.68rem;
+  }
+
+  .sky-luna-heart {
+    width: 25px;
+    font-size: 0.72rem;
+  }
+
+  .sky-dashboard-tile {
+    min-height: 144px;
+    padding: 11px 9px;
+    border-radius: 16px 16px 25px 16px;
+  }
+
+  .sky-dashboard-tile[data-tone="pink"] {
+    border-radius: 16px 25px 16px 16px;
+  }
+
+  .sky-dashboard-metrics {
+    gap: 7px;
+  }
+
+  .sky-tile-heading {
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .sky-tile-heading small {
+    font-size: 0.69rem;
+    line-height: 1.18;
+  }
+
+  .sky-tile-icon {
+    width: 28px;
+    border-radius: 9px 9px 13px 9px;
+  }
+
+  .sky-tile-icon .sky-icon {
+    width: 15px;
+  }
+
+  .sky-tile-value {
+    display: block;
+  }
+
+  .sky-tile-value strong {
+    display: block;
+    font-size: 2.15rem;
+  }
+
+  .sky-tile-value span {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.63rem;
+  }
+
+  .sky-dashboard-tile em {
+    font-size: 0.67rem;
+    line-height: 1.15;
+  }
+
+  .sky-progress-ring[data-size="micro"] {
+    width: 58px;
+  }
+
+  .sky-progress-ring[data-size="micro"] strong {
+    font-size: 0.78rem;
+  }
+
+  .sky-tile-arrow {
+    width: 24px;
+  }
+
+  .sky-dashboard-academy .sky-card-inner {
+    padding: 13px;
+  }
+
+  .sky-academy-layout {
+    grid-template-columns: 64px minmax(0, 1fr) 44px;
+    gap: 9px;
+  }
+
+  .sky-academy-badge {
+    width: 64px;
+    border-radius: 17px 17px 25px 17px;
+  }
+
+  .sky-academy-badge > .sky-icon {
+    width: 34px;
+  }
+
+  .sky-academy-heading {
+    display: grid;
+    gap: 5px;
+  }
+
+  .sky-academy-heading h2 {
+    margin-bottom: 2px;
+    font-size: 0.95rem;
+  }
+
+  .sky-academy-heading > div > span {
+    display: none;
+  }
+
+  .sky-academy-heading .sky-chip {
+    justify-self: start;
+    min-height: 23px;
+    padding: 3px 7px;
+    font-size: 0.62rem;
+  }
+
+  .sky-progress-track {
+    height: 7px;
+    margin: 8px 0;
+  }
+
+  .sky-academy-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .sky-academy-stat {
+    gap: 4px;
+  }
+
+  .sky-academy-stat > .sky-icon {
+    width: 15px;
+  }
+
+  .sky-academy-stat strong {
+    font-size: 0.74rem;
+  }
+
+  .sky-academy-stat small {
+    font-size: 0.56rem;
+  }
+
+  .sky-progress-ring[data-size="compact"] {
+    width: 62px;
+  }
+
+  .sky-progress-ring circle {
+    stroke-width: 9;
+  }
+
+  .sky-progress-ring strong {
+    font-size: 0.86rem;
+  }
+
+  .sky-progress-ring small {
+    display: none;
+  }
+
+  .sky-academy-action .sky-icon-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .sky-dashboard-lower {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: 8px;
+  }
+
+  .sky-agent-card .sky-card-inner,
+  .sky-quote-card .sky-card-inner {
+    min-height: 225px;
+    padding: 12px;
+  }
+
+  .sky-agent-card-heading {
+    display: grid;
+    gap: 5px;
+  }
+
+  .sky-agent-card-heading h2 {
+    font-size: 1rem;
+  }
+
+  .sky-agent-card-heading .sky-chip {
+    justify-self: start;
+    min-height: 23px;
+    padding: 3px 7px;
+    font-size: 0.6rem;
+  }
+
+  .sky-agent-panel {
+    position: relative;
+    display: block;
+    min-height: 142px;
+    padding: 8px 57px 0 0;
+  }
+
+  .sky-agent-panel img {
+    position: absolute;
+    right: -8px;
+    bottom: -12px;
+    width: 76px;
+    max-height: 126px;
+  }
+
+  .sky-agent-panel p {
+    margin-bottom: 8px;
+    font-size: 0.67rem;
+    line-height: 1.4;
+  }
+
+  .sky-agent-action {
+    min-height: 44px;
+    padding: 6px 8px;
+    font-size: 0.62rem;
+  }
+
+  .sky-agent-action .sky-icon {
+    width: 15px;
+  }
+
+  .sky-quote-card .sky-card-charm {
+    top: 13px;
+    left: 12px;
+    width: 25px;
+  }
+
+  .sky-quote-card blockquote {
+    margin: 24px auto 9px;
+    font-size: 1.06rem;
+  }
+
+  .sky-quote-card > .sky-card-inner > p:not(.sky-eyebrow) {
+    font-size: 0.66rem;
+  }
+
+  .sky-quote-action {
+    min-height: 44px;
+    padding: 6px 8px;
+    font-size: 0.61rem;
+  }
+
+  .sky-queue-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-briefing {
+    gap: 10px;
+  }
+
+  .sky-case-banner .sky-card-inner {
+    padding: 12px 13px;
+  }
+
+  .sky-case-banner-layout {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .sky-case-shield-large {
+    width: 48px;
+    border-radius: 14px 14px 21px 14px;
+  }
+
+  .sky-case-banner-copy > div {
+    gap: 7px;
+  }
+
+  .sky-case-banner-layout h1 {
+    font-size: 1rem;
+  }
+
+  .sky-case-banner-copy .sky-chip {
+    min-height: 24px;
+    padding: 3px 7px;
+    font-size: 0.6rem;
+  }
+
+  .sky-case-banner-layout p {
+    gap: 5px;
+    margin-top: 3px;
+    font-size: 0.64rem;
+  }
+
+  .sky-briefing-allegation .sky-card-inner {
+    padding: 14px;
+  }
+
+  .sky-briefing-card-title {
+    gap: 8px;
+  }
+
+  .sky-briefing-card-title h2 {
+    font-size: 0.96rem;
+  }
+
+  .sky-briefing-card-title small {
+    font-size: 0.66rem;
+  }
+
+  .sky-briefing-allegation .sky-lead {
+    margin: 9px 0 11px 28px;
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  .sky-briefing-fact {
+    grid-template-columns: 31px minmax(0, 1fr);
+    gap: 7px;
+    min-height: 98px;
+    padding: 10px 8px;
+  }
+
+  .sky-briefing-fact-icon {
+    width: 31px;
+    border-radius: 9px 9px 13px 9px;
+  }
+
+  .sky-briefing-fact-icon .sky-icon {
+    width: 17px;
+  }
+
+  .sky-briefing-fact small {
+    margin-bottom: 3px;
+    font-size: 0.62rem;
+  }
+
+  .sky-briefing-fact strong {
+    font-size: 0.75rem;
+    line-height: 1.25;
+  }
+
+  .sky-briefing-fact em {
+    margin-top: 3px;
+    font-size: 0.59rem;
+    line-height: 1.3;
+  }
+
+  .sky-briefing-lower {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .sky-briefing-quick .sky-card-inner,
+  .sky-briefing-evidence .sky-card-inner {
+    padding: 11px;
+  }
+
+  .sky-briefing-list-title {
+    align-items: flex-start;
+    gap: 5px;
+    margin-bottom: 5px;
+  }
+
+  .sky-briefing-list-title h2 {
+    font-size: 0.83rem;
+  }
+
+  .sky-briefing-list-title > strong {
+    font-size: 0.72rem;
+  }
+
+  .sky-briefing-quick-row {
+    grid-template-columns: 17px minmax(0, 1fr);
+    gap: 6px;
+    padding: 8px 0;
+  }
+
+  .sky-briefing-quick-row > .sky-icon {
+    width: 16px;
+  }
+
+  .sky-briefing-quick-row small {
+    font-size: 0.58rem;
+  }
+
+  .sky-briefing-quick-row strong {
+    font-size: 0.67rem;
+    line-height: 1.22;
+  }
+
+  .sky-briefing-parties-disclosure > summary {
+    padding: 9px;
+    font-size: 0.65rem;
+  }
+
+  .sky-document-checklist {
+    margin-bottom: 8px;
+  }
+
+  .sky-document-checklist li {
+    grid-template-columns: 16px minmax(0, 1fr);
+    gap: 5px;
+    padding: 8px 0;
+  }
+
+  .sky-document-checklist li .sky-icon {
+    width: 15px;
+  }
+
+  .sky-document-checklist strong {
+    font-size: 0.67rem;
+    line-height: 1.2;
+  }
+
+  .sky-document-checklist small {
+    margin-top: 2px;
+    font-size: 0.56rem;
+    line-height: 1.25;
+  }
+
+  .sky-document-action {
+    min-height: 44px;
+    padding: 7px 6px;
+    font-size: 0.63rem;
+  }
+
+  .sky-briefing-completion .sky-card-inner {
+    padding: 9px;
+  }
+
+  .sky-open-workspace {
+    min-height: 56px;
+    font-size: 0.92rem;
+  }
+
+  .sky-briefing-actions > summary {
+    padding: 10px;
+    font-size: 0.7rem;
+  }
+
+  .sky-briefing-actions > summary small {
+    font-size: 0.6rem;
+  }
+
+  .sky-case-queue {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-case-card {
+    min-height: 0;
+    padding: 18px;
+  }
+
+  .sky-case-card-top {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .sky-case-card-top > .sky-chip {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .sky-case-card-facts {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-tool-buttons,
+  .sky-summary-ribbon,
+  .sky-choice-grid,
+  .sky-choice-grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-review-page {
+    gap: 10px;
+  }
+
+  .sky-review-hero {
+    padding: 3px 4px 0;
+  }
+
+  .sky-review-hero-layout {
+    grid-template-columns: minmax(0, 1fr) 68px;
+    gap: 9px;
+    min-height: 94px;
+  }
+
+  .sky-review-hero h1 {
+    margin-bottom: 3px;
+    font-size: 1.08rem;
+  }
+
+  .sky-review-hero-layout > div:first-child > p:last-child {
+    font-size: 0.68rem;
+    line-height: 1.38;
+  }
+
+  .sky-review-luna img {
+    width: 62px;
+    max-height: 67px;
+  }
+
+  .sky-review-luna span {
+    margin-top: -4px;
+    font-size: 0.58rem;
+  }
+
+  .sky-review-section .sky-card-inner {
+    padding: 12px;
+  }
+
+  .sky-review-section-title {
+    gap: 5px;
+    margin-bottom: 8px;
+  }
+
+  .sky-review-section-number {
+    font-size: 0.83rem;
+  }
+
+  .sky-review-section-title h2 {
+    font-size: 0.83rem;
+  }
+
+  .sky-review-section-title p {
+    margin-top: 2px;
+    font-size: 0.59rem;
+    line-height: 1.3;
+  }
+
+  .sky-review-section-title .sky-chip {
+    min-height: 23px;
+    padding: 3px 6px;
+    font-size: 0.58rem;
+  }
+
+  .sky-review-guidance {
+    margin-bottom: 8px;
+    padding: 7px 8px;
+    font-size: 0.59rem;
+  }
+
+  .sky-indicator-item > summary {
+    grid-template-columns: 27px minmax(0, 1fr) auto 14px;
+    gap: 6px;
+    min-height: 56px;
+    padding: 7px 8px;
+  }
+
+  .sky-indicator-index {
+    width: 27px;
+    border-radius: 8px 8px 12px 8px;
+    font-size: 0.6rem;
+  }
+
+  .sky-indicator-prompt strong {
+    font-size: 0.67rem;
+    line-height: 1.27;
+  }
+
+  .sky-indicator-prompt small {
+    margin-top: 2px;
+    font-size: 0.58rem;
+    line-height: 1.25;
+  }
+
+  .sky-indicator-item .sky-chip {
+    min-height: 22px;
+    padding: 3px 5px;
+    font-size: 0.58rem;
+  }
+
+  .sky-indicator-editor {
+    padding: 9px 8px 10px;
+  }
+
+  .sky-indicator-hint {
+    gap: 5px;
+    margin-bottom: 7px;
+    font-size: 0.6rem;
+  }
+
+  .sky-indicator-options {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+    margin-bottom: 8px;
+  }
+
+  .sky-indicator-options .sky-choice-card {
+    min-height: 78px;
+    padding: 7px 5px;
+    border-radius: 12px 12px 18px 12px;
+  }
+
+  .sky-indicator-options .sky-choice-card strong {
+    font-size: 0.63rem;
+    line-height: 1.2;
+  }
+
+  .sky-indicator-options .sky-choice-card small {
+    margin-top: 4px;
+    font-size: 0.58rem;
+    line-height: 1.25;
+  }
+
+  .sky-indicator-fields {
+    gap: 7px;
+  }
+
+  .sky-indicator-fields textarea {
+    min-height: 80px;
+  }
+
+  .sky-scope-cues {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .sky-scope-cue {
+    display: block;
+    min-height: 92px;
+    padding: 8px 6px;
+    text-align: center;
+  }
+
+  .sky-scope-cue > span {
+    width: 29px;
+    margin: 0 auto 6px;
+    border-radius: 9px 9px 13px 9px;
+  }
+
+  .sky-scope-cue > span .sky-icon {
+    width: 15px;
+  }
+
+  .sky-scope-cue small,
+  .sky-scope-cue strong {
+    display: block;
+  }
+
+  .sky-scope-cue small {
+    font-size: 0.58rem;
+  }
+
+  .sky-scope-cue strong {
+    margin-top: 3px;
+    font-size: 0.63rem;
+    line-height: 1.22;
+  }
+
+  .sky-indicator-note-list {
+    gap: 6px;
+  }
+
+  .sky-indicator-note-list article {
+    padding: 8px 9px;
+  }
+
+  .sky-indicator-note-list strong {
+    font-size: 0.65rem;
+  }
+
+  .sky-indicator-note-list span {
+    font-size: 0.58rem;
+  }
+
+  .sky-indicator-note-list p {
+    margin-top: 3px;
+    font-size: 0.6rem;
+    line-height: 1.3;
+  }
+
+  .sky-indicator-notes-action,
+  .sky-view-evidence {
+    min-height: 44px;
+    margin-top: 8px;
+    padding: 7px;
+    font-size: 0.62rem;
+  }
+
+  .sky-review-next .sky-next-action {
+    gap: 8px;
+  }
+
+  .sky-review-next .sky-next-action > span {
+    font-size: 0.65rem;
+    line-height: 1.35;
+  }
+
+  .sky-determination-facts {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-determination-fact {
+    gap: 7px;
+    padding: 8px;
+  }
+
+  .sky-determination-fact > .sky-icon {
+    width: 16px;
+  }
+
+  .sky-determination-fact small {
+    font-size: 0.58rem;
+  }
+
+  .sky-determination-fact strong {
+    font-size: 0.66rem;
+  }
+
+  .sky-decision-group > header,
+  .sky-finding-group > header,
+  .sky-determination-rationale > header {
+    margin-bottom: 7px;
+  }
+
+  .sky-decision-group h3,
+  .sky-finding-group h3,
+  .sky-determination-rationale h3 {
+    font-size: 0.76rem;
+  }
+
+  .sky-decision-group header p,
+  .sky-finding-group header p,
+  .sky-determination-rationale header p {
+    font-size: 0.6rem;
+    line-height: 1.3;
+  }
+
+  .sky-determination-options,
+  .sky-finding-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .sky-determination-options .sky-decision-card,
+  .sky-finding-options .sky-decision-card {
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 6px;
+    min-height: 104px;
+    padding: 8px 7px;
+    border-radius: 13px 13px 19px 13px;
+  }
+
+  .sky-determination-options .sky-decision-icon,
+  .sky-finding-options .sky-decision-icon {
+    width: 32px;
+    border-radius: 9px 9px 13px 9px;
+  }
+
+  .sky-determination-options .sky-decision-icon .sky-icon,
+  .sky-finding-options .sky-decision-icon .sky-icon {
+    width: 18px;
+  }
+
+  .sky-determination-options .sky-decision-card strong,
+  .sky-finding-options .sky-decision-card strong {
+    font-size: 0.63rem;
+    line-height: 1.18;
+    overflow-wrap: anywhere;
+  }
+
+  .sky-determination-options .sky-decision-card small {
+    margin-top: 3px;
+    font-size: 0.58rem;
+    line-height: 1.22;
+  }
+
+  .sky-finding-options .sky-decision-card {
+    min-height: 72px;
+  }
+
+  .sky-finding-group,
+  .sky-determination-rationale {
+    margin-top: 11px;
+    padding-top: 10px;
+  }
+
+  .sky-determination-fields {
+    gap: 7px;
+  }
+
+  .sky-determination-fields textarea {
+    min-height: 92px;
+  }
+
+  .sky-rationale-count {
+    margin-top: 4px;
+    font-size: 0.58rem;
+  }
+
+  .sky-next-step-message {
+    gap: 6px;
+    padding: 9px;
+    font-size: 0.62rem;
+    line-height: 1.35;
+  }
+
+  .sky-determination-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .sky-determination-actions button {
+    width: 100%;
+  }
+
+  .sky-next-action {
+    display: grid;
+  }
+
+  .sky-next-action .sky-action-row {
+    display: grid;
+  }
+
+  .sky-next-action button {
+    width: 100%;
+  }
+
+  .sky-reference-tool-hero[data-luna="false"] {
+    grid-template-columns: 44px 40px minmax(0, 1fr);
+  }
+
+  .sky-document-focus-strip .sky-card-inner {
+    grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+    gap: 9px;
+    padding: 11px;
+  }
+
+  .sky-document-focus-copy {
+    grid-template-columns: 35px minmax(0, 1fr);
+    gap: 7px;
+  }
+
+  .sky-document-focus-copy > span {
+    width: 35px;
+  }
+
+  .sky-document-focus-copy small,
+  .sky-document-focus-strip label > span {
+    font-size: 0.61rem;
+  }
+
+  .sky-document-focus-copy strong {
+    font-size: 0.72rem;
+  }
+
+  .sky-document-focus-copy em {
+    font-size: 0.59rem;
+  }
+
+  .sky-document-focus-strip input {
+    font-size: 0.72rem;
+  }
+
+  .sky-document-preview-layout,
+  .sky-request-detail-layout {
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+    gap: 8px;
+  }
+
+  .sky-document-preview-card > .sky-card-inner,
+  .sky-document-summary-card > .sky-card-inner,
+  .sky-request-history-card > .sky-card-inner,
+  .sky-request-preview-card > .sky-card-inner {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .sky-document-preview-card header h2,
+  .sky-document-summary-card header h2,
+  .sky-request-history-card header h2,
+  .sky-request-preview-card header h2 {
+    font-size: 0.76rem;
+  }
+
+  .sky-document-preview-card header p,
+  .sky-document-summary-card header p,
+  .sky-request-history-card header p,
+  .sky-request-preview-card header p {
+    font-size: 0.59rem;
+  }
+
+  .sky-document-sheet-body {
+    max-height: 400px;
+    padding: 9px;
+  }
+
+  .sky-document-sheet > header {
+    padding: 9px;
+  }
+
+  .sky-document-sheet-body dl > div {
+    grid-template-columns: minmax(74px, 0.43fr) minmax(0, 0.57fr);
+    gap: 6px;
+  }
+
+  .sky-document-sheet-body dt,
+  .sky-document-sheet-body dd,
+  .sky-document-sheet-body p {
+    font-size: 0.54rem;
+  }
+
+  .sky-document-page-controls {
+    gap: 5px;
+  }
+
+  .sky-document-page-controls button {
+    padding-inline: 7px;
+    font-size: 0.61rem;
+  }
+
+  .sky-request-inbox-card > .sky-card-inner {
+    gap: 8px;
+    padding: 11px;
+  }
+
+  .sky-request-inbox-card header {
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    gap: 7px;
+  }
+
+  .sky-request-inbox-card header > span {
+    width: 36px;
+  }
+
+  .sky-request-inbox-card h2 {
+    font-size: 0.76rem;
+  }
+
+  .sky-request-inbox-card p,
+  .sky-request-inbox-card header > strong {
+    font-size: 0.59rem;
+  }
+
+  .sky-request-document-list > .sky-card-inner,
+  .sky-request-composer > .sky-card-inner {
+    padding: 11px;
+  }
+
+  .sky-request-records > button {
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .sky-request-records > button > span:first-child {
+    width: 34px;
+  }
+
+  .sky-request-document-list strong {
+    font-size: 0.69rem;
+  }
+
+  .sky-request-document-list small,
+  .sky-request-document-list em {
+    font-size: 0.57rem;
+  }
+
+  .sky-request-composer select,
+  .sky-request-composer input,
+  .sky-request-composer textarea {
+    font-size: 0.72rem;
+  }
+
+  .sky-merchant-search-row {
+    grid-template-columns: minmax(112px, 0.4fr) minmax(0, 1fr) auto;
+    gap: 6px;
+  }
+
+  .sky-merchant-search-row select,
+  .sky-merchant-search-row input {
+    min-height: 44px;
+    padding: 7px 8px;
+    border-radius: 11px 11px 16px 11px;
+    font-size: 0.7rem;
+  }
+
+  .sky-merchant-search-row label > span {
+    font-size: 0.61rem;
+  }
+
+  .sky-merchant-profile-card > .sky-card-inner {
+    grid-template-columns: 48px minmax(0, 1fr) 76px;
+    gap: 9px;
+    min-height: 112px;
+    padding: 12px;
+  }
+
+  .sky-merchant-profile-icon {
+    width: 48px;
+    border-radius: 15px 15px 22px 15px;
+  }
+
+  .sky-merchant-profile-luna {
+    width: 74px;
+  }
+
+  .sky-merchant-profile-copy h2 {
+    font-size: 0.88rem;
+  }
+
+  .sky-merchant-profile-copy p {
+    font-size: 0.62rem;
+  }
+
+  .sky-merchant-profile-copy > div {
+    gap: 3px;
+    margin-top: 6px;
+  }
+
+  .sky-merchant-profile-copy > div > span {
+    padding: 3px 5px;
+    font-size: 0.54rem;
+  }
+
+  .sky-merchant-transaction-card > .sky-card-inner {
+    grid-template-columns: minmax(0, 1fr) 58px;
+    min-height: 120px;
+    padding: 13px;
+  }
+
+  .sky-merchant-transaction-card > .sky-card-inner > span {
+    width: 56px;
+  }
+
+  .sky-merchant-transaction-card strong {
+    font-size: 1.18rem;
+  }
+
+  .sky-merchant-history-grid {
+    gap: 7px;
+  }
+
+  .sky-merchant-history-grid article {
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 2px 6px;
+    min-height: 92px;
+    padding: 9px 7px;
+  }
+
+  .sky-merchant-history-grid article > span {
+    width: 28px;
+  }
+
+  .sky-merchant-history-grid small,
+  .sky-merchant-history-grid em {
+    font-size: 0.54rem;
+  }
+
+  .sky-merchant-history-grid strong {
+    font-size: 0.68rem;
+  }
+
+  .sky-merchant-evidence-pair {
+    gap: 8px;
+  }
+
+  .sky-merchant-evidence-pair .sky-card-inner {
+    min-height: 194px;
+    padding: 11px;
+  }
+
+  .sky-merchant-evidence-pair h2 {
+    font-size: 0.73rem;
+  }
+
+  .sky-merchant-evidence-pair p {
+    font-size: 0.6rem;
+  }
+
+  .sky-merchant-section-deck > .sky-card-inner {
+    padding: 11px;
+  }
+
+  .sky-merchant-section-deck nav {
+    grid-auto-columns: minmax(115px, 1fr);
+  }
+
+  .sky-merchant-section-content {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 420px) {
+  .sky-dashboard {
+    gap: 10px;
+  }
+
+  .sky-card[data-shape="ribbon"] {
+    border-radius: 20px 28px 20px 28px;
+  }
+
+  .sky-card[data-shape="shield"] {
+    border-radius: 20px 20px 32px 20px;
+  }
+
+  .sky-card-charm {
+    top: 9px;
+    left: 10px;
+    font-size: 1.25rem;
+  }
+
+  .sky-eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: 0.09em;
+  }
+
+  .sky-bottom-nav {
+    padding: 6px;
+  }
+
+  .sky-nav-button {
+    min-height: 54px;
+    padding: 6px 3px;
+    font-size: 0.68rem;
+  }
+
+  .sky-nav-icon {
+    margin-bottom: 3px;
+  }
+
+  .sky-case-banner-layout p span:first-child {
+    max-width: 46%;
+  }
+
+  .sky-briefing-facts {
+    border-radius: 14px 14px 21px 14px;
+  }
+
+  .sky-briefing-allegation .sky-card-inner {
+    padding: 12px;
+  }
+
+  .sky-briefing-fact {
+    min-height: 94px;
+    padding: 9px 7px;
+  }
+
+  .sky-open-workspace {
+    border-radius: 16px 21px 16px 21px;
+  }
+
+  .sky-link-reference-section-heading {
+    flex-wrap: wrap;
+  }
+
+  .sky-link-reference-section-heading .sky-button-secondary {
+    width: 100%;
+  }
+
+  .sky-link-reference-map-canvas {
+    min-height: 338px;
+  }
+
+  .sky-link-reference-node {
+    width: min(120px, 35%);
+  }
+
+  .sky-link-reference-account-list > button {
+    grid-template-columns: 32px minmax(0, 1fr) minmax(82px, 0.58fr) 14px;
+    gap: 6px;
+  }
+
+  .sky-link-reference-account-list > button > span:first-child {
+    width: 32px;
+  }
+
+  .sky-timeline-reference-event > button {
+    grid-template-columns: minmax(0, 1fr) 38px;
+    gap: 6px;
+  }
+
+  .sky-timeline-reference-event > button > i {
+    width: 38px;
+  }
+
+  .sky-document-focus-strip .sky-card-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-document-preview-layout,
+  .sky-request-detail-layout,
+  .sky-merchant-evidence-pair {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-document-page-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sky-document-page-controls strong {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    text-align: center;
+  }
+
+  .sky-document-focus-copy {
+    grid-template-columns: 35px minmax(0, 1fr);
+  }
+
+  .sky-document-summary-card .sky-data-row,
+  .sky-request-history-card .sky-data-row,
+  .sky-merchant-section-content .sky-data-row {
+    grid-template-columns: minmax(0, 0.46fr) minmax(0, 0.54fr);
+    gap: 7px;
+  }
+
+  .sky-request-inbox-card > .sky-card-inner {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .sky-request-inbox-card .sky-button-secondary {
+    width: 100%;
+  }
+
+  .sky-request-form-pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sky-merchant-search-row {
+    grid-template-columns: minmax(105px, 0.38fr) minmax(0, 0.62fr);
+  }
+
+  .sky-merchant-search-row .sky-button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .sky-merchant-profile-card > .sky-card-inner {
+    grid-template-columns: 45px minmax(0, 1fr) 68px;
+    padding: 10px;
+  }
+
+  .sky-merchant-profile-icon {
+    width: 45px;
+  }
+
+  .sky-merchant-profile-luna {
+    width: 66px;
+  }
+
+  .sky-merchant-profile-copy > div > span {
+    font-size: 0.52rem;
+  }
+
+  .sky-merchant-history-grid article {
+    grid-template-columns: 1fr;
+    align-content: start;
+    text-align: center;
+  }
+
+  .sky-merchant-history-grid article > span {
+    grid-row: auto;
+    justify-self: center;
+    margin-bottom: 3px;
+  }
+
+  .sky-merchant-evidence-pair .sky-button-secondary {
+    justify-self: stretch;
+    width: 100%;
+    padding-inline: 9px;
+  }
+}
+
+@media (max-width: 385px) {
+  .sky-dashboard-tile {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "heading"
+      "value"
+      "detail";
+  }
+
+  .sky-tile-arrow {
+    display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .sky-briefing-lower {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-financial-reference-lower,
+  .sky-payment-reference-details {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-payment-reference-account {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .sky-payment-reference-match {
+    grid-column: 1 / -1;
+    max-width: none;
+  }
+
+  .sky-financial-reference-bars button {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .sky-financial-reference-bars i {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .sky-link-reference-form,
+  .sky-timeline-reference-form {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-link-reference-form label:first-child,
+  .sky-link-reference-form label:nth-child(2),
+  .sky-link-reference-form .sky-button,
+  .sky-timeline-reference-query,
+  .sky-timeline-reference-form label,
+  .sky-timeline-reference-form .sky-button {
+    grid-column: 1;
+  }
+
+  .sky-link-reference-focus > .sky-card-inner {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .sky-link-reference-focus > .sky-card-inner > strong:last-child {
+    grid-column: 1 / -1;
+    min-height: 40px;
+  }
+
+  .sky-link-reference-map-canvas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+    min-height: 0;
+    padding: 8px;
+  }
+
+  .sky-link-reference-map-canvas::before,
+  .sky-link-reference-map-canvas::after,
+  .sky-link-reference-map-canvas > svg {
+    display: none;
+  }
+
+  .sky-link-reference-map-canvas .sky-link-reference-center,
+  .sky-link-reference-map-canvas .sky-link-reference-node,
+  .sky-link-reference-map-canvas .sky-link-reference-map-empty {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    transform: none;
+  }
+
+  .sky-link-reference-map-canvas .sky-link-reference-center,
+  .sky-link-reference-map-canvas .sky-link-reference-map-empty,
+  .sky-link-reference-map-canvas .sky-link-reference-node[data-slot="5"] {
+    grid-column: 1 / -1;
+  }
+
+  .sky-link-reference-map-canvas .sky-link-reference-center {
+    min-height: 72px;
+  }
+
+  .sky-link-reference-map-canvas .sky-link-reference-node {
+    min-height: 66px;
+  }
+
+  .sky-link-reference-map-canvas .sky-link-reference-map-empty {
+    padding: 10px;
+  }
+
+  .sky-link-reference-account-list > button {
+    grid-template-columns: 32px minmax(0, 1fr) 14px;
+    align-items: start;
+  }
+
+  .sky-link-reference-account-list > button > span:first-child {
+    grid-row: 1 / span 2;
+  }
+
+  .sky-link-reference-account-list > button > span:nth-child(3) {
+    grid-column: 2;
+  }
+
+  .sky-link-reference-account-list > button > i {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+
+  .sky-link-reference-summary-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sky-link-reference-summary-metrics article {
+    min-height: 70px;
+  }
+
+  .sky-timeline-reference-event {
+    grid-template-columns: 48px 18px minmax(0, 1fr);
+    gap: 5px;
+  }
+
+  .sky-timeline-reference-group > div::before {
+    left: 62px;
+  }
+
+  .sky-timeline-reference-group > header {
+    margin-left: 48px;
+  }
+
+  .sky-timeline-reference-event > button {
+    grid-template-columns: minmax(0, 1fr) 34px;
+    padding: 8px;
+  }
+
+  .sky-timeline-reference-event > button > i {
+    width: 34px;
+  }
+
+  .sky-timeline-reference-inline-detail {
+    grid-column: 1 / -1;
+    margin-left: 53px;
+  }
+
+  .sky-timeline-reference-supplement-list .sky-timeline-reference-inline-detail {
+    margin-left: 0;
+  }
+
+  .sky-document-preview-layout,
+  .sky-request-detail-layout,
+  .sky-merchant-evidence-pair {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-document-sheet-body {
+    max-height: 360px;
+  }
+
+  .sky-document-page-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sky-document-page-controls strong {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    text-align: center;
+  }
+
+  .sky-request-form-pair,
+  .sky-merchant-search-row {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-merchant-search-row .sky-button {
+    grid-column: 1;
+  }
+
+  .sky-request-records > button {
+    grid-template-columns: 32px minmax(0, 1fr);
+  }
+
+  .sky-request-records > button > em {
+    grid-column: 2;
+    text-align: left;
+  }
+
+  .sky-merchant-profile-card > .sky-card-inner {
+    grid-template-columns: 42px minmax(0, 1fr) 58px;
+    gap: 6px;
+    padding: 9px;
+  }
+
+  .sky-merchant-profile-icon {
+    width: 42px;
+  }
+
+  .sky-merchant-profile-luna {
+    width: 56px;
+  }
+
+  .sky-merchant-profile-copy > div {
+    display: none;
+  }
+
+  .sky-merchant-history-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-merchant-history-grid article {
+    grid-template-columns: 30px minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    min-height: 76px;
+    text-align: left;
+  }
+
+  .sky-merchant-history-grid article > span {
+    grid-row: 1 / span 3;
+    justify-self: auto;
+  }
+}
+
+@media (max-width: 360px) {
+  .sky-academy-stat small {
+    display: none;
+  }
+
+  .sky-nav-button {
+    padding-inline: 2px;
+    font-size: 0.68rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .sky-queue-reference-list {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-toolmap-orbit {
+    grid-template:
+      "identity . digital" 160px
+      "financial core business" 180px
+      ". evidence ." 165px
+      / repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .sky-toolmap-node {
+    min-height: 140px;
+  }
+
+  .sky-toolmap-core {
+    width: min(160px, 100%);
+  }
+
+  .sky-quick-pad-sheet {
+    max-height: calc(100vh - 118px);
+  }
+}
+
+@media (max-width: 680px) {
+  .sky-app[data-reference-screen="true"] .sky-shell {
+    padding: 8px 10px 112px;
+  }
+
+  .sky-queue-reference,
+  .sky-toolmap-reference {
+    gap: 10px;
+  }
+
+  .sky-queue-reference-header,
+  .sky-toolmap-reference-header {
+    min-height: 74px;
+    border-radius: 18px 18px 26px 18px;
+  }
+
+  .sky-queue-reference-header {
+    grid-template-columns: minmax(0, 1fr) 60px;
+    padding: 5px 7px;
+  }
+
+  .sky-queue-brand-mark,
+  .sky-toolmap-header-mark {
+    width: 42px;
+    border-radius: 13px 13px 20px 13px;
+  }
+
+  .sky-queue-brand {
+    gap: 8px;
+  }
+
+  .sky-queue-brand strong {
+    font-size: 0.94rem;
+  }
+
+  .sky-queue-brand small {
+    font-size: 0.58rem;
+  }
+
+  .sky-queue-luna,
+  .sky-toolmap-luna {
+    width: 58px;
+    height: 62px;
+  }
+
+  .sky-queue-luna img,
+  .sky-toolmap-luna img {
+    width: 54px;
+    height: 58px;
+  }
+
+  .sky-queue-titlebar {
+    align-items: center;
+    padding-inline: 2px;
+  }
+
+  .sky-queue-titlebar h1 {
+    font-size: 1.22rem;
+  }
+
+  .sky-queue-titlebar h2 {
+    font-size: 0.64rem;
+  }
+
+  .sky-queue-title-actions {
+    gap: 5px;
+  }
+
+  .sky-queue-generate,
+  .sky-queue-filter-toggle {
+    min-height: 44px;
+    padding: 7px 9px;
+    font-size: 0.65rem;
+  }
+
+  .sky-queue-search {
+    min-height: 50px;
+    border-radius: 14px 14px 21px 14px;
+  }
+
+  .sky-queue-search input {
+    font-size: 0.75rem;
+  }
+
+  .sky-queue-status-tabs button {
+    min-height: 42px;
+    padding: 7px 10px;
+    font-size: 0.68rem;
+  }
+
+  .sky-queue-filter-sheet {
+    padding: 12px;
+  }
+
+  .sky-queue-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-case-card.sky-queue-reference-card {
+    gap: 9px;
+    padding: 12px;
+    border-radius: 16px 16px 24px 16px;
+  }
+
+  .sky-queue-card-main > span:first-child > strong {
+    font-size: 0.93rem;
+  }
+
+  .sky-queue-card-main > span:first-child > b {
+    font-size: 0.72rem;
+  }
+
+  .sky-queue-card-alert {
+    min-height: 31px;
+    font-size: 0.66rem;
+  }
+
+  .sky-queue-card-facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .sky-queue-card-facts > span {
+    padding: 7px;
+  }
+
+  .sky-queue-reference-card .sky-case-card-action {
+    min-height: 44px;
+  }
+
+  .sky-toolmap-reference-header {
+    grid-template-columns: 44px 42px minmax(0, 1fr) 44px 58px;
+    gap: 6px;
+    padding: 5px 6px;
+  }
+
+  .sky-toolmap-heading-copy h1 {
+    font-size: 0.9rem;
+  }
+
+  .sky-toolmap-heading-copy h1 small {
+    font-size: 0.55rem;
+  }
+
+  .sky-toolmap-case-switch {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 7px;
+    border-radius: 13px 13px 19px 13px;
+  }
+
+  .sky-toolmap-case-switch span {
+    display: none;
+  }
+
+  .sky-toolmap-metrics {
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 3px;
+  }
+
+  .sky-toolmap-metrics > span {
+    flex: 0 0 auto;
+  }
+
+  .sky-toolmap-canvas {
+    padding: 12px 10px 14px;
+    border-radius: 20px 28px 20px 28px;
+  }
+
+  .sky-toolmap-canvas > figcaption {
+    font-size: 0.58rem;
+  }
+
+  .sky-toolmap-lines {
+    display: none;
+  }
+
+  .sky-toolmap-lines-mobile {
+    position: absolute;
+    z-index: 0;
+    inset: 53px 10px 12px;
+    display: block;
+    width: calc(100% - 20px);
+    height: calc(100% - 65px);
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .sky-toolmap-orbit {
+    grid-template:
+      "identity digital" auto
+      "core core" auto
+      "financial business" auto
+      "evidence evidence" auto
+      / repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    padding: 2px;
+  }
+
+  .sky-toolmap-node {
+    min-height: 126px;
+    padding: 10px 7px;
+    border-radius: 17px 17px 25px 17px;
+  }
+
+  .sky-toolmap-node-icon {
+    width: 39px;
+  }
+
+  .sky-toolmap-node > strong {
+    font-size: 0.68rem;
+  }
+
+  .sky-toolmap-node > span:not(.sky-toolmap-node-icon) {
+    font-size: 0.59rem;
+  }
+
+  .sky-toolmap-node > small {
+    font-size: 0.55rem;
+  }
+
+  .sky-toolmap-core {
+    width: 145px;
+    margin-block: 5px;
+    padding: 15px;
+  }
+
+  .sky-toolmap-drawer {
+    padding: 12px;
+    border-radius: 18px 18px 26px 18px;
+  }
+
+  .sky-toolmap-drawer-heading {
+    grid-template-columns: 40px minmax(0, 1fr);
+    align-items: start;
+    gap: 8px;
+  }
+
+  .sky-toolmap-drawer-heading > .sky-chip {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .sky-toolmap-drawer-icon {
+    width: 40px;
+  }
+
+  .sky-toolmap-drawer-heading h2 {
+    font-size: 0.84rem;
+  }
+
+  .sky-toolmap-drawer-heading p:last-child {
+    font-size: 0.61rem;
+  }
+
+  .sky-toolmap-tool-list {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-toolmap-tool-button.sky-tool-button {
+    min-height: 68px;
+  }
+
+  .sky-toolmap-unavailable {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .sky-toolmap-unavailable button {
+    width: 100%;
+  }
+
+  .sky-toolmap-summary-action {
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 9px;
+    padding: 11px;
+  }
+
+  .sky-toolmap-summary-icon {
+    width: 40px;
+  }
+
+  .sky-toolmap-summary-action .sky-button {
+    grid-column: 1 / -1;
+    justify-content: center;
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .sky-quick-pad-fab {
+    right: 14px;
+    bottom: calc(max(8px, env(safe-area-inset-bottom)) + 78px);
+    width: 54px;
+  }
+
+  .sky-quick-pad-sheet {
+    bottom: calc(max(8px, env(safe-area-inset-bottom)) + 76px);
+    width: calc(100vw - 16px);
+    max-height: calc(100vh - 94px);
+    padding: 13px;
+    border-radius: 21px 29px 21px 21px;
+  }
+
+  .sky-quick-pad-sheet > header {
+    margin-bottom: 10px;
+  }
+
+  .sky-quick-pad-sheet .sky-grid {
+    gap: 12px;
+  }
+
+  .sky-quick-pad-sheet .sky-field textarea {
+    min-height: 80px;
+  }
+
+  .sky-quick-pad-sheet .sky-button-secondary {
+    min-height: 44px;
+    padding: 8px 10px;
+    font-size: 0.68rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .sky-queue-titlebar {
+    gap: 8px;
+  }
+
+  .sky-queue-titlebar .sky-eyebrow {
+    display: none;
+  }
+
+  .sky-queue-title-actions .sky-icon {
+    width: 15px;
+  }
+
+  .sky-queue-generate,
+  .sky-queue-filter-toggle {
+    padding-inline: 7px;
+  }
+
+  .sky-queue-card-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sky-queue-card-facts > span:nth-child(3) {
+    grid-column: 1 / -1;
+    border-top: 1px solid rgba(83, 174, 255, 0.12);
+    border-left: 0;
+  }
+
+  .sky-toolmap-header-mark {
+    width: 36px;
+  }
+
+  .sky-toolmap-reference-header {
+    grid-template-columns: 44px 36px minmax(0, 1fr) 44px 56px;
+    gap: 4px;
+  }
+
+  .sky-toolmap-node {
+    min-height: 122px;
+  }
+
+  .sky-toolmap-node > strong {
+    max-width: 14ch;
+  }
+}
+
+@media (max-width: 360px) {
+  .sky-queue-titlebar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .sky-queue-title-actions {
+    width: 100%;
+  }
+
+  .sky-queue-generate,
+  .sky-queue-filter-toggle {
+    flex: 1;
+  }
+
+  .sky-queue-card-main {
+    gap: 7px;
+  }
+
+  .sky-queue-progress .sky-progress-ring[data-size="micro"] {
+    width: 52px;
+  }
+
+  .sky-toolmap-reference-header {
+    grid-template-columns: 42px 34px minmax(0, 1fr) 42px 50px;
+    gap: 3px;
+  }
+
+  .sky-toolmap-header-mark {
+    width: 34px;
+  }
+
+  .sky-toolmap-luna {
+    width: 50px;
+  }
+
+  .sky-toolmap-luna img {
+    width: 48px;
+  }
+
+  .sky-toolmap-orbit {
+    gap: 7px;
+  }
+
+  .sky-toolmap-node {
+    min-height: 118px;
+    padding-inline: 5px;
+  }
+
+  .sky-toolmap-node-icon {
+    width: 36px;
+  }
+
+  .sky-toolmap-core {
+    width: 136px;
+  }
+
+  .sky-quick-pad-fab {
+    right: 10px;
+    width: 50px;
+  }
+}
+
+/* Reference-built Determination, Submit Decision, and Luna Debrief. */
+@media (max-width: 680px) {
+  .sky-review-reference-page {
+    gap: 9px;
+  }
+
+  .sky-review-reference-header {
+    grid-template-columns: 44px 39px minmax(0, 1fr) 54px;
+    gap: 7px;
+    min-height: 74px;
+    padding: 5px 7px;
+    border-radius: 18px 18px 26px 18px;
+  }
+
+  .sky-review-reference-back {
+    width: 44px;
+    min-height: 44px;
+    border-radius: 13px 13px 19px 13px;
+  }
+
+  .sky-review-reference-mark {
+    width: 38px;
+    border-radius: 12px 12px 18px 12px;
+  }
+
+  .sky-review-reference-mark .sky-icon {
+    width: 19px;
+  }
+
+  .sky-review-reference-copy h1 {
+    font-size: 0.88rem;
+  }
+
+  .sky-review-reference-copy p {
+    gap: 4px;
+    font-size: 0.58rem;
+  }
+
+  .sky-review-reference-copy p i::before {
+    margin-right: 4px;
+  }
+
+  .sky-review-reference-luna,
+  .sky-review-reference-slot {
+    width: 52px;
+    min-height: 56px;
+  }
+
+  .sky-review-reference-luna img {
+    width: 49px;
+    height: 53px;
+  }
+
+  .sky-determination-reference {
+    gap: 9px;
+  }
+
+  .sky-determination-reference .sky-review-hero {
+    padding: 3px 5px 0;
+    border-radius: 16px 16px 23px 16px;
+  }
+
+  .sky-determination-summary-reference .sky-card-inner,
+  .sky-determination-panel-reference .sky-card-inner,
+  .sky-determination-next-reference .sky-card-inner,
+  .sky-submit-reference .sky-card-inner,
+  .sky-luna-reference .sky-card-inner {
+    padding: 11px;
+  }
+
+  .sky-submit-case-banner .sky-card-inner {
+    min-height: 94px;
+    gap: 8px;
+  }
+
+  .sky-submit-case-copy small {
+    font-size: 0.58rem;
+  }
+
+  .sky-submit-case-copy h2 {
+    margin-top: 3px;
+    font-size: 0.97rem;
+  }
+
+  .sky-submit-case-copy p {
+    margin-top: 4px;
+    font-size: 0.62rem;
+    line-height: 1.32;
+  }
+
+  .sky-submit-case-banner .sky-chip {
+    min-height: 25px;
+    padding: 4px 7px;
+    font-size: 0.57rem;
+  }
+
+  .sky-submit-section-heading,
+  .sky-luna-section-heading {
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    gap: 7px;
+    margin-bottom: 8px;
+  }
+
+  .sky-submit-section-heading > span:first-child,
+  .sky-luna-section-heading > span:first-child {
+    width: 35px;
+    border-radius: 10px 10px 15px 10px;
+  }
+
+  .sky-submit-section-heading > span:first-child .sky-icon,
+  .sky-luna-section-heading > span:first-child .sky-icon {
+    width: 18px;
+  }
+
+  .sky-submit-section-heading small,
+  .sky-luna-section-heading small {
+    font-size: 0.57rem;
+  }
+
+  .sky-submit-section-heading h2,
+  .sky-luna-section-heading h2 {
+    font-size: 0.72rem;
+    line-height: 1.28;
+  }
+
+  .sky-submit-section-heading .sky-chip,
+  .sky-luna-section-heading .sky-chip {
+    min-height: 24px;
+    padding: 3px 6px;
+    font-size: 0.56rem;
+  }
+
+  .sky-submit-decision-details {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 6px;
+  }
+
+  .sky-submit-decision-details article {
+    min-height: 88px;
+    padding: 8px;
+    border-radius: 11px 11px 16px 11px;
+  }
+
+  .sky-submit-decision-details small {
+    font-size: 0.56rem;
+  }
+
+  .sky-submit-decision-details strong {
+    margin-top: 3px;
+    font-size: 0.65rem;
+  }
+
+  .sky-submit-decision-details p {
+    margin-top: 3px;
+    font-size: 0.59rem;
+    line-height: 1.35;
+  }
+
+  .sky-submit-text-action {
+    min-height: 44px;
+    padding: 7px;
+    font-size: 0.59rem;
+  }
+
+  .sky-submit-evidence-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .sky-submit-evidence-grid article {
+    min-height: 122px;
+    padding: 8px 7px;
+    border-radius: 12px 12px 18px 12px;
+  }
+
+  .sky-submit-evidence-grid article > span {
+    width: 29px;
+    margin-bottom: 6px;
+    border-radius: 9px 9px 13px 9px;
+  }
+
+  .sky-submit-evidence-grid article > span .sky-icon {
+    width: 15px;
+  }
+
+  .sky-submit-evidence-grid small {
+    font-size: 0.54rem;
+  }
+
+  .sky-submit-evidence-grid strong {
+    font-size: 0.61rem;
+    line-height: 1.25;
+  }
+
+  .sky-submit-evidence-grid p {
+    font-size: 0.55rem;
+    line-height: 1.28;
+  }
+
+  .sky-submit-empty {
+    padding: 10px;
+    font-size: 0.61rem;
+    line-height: 1.35;
+  }
+
+  .sky-submit-note-list {
+    gap: 5px;
+  }
+
+  .sky-submit-note-list li {
+    padding: 8px 9px;
+  }
+
+  .sky-submit-note-list strong {
+    font-size: 0.59rem;
+  }
+
+  .sky-submit-note-list span {
+    font-size: 0.61rem;
+    line-height: 1.33;
+  }
+
+  .sky-submit-disclosure > summary,
+  .sky-luna-outcome-details > summary,
+  .sky-luna-breakdown > summary {
+    min-height: 44px;
+    padding: 11px;
+    font-size: 0.62rem;
+  }
+
+  .sky-submit-indicator-count {
+    font-size: 0.65rem;
+  }
+
+  .sky-submit-indicator-count small {
+    display: block;
+    font-size: 0.53rem;
+  }
+
+  .sky-submit-status-list {
+    gap: 5px;
+    margin-bottom: 9px;
+  }
+
+  .sky-submit-status-list li {
+    padding-left: 17px;
+    font-size: 0.61rem;
+    line-height: 1.32;
+  }
+
+  .sky-submit-confirm {
+    min-height: 56px;
+    padding: 9px 12px;
+    border-radius: 16px 21px 16px 21px;
+    font-size: 0.74rem;
+  }
+
+  .sky-submit-finality {
+    margin-top: 8px;
+    font-size: 0.56rem;
+  }
+
+  .sky-luna-coach-hero {
+    grid-template-columns: 118px minmax(0, 1fr);
+    gap: 9px;
+    min-height: 190px;
+    padding: 10px;
+    border-radius: 20px 28px 20px 28px;
+  }
+
+  .sky-luna-coach-art::before {
+    width: 98px;
+  }
+
+  .sky-luna-coach-art img {
+    width: 116px;
+    max-height: 165px;
+  }
+
+  .sky-luna-coach-art > i {
+    right: 0;
+    bottom: 20px;
+    font-size: 1rem;
+  }
+
+  .sky-luna-speech {
+    padding: 12px;
+    border-radius: 15px 21px 15px 21px;
+  }
+
+  .sky-luna-speech::before {
+    left: -8px;
+    width: 15px;
+    height: 15px;
+  }
+
+  .sky-luna-speech small {
+    font-size: 0.56rem;
+  }
+
+  .sky-luna-speech h2 {
+    margin-top: 4px;
+    font-size: 0.76rem;
+    line-height: 1.25;
+  }
+
+  .sky-luna-speech p {
+    margin-top: 5px;
+    font-size: 0.6rem;
+    line-height: 1.35;
+  }
+
+  .sky-luna-check-list {
+    gap: 4px;
+  }
+
+  .sky-luna-check-list li {
+    gap: 6px;
+    padding: 6px 4px;
+    font-size: 0.61rem;
+    line-height: 1.32;
+  }
+
+  .sky-luna-check-list .sky-icon {
+    width: 15px;
+  }
+
+  .sky-luna-missed-list {
+    gap: 6px;
+  }
+
+  .sky-luna-missed-list article {
+    grid-template-columns: 33px minmax(0, 1fr) auto;
+    gap: 7px;
+    padding: 8px;
+    border-radius: 12px 12px 18px 12px;
+  }
+
+  .sky-luna-missed-list article > span {
+    width: 32px;
+  }
+
+  .sky-luna-missed-list article > span .sky-icon {
+    width: 16px;
+  }
+
+  .sky-luna-missed-list strong {
+    font-size: 0.63rem;
+  }
+
+  .sky-luna-missed-list p {
+    font-size: 0.56rem;
+    line-height: 1.3;
+  }
+
+  .sky-luna-missed-list small {
+    font-size: 0.53rem;
+  }
+
+  .sky-luna-missed-list .sky-button-secondary {
+    min-height: 44px;
+    padding: 7px 9px;
+    font-size: 0.59rem;
+  }
+
+  .sky-luna-clear,
+  .sky-luna-outcome-description,
+  .sky-luna-legacy-note,
+  .sky-luna-tip-card p,
+  .sky-luna-motivation-card blockquote {
+    font-size: 0.61rem;
+    line-height: 1.36;
+  }
+
+  .sky-luna-outcome-card .sky-data-row {
+    grid-template-columns: minmax(0, 0.48fr) minmax(0, 0.52fr);
+    gap: 7px;
+  }
+
+  .sky-luna-outcome-card .sky-data-row span,
+  .sky-luna-outcome-card .sky-data-row strong {
+    font-size: 0.59rem;
+  }
+
+  .sky-luna-coaching-pair {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .sky-luna-motivation-card blockquote {
+    max-width: 82%;
+    font-size: 0.67rem;
+  }
+
+  .sky-luna-breakdown .sky-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .sky-luna-actions {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .sky-luna-actions button {
+    min-height: 48px;
+  }
+
+  .sky-luna-locked-layout {
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .sky-luna-locked-art {
+    min-height: 120px;
+  }
+
+  .sky-luna-locked-art img {
+    width: 106px;
+    max-height: 124px;
+  }
+
+  .sky-luna-locked-layout h2 {
+    font-size: 0.82rem;
+  }
+
+  .sky-luna-locked-layout p:not(.sky-eyebrow) {
+    margin-bottom: 10px;
+    font-size: 0.62rem;
+    line-height: 1.35;
+  }
+
+  .sky-luna-locked-layout .sky-button {
+    min-height: 44px;
+    padding: 8px 10px;
+    font-size: 0.64rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .sky-review-reference-header {
+    grid-template-columns: 44px 36px minmax(0, 1fr) 50px;
+    gap: 5px;
+  }
+
+  .sky-review-reference-mark {
+    width: 35px;
+  }
+
+  .sky-review-reference-copy p span {
+    display: none;
+  }
+
+  .sky-review-reference-copy p i::before {
+    display: none;
+  }
+
+  .sky-submit-case-banner .sky-card-inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .sky-submit-section-heading {
+    grid-template-columns: 35px minmax(0, 1fr) auto;
+  }
+
+  .sky-submit-text-action {
+    max-width: 76px;
+    white-space: normal;
+  }
+
+  .sky-luna-coach-hero {
+    grid-template-columns: 105px minmax(0, 1fr);
+  }
+
+  .sky-luna-coach-art::before {
+    width: 88px;
+  }
+
+  .sky-luna-coach-art img {
+    width: 104px;
+  }
+
+  .sky-luna-missed-list article {
+    grid-template-columns: 31px minmax(0, 1fr);
+  }
+
+  .sky-luna-missed-list article .sky-button-secondary {
+    grid-column: 2;
+    justify-self: stretch;
+    width: 100%;
+    margin-top: 2px;
+  }
+}
+
+@media (max-width: 360px) {
+  .sky-review-reference-header {
+    grid-template-columns: 44px minmax(0, 1fr) 48px;
+  }
+
+  .sky-review-reference-mark {
+    display: none;
+  }
+
+  .sky-review-reference-copy h1 {
+    font-size: 0.8rem;
+  }
+
+  .sky-submit-case-banner .sky-card-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-submit-case-banner .sky-chip {
+    justify-self: start;
+  }
+
+  .sky-submit-decision-details,
+  .sky-submit-evidence-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sky-submit-decision-details article:last-child,
+  .sky-submit-evidence-grid article:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .sky-submit-section-heading {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .sky-submit-section-heading > :last-child:not(div) {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .sky-submit-text-action {
+    max-width: none;
+  }
+
+  .sky-luna-coach-hero {
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .sky-luna-coach-art::before {
+    width: 78px;
+  }
+
+  .sky-luna-coach-art img {
+    width: 92px;
+  }
+
+  .sky-luna-speech {
+    padding: 10px;
+  }
+
+  .sky-luna-speech h2 {
+    font-size: 0.69rem;
+  }
+
+  .sky-luna-speech p {
+    font-size: 0.56rem;
+  }
+
+  .sky-luna-section-heading {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .sky-luna-section-heading .sky-chip {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .sky-luna-locked-layout {
+    grid-template-columns: 90px minmax(0, 1fr);
+    gap: 9px;
+  }
+
+  .sky-luna-locked-art {
+    min-height: 98px;
+  }
+
+  .sky-luna-locked-art img {
+    width: 88px;
+  }
+}
+
+@media (max-width: 680px) {
+  .sky-payroll-overview > .sky-card-inner,
+  .sky-payroll-search > .sky-card-inner,
+  .sky-payroll-employees > .sky-card-inner,
+  .sky-payroll-breakdowns > .sky-card-inner,
+  .sky-payroll-destinations > .sky-card-inner {
+    padding: 10px;
+  }
+
+  .sky-payroll-overview > .sky-card-inner > header {
+    margin-bottom: 8px;
+  }
+
+  .sky-payroll-overview header small,
+  .sky-payroll-results-heading small,
+  .sky-payroll-employees header small,
+  .sky-payroll-breakdowns header small,
+  .sky-payroll-destinations header small {
+    font-size: 0.56rem;
+  }
+
+  .sky-payroll-overview header h2,
+  .sky-payroll-results-heading h2,
+  .sky-payroll-employees header h2,
+  .sky-payroll-breakdowns header h3,
+  .sky-payroll-destinations header h3 {
+    font-size: 0.76rem;
+  }
+
+  .sky-payroll-overview header > span,
+  .sky-payroll-results-heading > span,
+  .sky-payroll-employees header > span,
+  .sky-payroll-destinations header > span {
+    padding: 4px 7px;
+    font-size: 0.56rem;
+  }
+
+  .sky-payroll-overview-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .sky-payroll-overview-grid > article {
+    min-height: 91px;
+    padding: 7px 6px;
+  }
+
+  .sky-payroll-overview-grid > article > span {
+    width: 27px;
+    margin-bottom: 6px;
+    border-radius: 8px 8px 12px 8px;
+  }
+
+  .sky-payroll-overview-grid > article > span .sky-icon {
+    width: 15px;
+  }
+
+  .sky-payroll-overview-grid small,
+  .sky-payroll-overview-grid p {
+    font-size: 0.49rem;
+    line-height: 1.25;
+  }
+
+  .sky-payroll-overview-grid strong {
+    font-size: clamp(0.6rem, 2.8vw, 0.75rem);
+  }
+
+  .sky-payroll-search-form {
+    grid-template-columns: minmax(0, 1fr) 42px minmax(67px, auto);
+    gap: 6px;
+  }
+
+  .sky-payroll-search-form label > span {
+    display: none;
+  }
+
+  .sky-payroll-search-form input,
+  .sky-payroll-filters select {
+    min-height: 42px;
+    padding: 7px 9px;
+    border-radius: 11px 11px 16px 11px;
+    font-size: 0.67rem;
+  }
+
+  .sky-payroll-search-form .sky-button,
+  .sky-payroll-search-form .sky-button-secondary {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 7px;
+    font-size: 0.63rem;
+    white-space: normal;
+  }
+
+  .sky-payroll-search-form .sky-button > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .sky-payroll-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .sky-payroll-filters .sky-button-secondary {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 40px;
+    padding: 7px;
+    font-size: 0.63rem;
+  }
+
+  .sky-payroll-runs,
+  .sky-payroll-run-list {
+    gap: 7px;
+  }
+
+  .sky-payroll-run-toggle {
+    grid-template-areas:
+      "icon title status arrow"
+      "icon fact-one fact-two arrow";
+    grid-template-columns: 48px minmax(0, 1fr) minmax(72px, auto) 16px;
+    gap: 6px 8px;
+    padding: 9px;
+  }
+
+  .sky-payroll-run-icon {
+    grid-area: icon;
+    width: 46px;
+    border-radius: 13px 13px 18px 13px;
+  }
+
+  .sky-payroll-run-icon .sky-icon {
+    width: 20px;
+  }
+
+  .sky-payroll-run-title {
+    grid-area: title;
+  }
+
+  .sky-payroll-run-title > strong {
+    font-size: 0.72rem;
+  }
+
+  .sky-payroll-run-title > small {
+    font-size: 0.59rem;
+  }
+
+  .sky-payroll-run-title > em {
+    font-size: 0.51rem;
+  }
+
+  .sky-payroll-run-fact:nth-of-type(3) {
+    grid-area: fact-one;
+  }
+
+  .sky-payroll-run-fact:nth-of-type(4) {
+    grid-area: fact-two;
+    text-align: right;
+  }
+
+  .sky-payroll-run-fact > small,
+  .sky-payroll-run-status > small {
+    font-size: 0.51rem;
+  }
+
+  .sky-payroll-run-fact > strong,
+  .sky-payroll-run-status > strong {
+    font-size: 0.61rem;
+  }
+
+  .sky-payroll-run-status {
+    grid-area: status;
+  }
+
+  .sky-payroll-run-status > em {
+    margin-bottom: 4px;
+    padding: 3px 5px;
+    font-size: 0.5rem;
+  }
+
+  .sky-payroll-run-status > small {
+    display: none;
+  }
+
+  .sky-payroll-run-chevron {
+    grid-area: arrow;
+  }
+
+  .sky-payroll-run-detail {
+    padding: 0 9px 9px;
+  }
+
+  .sky-payroll-run-totals > span {
+    padding: 7px 6px;
+  }
+
+  .sky-payroll-run-totals small {
+    font-size: 0.5rem;
+  }
+
+  .sky-payroll-run-totals strong {
+    font-size: 0.62rem;
+  }
+
+  .sky-payroll-run-detail .sky-data-row,
+  .sky-payroll-destination-detail .sky-data-row {
+    grid-template-columns: minmax(88px, 0.72fr) minmax(0, 1.28fr);
+    gap: 6px;
+    padding: 7px;
+    font-size: 0.61rem;
+  }
+
+  .sky-payroll-employee-list > button {
+    grid-template-columns: 39px minmax(0, 1fr) minmax(82px, auto) 15px;
+    gap: 7px;
+    padding: 8px;
+  }
+
+  .sky-payroll-employee-avatar {
+    width: 37px;
+  }
+
+  .sky-payroll-employee-list > button > span > strong {
+    font-size: 0.67rem;
+  }
+
+  .sky-payroll-employee-list > button > span > small,
+  .sky-payroll-employee-list > button > span > em {
+    font-size: 0.53rem;
+  }
+
+  .sky-payroll-paystub {
+    gap: 7px;
+  }
+
+  .sky-payroll-paystub-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 7px;
+  }
+
+  .sky-payroll-paystub-grid .sky-card-inner {
+    padding: 10px;
+  }
+
+  .sky-payroll-breakdowns > .sky-card-inner > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sky-payroll-breakdown > summary {
+    min-height: 39px;
+    padding: 7px 9px;
+  }
+
+  .sky-payroll-destination-select {
+    grid-template-columns: 39px minmax(0, 1fr) minmax(80px, auto) 15px;
+    gap: 7px;
+    padding: 8px;
+  }
+
+  .sky-payroll-destination-select > span:first-child {
+    width: 37px;
+  }
+
+  .sky-payroll-destination-select strong {
+    font-size: 0.66rem;
+  }
+
+  .sky-payroll-destination-select small,
+  .sky-payroll-destination-select em {
+    font-size: 0.52rem;
+  }
+
+  .sky-payroll-destination-detail {
+    padding: 0 8px 8px;
+  }
+
+  .sky-payroll-destination-detail .sky-button-secondary {
+    width: 100%;
+    min-height: 39px;
+    padding: 7px;
+    font-size: 0.62rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .sky-payroll-overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sky-payroll-overview-grid > article {
+    min-height: 82px;
+    border-bottom: 1px solid rgba(91, 172, 255, 0.17);
+  }
+
+  .sky-payroll-overview-grid > article:nth-child(2) {
+    border-right: 0;
+  }
+
+  .sky-payroll-overview-grid > article:nth-child(n + 3) {
+    border-bottom: 0;
+  }
+
+  .sky-payroll-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sky-payroll-filters .sky-button-secondary {
+    grid-column: auto;
+  }
+
+  .sky-payroll-run-toggle {
+    grid-template-areas:
+      "icon title arrow"
+      "fact-one fact-two status";
+    grid-template-columns: 44px minmax(0, 1fr) 16px;
+  }
+
+  .sky-payroll-run-icon {
+    width: 42px;
+  }
+
+  .sky-payroll-run-fact:nth-of-type(3),
+  .sky-payroll-run-fact:nth-of-type(4),
+  .sky-payroll-run-status {
+    padding-top: 6px;
+    border-top: 1px solid rgba(87, 151, 232, 0.14);
+  }
+
+  .sky-payroll-run-fact:nth-of-type(4) {
+    text-align: center;
+  }
+
+  .sky-payroll-run-status {
+    text-align: right;
+  }
+
+  .sky-payroll-run-status > em {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .sky-payroll-employee-list > button {
+    grid-template-areas:
+      "avatar person arrow"
+      "pay pay pay";
+    grid-template-columns: 39px minmax(0, 1fr) 15px;
+  }
+
+  .sky-payroll-employee-avatar {
+    grid-area: avatar;
+  }
+
+  .sky-payroll-employee-list > button > span:nth-of-type(2) {
+    grid-area: person;
+  }
+
+  .sky-payroll-employee-list > button > span:nth-of-type(3) {
+    grid-area: pay;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 5px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(87, 151, 232, 0.14);
+    text-align: left;
+  }
+
+  .sky-payroll-employee-list > button > span:nth-of-type(3) > small {
+    grid-column: 1;
+    margin: 0;
+  }
+
+  .sky-payroll-employee-list > button > span:nth-of-type(3) > strong {
+    grid-column: 1;
+  }
+
+  .sky-payroll-employee-list > button > span:nth-of-type(3) > em {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    margin: 0;
+  }
+
+  .sky-payroll-employee-list > button > .sky-icon {
+    grid-area: arrow;
+  }
+
+  .sky-payroll-destination-select {
+    grid-template-areas:
+      "icon destination arrow"
+      "value value value";
+    grid-template-columns: 39px minmax(0, 1fr) 15px;
+  }
+
+  .sky-payroll-destination-select > span:first-child {
+    grid-area: icon;
+  }
+
+  .sky-payroll-destination-select > span:nth-of-type(2) {
+    grid-area: destination;
+  }
+
+  .sky-payroll-destination-select > span:nth-of-type(3) {
+    grid-area: value;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 5px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(87, 151, 232, 0.14);
+    text-align: left;
+  }
+
+  .sky-payroll-destination-select > .sky-icon {
+    grid-area: arrow;
+  }
+
+  .sky-payroll-run-detail .sky-data-row,
+  .sky-payroll-destination-detail .sky-data-row,
+  .sky-payroll-breakdown .sky-data-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3px;
+  }
+}
+
+@media (max-width: 640px) {
+  .sky-reference-tool-case-line {
+    gap: 5px;
+    margin-top: 2px;
+  }
+
+  .sky-reference-tool-case-line .sky-chip {
+    min-height: 22px;
+    padding: 3px 6px;
+    font-size: 0.56rem;
+  }
+
+  .sky-system-access-search > .sky-card-inner {
+    gap: 8px;
+  }
+
+  .sky-system-access-search-form {
+    gap: 6px;
+  }
+
+  .sky-system-access-search-form label {
+    gap: 4px;
+    font-size: 0.68rem;
+  }
+
+  .sky-system-access-search-form input,
+  .sky-system-access-search-form .sky-button {
+    min-height: 44px;
+  }
+
+  .sky-system-access-search-form input {
+    padding: 8px 9px;
+    border-radius: 11px 11px 16px 11px;
+    font-size: 0.73rem;
+  }
+
+  .sky-system-access-search-form .sky-button {
+    padding: 7px 10px;
+    font-size: 0.69rem;
+  }
+
+  .sky-system-access-error {
+    padding: 7px 8px;
+    font-size: 0.68rem;
+  }
+
+  .sky-system-access-search-status {
+    gap: 7px;
+    padding: 7px 8px;
+  }
+
+  .sky-system-access-search-status span,
+  .sky-system-access-search-status small {
+    font-size: 0.68rem;
+  }
+
+  .sky-system-access-summary {
+    gap: 6px;
+  }
+
+  .sky-system-access-summary > article {
+    grid-template-columns: 29px minmax(0, 1fr);
+    gap: 2px 5px;
+    min-height: 94px;
+    padding: 8px 7px;
+    border-radius: 13px 13px 19px 13px;
+  }
+
+  .sky-system-access-summary > article > span {
+    width: 29px;
+    border-radius: 9px 9px 13px 9px;
+  }
+
+  .sky-system-access-summary > article > span .sky-icon {
+    width: 17px;
+  }
+
+  .sky-system-access-summary strong {
+    font-size: 0.82rem;
+  }
+
+  .sky-system-access-summary small {
+    margin-top: 3px;
+    font-size: 0.61rem;
+    line-height: 1.2;
+  }
+
+  .sky-system-access-summary em {
+    font-size: 0.56rem;
+    line-height: 1.2;
+  }
+
+  .sky-system-access-lane {
+    gap: 7px;
+  }
+
+  .sky-system-access-lane::before {
+    top: 34px;
+    bottom: 34px;
+    left: 70px;
+  }
+
+  .sky-system-access-event {
+    grid-template-columns: 54px 20px minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .sky-system-access-event > time strong,
+  .sky-system-access-event > time span {
+    font-size: 0.58rem;
+    line-height: 1.18;
+  }
+
+  .sky-system-access-dot {
+    width: 11px;
+  }
+
+  .sky-system-access-event > button {
+    grid-template-areas:
+      "icon copy arrow"
+      "icon status status";
+    grid-template-columns: 42px minmax(0, 1fr) 15px;
+    gap: 5px 8px;
+    min-height: 86px;
+    padding: 9px;
+    border-radius: 14px 14px 20px 14px;
+  }
+
+  .sky-system-access-event > button > i {
+    grid-area: icon;
+    width: 42px;
+    border-radius: 12px 12px 17px 12px;
+  }
+
+  .sky-system-access-event > button > span:nth-of-type(1) {
+    grid-area: copy;
+  }
+
+  .sky-system-access-event > button .sky-chip {
+    grid-area: status;
+    justify-self: start;
+    max-width: 100%;
+    min-height: 24px;
+    padding: 3px 7px;
+    font-size: 0.56rem;
+  }
+
+  .sky-system-access-event > button > .sky-icon {
+    grid-area: arrow;
+  }
+
+  .sky-system-access-event > button small,
+  .sky-system-access-event > button em,
+  .sky-system-access-event > button b {
+    font-size: 0.57rem;
+    line-height: 1.22;
+  }
+
+  .sky-system-access-event > button strong {
+    font-size: 0.69rem;
+    line-height: 1.2;
+  }
+
+  .sky-system-access-detail {
+    grid-column: 3;
+    gap: 8px;
+    padding: 9px;
+  }
+
+  .sky-system-access-detail > header small,
+  .sky-system-access-detail > header strong,
+  .sky-system-access-detail .sky-data-row dt,
+  .sky-system-access-detail .sky-data-row dd {
+    font-size: 0.61rem;
+  }
+
+  .sky-system-access-detail .sky-data-row {
+    grid-template-columns: minmax(82px, 0.65fr) minmax(0, 1.35fr);
+    gap: 6px;
+    padding: 7px;
+  }
+
+  .sky-system-access-empty > .sky-card-inner {
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .sky-system-access-empty > .sky-card-inner > .sky-icon {
+    width: 38px;
+    height: 38px;
+    padding: 8px;
+    border-radius: 11px 11px 16px 11px;
+  }
+
+  .sky-system-access-empty strong,
+  .sky-system-access-empty p {
+    font-size: 0.68rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .sky-system-access-search-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sky-system-access-search-form .sky-button {
+    width: 100%;
+  }
+
+  .sky-system-access-search-status {
+    display: grid;
+  }
+
+  .sky-system-access-search-status small {
+    text-align: left;
+  }
+
+  .sky-system-access-event {
+    grid-template-columns: 48px 18px minmax(0, 1fr);
+    gap: 5px;
+  }
+
+  .sky-system-access-lane::before {
+    left: 61px;
+  }
+
+  .sky-system-access-event > button {
+    grid-template-columns: 38px minmax(0, 1fr) 14px;
+    gap: 5px 6px;
+    padding: 8px;
+  }
+
+  .sky-system-access-event > button > i {
+    width: 38px;
+  }
+
+  .sky-system-access-detail {
+    grid-column: 1 / -1;
+    margin-left: 53px;
+  }
+
+  .sky-system-access-detail .sky-data-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3px;
+  }
+}
+
+@media (max-width: 340px) {
+  .sky-reference-tool-case-line {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .sky-system-access-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sky-system-access-summary > article {
+    min-height: 86px;
+  }
+
+  .sky-system-access-event {
+    grid-template-columns: 42px 16px minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .sky-system-access-lane::before {
+    left: 53px;
+  }
+
+  .sky-system-access-event > time strong,
+  .sky-system-access-event > time span {
+    font-size: 0.53rem;
+  }
+
+  .sky-system-access-event > button {
+    grid-template-areas:
+      "copy arrow"
+      "status status";
+    grid-template-columns: minmax(0, 1fr) 13px;
+  }
+
+  .sky-system-access-event > button > i {
+    display: none;
+  }
+
+  .sky-system-access-detail {
+    margin-left: 46px;
+  }
+}
