@@ -4189,6 +4189,20 @@ export function DocumentViewerTool(props) {
               Open
             </button>
           </form>
+          <div className="sky-action-row">
+            <button
+              className="sky-button-secondary"
+              type="button"
+              onClick={() => openRelatedTool(
+                props,
+                'Document Request',
+                matchedCase?.accountId ?? activeCase.accountId ?? activeCase.id,
+              )}
+            >
+              <SkyIcon name="evidence" size={17} />
+              Request a document
+            </button>
+          </div>
           {error ? <div className="sky-reference-search-message" data-tone="pink" role="alert">{error}</div> : null}
           {!hasRun ? (
             <div className="sky-reference-search-message" role="status">
