@@ -310,7 +310,9 @@ if (
 
 for (const anchor of [
   'buildExplicitMerchantWorkspace(activeCase)',
-  'resolveMerchantLookup(workspace, input, lookupType)',
+  'const resolveWorkspaceRecord = () =>',
+  'resolveMerchantLookup(workspace, lookup, routedLookupType)',
+  'setResolved(nextResolved)',
   'sky-merchant-profile-card',
   'sky-merchant-transaction-card',
   'sky-merchant-history-grid',
