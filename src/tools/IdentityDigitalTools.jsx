@@ -309,6 +309,54 @@ function MetricGrid({ metrics }) {
   );
 }
 
+function RecordCollection({
+  title,
+  description,
+  records = [],
+  selectedId = '',
+  getId,
+  getTitle,
+  getDetail,
+  onSelect,
+}) {
+  return (
+    <section className="sky-card span-12 sky-access-record-collection" data-shape="ribbon">
+      <div className="sky-card-inner">
+        <header className="sky-section-heading">
+          <div>
+            <p>Active-case records</p>
+            <h3>{title}</h3>
+            <span>{description}</span>
+          </div>
+          <span className="sky-chip">{records.length} supplied</span>
+        </header>
+        {records.length ? (
+          <div className="sky-record-list">
+            {records.map((record) => {
+              const id = getId(record);
+              return (
+                <button
+                  className="sky-record"
+                  type="button"
+                  key={id}
+                  aria-current={id === selectedId}
+                  onClick={() => onSelect(record)}
+                >
+                  <span>
+                    <strong>{getTitle(record)}</strong>
+                    <small>{getDetail(record)}</small>
+                  </span>
+                  <span>{id === selectedId ? 'Open' : 'View'}</span>
+                </button>
+              );
+            })}
+          </div>
+        ) : <div className="sky-empty">No source records are supplied for this case.</div>}
+      </div>
+    </section>
+  );
+}
+
 function SearchField({ label, value, onChange, placeholder, type = 'text', autoComplete = 'off', wide = false }) {
   return (
     <label className={`sky-field${wide ? ' wide' : ''}`}>
@@ -928,6 +976,68 @@ export function Customer360Tool({
                   </div>
                 </div>
               </article>
+
+              {linkedBusinessCount > 0 ? (
+                <article
+                  className="sky-card sky-customer-section-card sky-customer-relationship-card"
+                  data-shape="notched"
+                  aria-labelledby="customer-business-links-heading"
+                >
+                  <div className="sky-card-inner">
+                    <header className="sky-customer-section-heading">
+                      <span aria-hidden="true"><SkyIcon name="building" size={21} /></span>
+                      <div>
+                        <small>Ownership and affiliation records</small>
+                        <h2 id="customer-business-links-heading">Linked businesses</h2>
+                        <p>Source-recorded relationships only; no ownership is inferred.</p>
+                      </div>
+                      <em>{linkedBusinessCount}</em>
+                    </header>
+                    <div className="sky-customer-record-list">
+                      {dossier.relationship.businessRelationships.map((business) => (
+                        <article key={business.businessId}>
+                          <span aria-hidden="true"><SkyIcon name="building" size={18} /></span>
+                          <div>
+                            <small>{displayValue(business.businessId)}</small>
+                            <strong>{displayValue(business.businessName)}</strong>
+                            <DataRows rows={[
+                              ['Relationship', business.relationship],
+                              ['Ownership', business.ownershipPercentage],
+                              ['Relationship since', business.relationshipSince],
+                              ['Status', business.status],
+                            ]} />
+                          </div>
+                          <div className="sky-customer-record-actions">
+                            <NavigateButton
+                              onNavigate={onNavigate}
+                              targetTool="Business 360"
+                              query={business.businessId}
+                              identifierType="businessId"
+                              sourceTool={tool}
+                              sourceRecordId={business.businessId}
+                            >
+                              Open Business 360
+                            </NavigateButton>
+                            <PinButton
+                              onPin={onPin}
+                              activeCase={activeCase}
+                              tool={tool}
+                              recordId={business.businessId}
+                              label="Linked business"
+                              value={trainingId}
+                              detailValue={business.businessId}
+                              query={trainingId}
+                              identifierType="trainingId"
+                              record={business}
+                              children="Pin relationship"
+                            />
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                </article>
+              ) : null}
             </div>
 
             <article
@@ -954,6 +1064,15 @@ export function Customer360Tool({
                           <small>{displayValue(contact.dateTime)} · {displayValue(contact.channel)}</small>
                           <strong>{displayValue(contact.type ?? contact.reasonForContact)}</strong>
                           <p>{displayValue(contact.notes ?? contact.outcome)}</p>
+                          <DataRows rows={[
+                            ['Outcome', contact.outcome],
+                            ['Agent / department', contact.agent ?? contact.agentOrDepartment],
+                            ['Related account', contact.relatedAccountId],
+                            ['Information reported', contact.reportedInformation],
+                            ['Assistance provided', contact.assistanceProvided],
+                            ['Documents requested', contact.documentsRequested],
+                            ['Follow-up status', contact.followUpStatus],
+                          ]} />
                         </div>
                         <PinButton
                           onPin={onPin}
@@ -1319,6 +1438,39 @@ export function LoginHistoryTool({
         </ExactSearchForm>
       </ReferenceSearchCard>
 
+      <section className="sky-card span-12" data-shape="notched" aria-label="Login history summary">
+        <div className="sky-card-inner">
+          <MetricGrid metrics={[
+            ['Authentication events', records.length, 'Supplied logins'],
+            ['Successful', records.filter((record) => /successful/i.test(record.result ?? '')).length, 'Recorded result'],
+            ['Failed / denied', records.filter((record) => /(failed|denied)/i.test(record.result ?? '')).length, 'Recorded result'],
+            ['Account lockouts', records.filter((record) => /lock/i.test(record.accountLockout ?? record.result ?? '')).length, 'Recorded lock state'],
+            ['Unique devices', new Set(records.map((record) => record.deviceId ?? record.device).filter(Boolean)).size, 'Exact device references'],
+            ['MFA completed', records.filter((record) => /(completed|approved|delivered)/i.test(record.mfaStatus ?? '')).length, 'Recorded MFA state'],
+          ]} />
+        </div>
+      </section>
+
+      <RecordCollection
+        title="Recorded authentication events"
+        description="Choose any supplied login. The exact-ID field above remains available as a quick switch."
+        records={records}
+        selectedId={lookup.selected?.id}
+        getId={(record) => record.id}
+        getTitle={(record) => `${record.id} · ${displayValue(record.result, 'Recorded')}`}
+        getDetail={(record) => displayValue([
+          record.timestamp,
+          record.deviceId ?? record.device,
+          record.location,
+          record.ip,
+        ])}
+        onSelect={(record) => {
+          lookup.setSelected(record);
+          lookup.setQuery(record.id);
+          lookup.setAttempted(false);
+        }}
+      />
+
       <LookupMessage attempted={lookup.attempted} matched={Boolean(lookup.selected)}>
         {lookup.selected ? (
           <div className="span-12 sky-intel-reference-results sky-access-reference-results">
@@ -1524,6 +1676,39 @@ export function SessionHistoryTool({
           />
         </ExactSearchForm>
       </ReferenceSearchCard>
+
+      <section className="sky-card span-12" data-shape="notched" aria-label="Session history summary">
+        <div className="sky-card-inner">
+          <MetricGrid metrics={[
+            ['Recorded sessions', records.length, 'Supplied sessions'],
+            ['Normal logout', records.filter((record) => /normal logout/i.test(record.logoutStatus ?? '')).length, 'Recorded state'],
+            ['Session timeout', records.filter((record) => /timeout/i.test(record.logoutStatus ?? '')).length, 'Recorded state'],
+            ['Profile activity', records.filter((record) => (record.activityTypes ?? []).some((item) => /profile/i.test(item))).length, 'Explicit activity'],
+            ['Money activity', records.filter((record) => (record.activityTypes ?? []).some((item) => /(payment|transfer|purchase|money)/i.test(item))).length, 'Explicit activity'],
+            ['Devices / IPs', `${new Set(records.map((record) => sourceLogin(activeCase, record.id)?.deviceId).filter(Boolean)).size} / ${new Set(records.map((record) => sourceLogin(activeCase, record.id)?.ip).filter(Boolean)).size}`, 'Exact references'],
+          ]} />
+        </div>
+      </section>
+
+      <RecordCollection
+        title="Recorded authenticated sessions"
+        description="Open any supplied session without running a search."
+        records={records}
+        selectedId={lookup.selected?.session}
+        getId={(record) => record.session}
+        getTitle={(record) => `${record.session} · ${displayValue(record.duration, 'Duration not supplied')}`}
+        getDetail={(record) => displayValue([
+          record.start,
+          record.end,
+          record.logoutStatus,
+          record.activityTypes,
+        ])}
+        onSelect={(record) => {
+          lookup.setSelected(record);
+          lookup.setQuery(record.session);
+          lookup.setAttempted(false);
+        }}
+      />
 
       <LookupMessage attempted={lookup.attempted} matched={Boolean(lookup.selected)}>
         {lookup.selected ? (
@@ -1802,6 +1987,27 @@ export function DeviceIntelligenceTool({
         </ExactSearchForm>
       </ReferenceSearchCard>
 
+      <RecordCollection
+        title="Supplied device records"
+        description="Compare every device attached to the active case; the exact field above is only a shortcut."
+        records={records}
+        selectedId={lookup.selected?.id}
+        getId={(record) => record.id}
+        getTitle={(record) => `${record.id} · ${displayValue(record.deviceName)}`}
+        getDetail={(record) => displayValue([
+          record.deviceType,
+          record.operatingSystem,
+          record.browser,
+          record.firstSeen,
+          record.lastSeen,
+        ])}
+        onSelect={(record) => {
+          lookup.setSelected(record);
+          lookup.setQuery(record.id);
+          lookup.setAttempted(false);
+        }}
+      />
+
       <LookupMessage attempted={lookup.attempted} matched={Boolean(lookup.selected)}>
         {lookup.selected ? (
           <div className="span-12 sky-intel-reference-results sky-device-reference-results">
@@ -2013,6 +2219,27 @@ export function IpIntelligenceTool({
           />
         </ExactSearchForm>
       </ReferenceSearchCard>
+
+      <RecordCollection
+        title="Supplied network records"
+        description="Open any observed address without unlocking it through search."
+        records={records}
+        selectedId={lookup.selected?.ip}
+        getId={(record) => record.ip}
+        getTitle={(record) => record.ip}
+        getDetail={(record) => displayValue([
+          record.firstSeen,
+          record.lastSeen,
+          record.lookupResult,
+          record.observedDevices,
+          record.observedSessions,
+        ])}
+        onSelect={(record) => {
+          lookup.setSelected(record);
+          lookup.setQuery(record.ip);
+          lookup.setAttempted(false);
+        }}
+      />
 
       <LookupMessage attempted={lookup.attempted} matched={Boolean(lookup.selected)}>
         {lookup.selected ? (
