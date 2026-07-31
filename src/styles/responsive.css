@@ -4301,8 +4301,9 @@
 
   .sky-toolmap-core {
     grid-area: auto;
+    order: -1;
     grid-column: 1 / -1;
-    grid-row: 1;
+    grid-row: auto;
     width: 156px;
     margin-block: 6px;
   }
@@ -4522,8 +4523,9 @@
 
   .sky-toolmap-core {
     grid-area: auto;
+    order: -1;
     grid-column: 1 / -1;
-    grid-row: 1;
+    grid-row: auto;
     width: 145px;
     margin-block: 5px;
     padding: 15px;
