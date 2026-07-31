@@ -296,10 +296,39 @@ for (const forbidden of [
   expect(!source.includes(forbidden), `Explicit merchant contract contains forbidden synthetic dependency: ${forbidden}`);
 }
 
+const toolSource = fs.readFileSync('src/tools/FinancialBusinessTools.jsx', 'utf8');
+const merchantComponent = toolSource.slice(
+  toolSource.indexOf('export function MerchantIntelligenceTool'),
+  toolSource.indexOf('export function PaymentVerificationTool'),
+);
+for (const required of [
+  'const resolveWorkspaceRecord = () =>',
+  'setResolved(nextResolved)',
+  'No merchant packet is supplied for this case.',
+  'sky-merchant-profile-card',
+  'sky-merchant-section-deck',
+]) {
+  expect(
+    merchantComponent.includes(required),
+    `Merchant Intelligence direct-open workspace is missing: ${required}`,
+  );
+}
+for (const obsoleteGate of [
+  'Search before reveal',
+  'Merchant evidence is locked.',
+  'Search Merchant Intelligence',
+  'runSearch(event)',
+]) {
+  expect(
+    !merchantComponent.includes(obsoleteGate),
+    `Merchant Intelligence still contains the obsolete search gate: ${obsoleteGate}`,
+  );
+}
+
 if (failures.length) {
   console.error('Merchant Intelligence contract check failed:');
   failures.forEach((message) => console.error(`- ${message}`));
   process.exit(1);
 }
 
-console.log('Merchant Intelligence exact-search and explicit-source contract check passed.');
+console.log('Merchant Intelligence direct-open and explicit-source contract check passed.');
