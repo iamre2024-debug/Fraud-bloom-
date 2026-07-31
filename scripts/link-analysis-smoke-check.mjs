@@ -256,13 +256,13 @@ const linkPinHelper = component.slice(
 );
 for (const anchor of [
   'export function LinkAnalysisTool',
-  'Search one exact identifier',
+  'Active connected record',
+  'View a different exact identifier',
+  'The current case connection opens automatically.',
   'Run exact search',
-  'Results show stored exact matches only.',
   'searchLinkRelationships({',
   'setResult(next)',
   'Exact identifier',
-  'Account relationship',
   'relationshipToCurrentCase',
   'setSelected(match)',
   "toolActions(props, 'Link Analysis'",
@@ -270,34 +270,34 @@ for (const anchor of [
   'initialPayload = null',
   'prefilledQuery = clean(initialPayload?.query ?? routedQuery)',
   'prefilledType = clean(initialPayload?.identifierType)',
-  'setQuery(prefilledQuery)',
-  'setType(prefilledType)',
-  'setResult(null)',
+  "knownIdentifiers.find((item) => item.type === 'phone')",
+  "knownIdentifiers.find((item) => item.type === 'training-id')",
+  'const initialQuery = prefilledQuery || clean(defaultIdentifier?.value)',
+  'const initialType = prefilledType || clean(defaultIdentifier?.type)',
+  'useState(() => (',
+  'setResult(nextQuery',
   'setSelected(null)',
-  'setHasRun(false)',
-  'activeCase?.id, prefilledQuery, prefilledType',
-  'The routed identifier is ready. Run the exact search to reveal relationships.',
-  'Account relationships are hidden',
+  'No connected identifier is supplied',
   'disabled={!query.trim()}',
-  'clearResult()',
+  'resetSelection()',
   'Source-backed exact matches',
   'Current account',
   "match.status ?? 'Not supplied'",
 ]) {
   if (!linkComponent.includes(anchor)) fail(`Clean Link Analysis workspace is missing: ${anchor}.`);
 }
-if (/useState\(\s*true\s*\)/.test(linkComponent)) {
-  fail('Link Analysis reveals search output before the learner runs the exact search.');
+for (const obsoleteGate of [
+  'Search before reveal',
+  'Account relationships are hidden',
+  'setHasRun',
+  '{!hasRun ? (',
+]) {
+  if (linkComponent.includes(obsoleteGate)) {
+    fail(`Link Analysis still contains the obsolete locked-search behavior: ${obsoleteGate}.`);
+  }
 }
-const resetEffect = linkComponent.slice(
-  linkComponent.indexOf('useEffect(() => {'),
-  linkComponent.indexOf('function clearResult'),
-);
-if (resetEffect.includes('runSearch(') || resetEffect.includes('setHasRun(true)')) {
-  fail('A routed Link Analysis identifier auto-runs instead of remaining a prefill.');
-}
-if (!linkComponent.includes('{!hasRun ? (') || !linkComponent.includes('{result ? (')) {
-  fail('Link Analysis does not preserve its search-before-reveal render gate.');
+if (!linkComponent.includes('{result ? (')) {
+  fail('Link Analysis does not render the active connected record result.');
 }
 for (const forbidden of [
   'High Risk',
@@ -389,4 +389,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('Link Analysis smoke check passed for exact source-backed matching, personal and generated cases, learner-run searches, evidence actions, responsive structure, and Evidence First boundaries.');
+console.log('Link Analysis smoke check passed for direct active-record opening, optional exact identifier switching, source-backed matching, evidence actions, responsive structure, and Evidence First boundaries.');
