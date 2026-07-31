@@ -6942,6 +6942,28 @@
   overflow-wrap: anywhere;
 }
 
+.sky-quick-pad-autosave {
+  display: block;
+  margin-top: 8px;
+  color: var(--mint);
+}
+
+.sky-quick-id-form {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.8fr) minmax(0, 1.2fr);
+  gap: 10px;
+  align-items: end;
+}
+
+.sky-quick-id-form > button {
+  grid-column: 1 / -1;
+}
+
+.sky-quick-pad-sheet .sky-summary-list li > button {
+  margin-top: 8px;
+  justify-self: start;
+}
+
 @keyframes sky-reference-header-glint {
   0%,
   72%,
