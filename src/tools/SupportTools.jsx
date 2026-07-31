@@ -606,8 +606,8 @@ export function SystemAccessTool(props) {
   const records = useMemo(() => getSystemAccessRecords(activeCase), [activeCase]);
   const prefilledQuery = clean(initialPayload?.query ?? routedQuery);
   const [query, setQuery] = useState(prefilledQuery);
-  const [submittedQuery, setSubmittedQuery] = useState('');
-  const [ran, setRan] = useState(false);
+  const [submittedQuery, setSubmittedQuery] = useState(prefilledQuery);
+  const [ran, setRan] = useState(true);
   const [selected, setSelected] = useState(null);
   const [error, setError] = useState('');
   const matches = useMemo(
@@ -624,14 +624,13 @@ export function SystemAccessTool(props) {
 
   useEffect(() => {
     setQuery(prefilledQuery);
-    setSubmittedQuery('');
-    setRan(false);
+    setSubmittedQuery(prefilledQuery);
+    setRan(true);
     setSelected(null);
     setError('');
   }, [activeCase?.id, prefilledQuery]);
 
   function clearResult() {
-    setRan(false);
     setSelected(null);
     setError('');
   }
@@ -639,12 +638,6 @@ export function SystemAccessTool(props) {
   function runSystemAccessSearch(event) {
     event.preventDefault();
     const exactQuery = query.trim();
-    if (!exactQuery) {
-      setError('Enter a record ID, actor, object, lane, status, or event.');
-      setRan(false);
-      setSelected(null);
-      return;
-    }
     setSubmittedQuery(exactQuery);
     setRan(true);
     setSelected(null);
@@ -665,12 +658,12 @@ export function SystemAccessTool(props) {
       <SupportReferenceHero
         title="System Access Lane"
         eyebrow="Audit trail · Supplied records"
-        subtitle="Search the case access sources, then open one recorded event and review its exact context."
+        subtitle="Review the active case’s access sources and filter the supplied events when needed."
         activeCase={activeCase}
         onBack={props.onBackToWorkspace}
         icon="shield"
         luna
-        status={ran ? `${matches.length} matched` : 'Search required'}
+        status={`${matches.length} shown`}
       />
 
       <div className="sky-grid">
@@ -682,9 +675,9 @@ export function SystemAccessTool(props) {
           <header className="sky-reference-search-heading">
             <span aria-hidden="true"><SkyIcon name="search" size={20} /></span>
             <div>
-              <small>Run before reveal</small>
-              <strong>Find a supplied access event</strong>
-              <p>Search by exact record ID or a source-backed actor, object, lane, status, or event term.</p>
+              <small>Record filter</small>
+              <strong>Filter supplied access events</strong>
+              <p>All active-case events open automatically. Narrow them by record ID, actor, object, lane, status, or event term.</p>
             </div>
           </header>
           <form
@@ -705,27 +698,17 @@ export function SystemAccessTool(props) {
                 autoComplete="off"
               />
             </label>
-            <button className="sky-button" type="submit" aria-label="Run access search">
+            <button className="sky-button" type="submit" aria-label="Apply access filter">
               <SkyIcon name="search" size={18} />
-              Run access search
+              Apply filter
             </button>
           </form>
           {error ? <p className="sky-system-access-error" role="alert">{error}</p> : null}
           <div className="sky-system-access-search-status" role="status">
-            <span>{ran ? `${matches.length} matching event${matches.length === 1 ? '' : 's'}` : 'Access events are hidden'}</span>
-            <small>{ran ? `Search: ${submittedQuery}` : 'Run the search to reveal supplied records'}</small>
+            <span>{matches.length} matching event{matches.length === 1 ? '' : 's'}</span>
+            <small>{submittedQuery ? `Filter: ${submittedQuery}` : 'All supplied records'}</small>
           </div>
         </SkyCard>
-
-        {!ran ? (
-          <SkyCard className="span-12 sky-support-reference-locked" shape="notched">
-            <SkyIcon name="shield" size={23} />
-            <div>
-              <strong>System access records are hidden</strong>
-              <p>Run a case-scoped search to reveal only the matching supplied events. No outcome is inferred before review.</p>
-            </div>
-          </SkyCard>
-        ) : null}
 
         {ran && matches.length ? (
           <>
@@ -866,9 +849,9 @@ export function TimelineTool(props) {
   );
   const [query, setQuery] = useState(prefilledQuery);
   const [source, setSource] = useState(prefilledSource);
-  const [submittedQuery, setSubmittedQuery] = useState('');
-  const [submittedSource, setSubmittedSource] = useState('All');
-  const [ran, setRan] = useState(false);
+  const [submittedQuery, setSubmittedQuery] = useState(prefilledQuery);
+  const [submittedSource, setSubmittedSource] = useState(prefilledSource);
+  const [ran, setRan] = useState(true);
   const [selected, setSelected] = useState(null);
   const allRows = useMemo(
     () => [
@@ -902,14 +885,13 @@ export function TimelineTool(props) {
   useEffect(() => {
     setQuery(prefilledQuery);
     setSource(sources.includes(prefilledSource) ? prefilledSource : 'All');
-    setSubmittedQuery('');
-    setSubmittedSource('All');
-    setRan(false);
+    setSubmittedQuery(prefilledQuery);
+    setSubmittedSource(sources.includes(prefilledSource) ? prefilledSource : 'All');
+    setRan(true);
     setSelected(null);
   }, [activeCase?.id, prefilledQuery, prefilledSource, sources]);
 
   function clearTimelineResult() {
-    setRan(false);
     setSelected(null);
   }
 
@@ -935,7 +917,7 @@ export function TimelineTool(props) {
       <SupportReferenceHero
         title="Timeline"
         eyebrow="Sequence · Supplied records"
-        subtitle="Filter and run the case timeline, then open one event and cite its exact source."
+        subtitle="Review the active case timeline, filter its records, and open an event to cite its exact source."
         activeCase={activeCase}
         onBack={props.onBackToWorkspace}
         icon="calendar"
@@ -951,9 +933,9 @@ export function TimelineTool(props) {
           <header className="sky-reference-search-heading">
             <span aria-hidden="true"><SkyIcon name="calendar" size={20} /></span>
             <div>
-              <small>Run before reveal</small>
-              <strong>Put the recorded sequence in order</strong>
-              <p>Choose a source or search term, run the timeline, then open an event and cite its timestamp.</p>
+              <small>Timeline filter</small>
+              <strong>Filter the recorded sequence</strong>
+              <p>The full supplied timeline opens automatically. Use a source or search term to narrow the sequence.</p>
             </div>
           </header>
           <form className="sky-timeline-reference-form" onSubmit={runTimelineSearch} noValidate>
@@ -985,24 +967,14 @@ export function TimelineTool(props) {
             </label>
             <button className="sky-button" type="submit">
               <SkyIcon name="calendar" size={18} />
-              Run timeline
+              Apply filter
             </button>
           </form>
           <div className="sky-timeline-reference-search-status" role="status">
-            <span>{ran ? `${rows.length} matched event${rows.length === 1 ? '' : 's'}` : 'Timeline events are hidden'}</span>
-            <small>{ran ? `${submittedSource} source filter` : 'Run the search to reveal supplied events'}</small>
+            <span>{rows.length} matched event{rows.length === 1 ? '' : 's'}</span>
+            <small>{submittedSource} source filter</small>
           </div>
         </SkyCard>
-
-        {!ran ? (
-          <SkyCard className="span-12 sky-support-reference-locked" shape="notched">
-            <SkyIcon name="calendar" size={23} />
-            <div>
-              <strong>Timeline rows are hidden</strong>
-              <p>Search text is optional. Choose a source or All, then run the timeline to reveal the supplied sequence.</p>
-            </div>
-          </SkyCard>
-        ) : null}
 
         {ran && occurredRows.length ? (
           <section className="span-12 sky-timeline-reference" aria-label="Case timeline events">
