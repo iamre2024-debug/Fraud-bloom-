@@ -532,8 +532,13 @@ function cleanText(value) {
   return String(value ?? '').trim();
 }
 
+export function countRationaleWords(text = '') {
+  const normalized = cleanText(text).normalize('NFKC');
+  return normalized.match(/[\p{L}\p{N}]+(?:['’.-][\p{L}\p{N}]+)*/gu)?.length ?? 0;
+}
+
 function wordCount(text = '') {
-  return cleanText(text).split(/\s+/).filter(Boolean).length;
+  return countRationaleWords(text);
 }
 
 function positiveInteger(value) {
