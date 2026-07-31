@@ -660,12 +660,13 @@ export function FinancialInvestigationTool(props) {
   const [hasRun, setHasRun] = useState(false);
 
   useEffect(() => {
+    const directResults = source.supplied && workspace ? allRecords : [];
     setInput(query);
-    setResults([]);
-    setSelectedId('');
+    setResults(directResults);
+    setSelectedId(directResults[0]?.id ?? '');
     setError('');
-    setHasRun(false);
-  }, [activeCase.id, query]);
+    setHasRun(true);
+  }, [activeCase.id, allRecords, query, source.supplied, workspace]);
 
   function runSearch(event) {
     event.preventDefault();
@@ -673,8 +674,9 @@ export function FinancialInvestigationTool(props) {
     setSelectedId('');
     setHasRun(true);
     if (!requested) {
-      setResults([]);
-      setError('Enter a record ID, account, date, amount, source, or other financial value.');
+      setResults(allRecords);
+      setSelectedId(allRecords[0]?.id ?? '');
+      setError('');
       return;
     }
     if (!source.supplied || !workspace) {
@@ -739,9 +741,9 @@ export function FinancialInvestigationTool(props) {
           <header className="sky-reference-search-heading">
             <span aria-hidden="true"><SkyIcon name="sparkle" size={20} /></span>
             <div>
-              <small>Search before reveal</small>
-              <strong>Find a supplied financial record</strong>
-              <p>Account, spending, deposit, payment, loan, and payroll details remain hidden until a case record matches.</p>
+              <small>Record filter</small>
+              <strong>Filter supplied financial records</strong>
+              <p>The active case’s financial records open automatically. Use this filter to narrow the visible records.</p>
             </div>
           </header>
           <form className="sky-reference-search-row" onSubmit={runSearch} noValidate>
@@ -751,10 +753,7 @@ export function FinancialInvestigationTool(props) {
                 value={input}
                 onChange={(event) => {
                   setInput(event.target.value);
-                  setResults([]);
-                  setSelectedId('');
                   setError('');
-                  setHasRun(false);
                 }}
                 placeholder="Record ID, account, date, amount, source, or support ID"
                 aria-label="Search Financial Investigation"
@@ -763,7 +762,7 @@ export function FinancialInvestigationTool(props) {
             </label>
             <button className="sky-button" type="submit">
               <SkyIcon name="sparkle" size={18} />
-              Run search
+              Apply filter
             </button>
           </form>
           {error ? <div className="sky-reference-search-message" data-tone="pink" role="alert">{error}</div> : null}
@@ -1005,16 +1004,16 @@ export function TransactionHistoryTool(props) {
 
   useEffect(() => {
     setInput(query);
-    setResults([]);
+    setResults(records);
     setSelectedId('');
     setError('');
-    setHasRun(false);
+    setHasRun(true);
     setRangeId('30d');
     setCustomStart('');
     setCustomEnd('');
     setFiltersOpen(false);
     setFilters({ direction: 'all', status: 'all', channel: 'all' });
-  }, [activeCase.id, query]);
+  }, [activeCase.id, query, records]);
 
   function runSearch(event) {
     event.preventDefault();
@@ -1022,8 +1021,8 @@ export function TransactionHistoryTool(props) {
     setSelectedId('');
     setHasRun(true);
     if (!requested) {
-      setResults([]);
-      setError('Enter a transaction ID, merchant, account, channel, date, amount, or status.');
+      setResults(records);
+      setError('');
       return;
     }
     if (!records.length) {
@@ -1047,10 +1046,7 @@ export function TransactionHistoryTool(props) {
 
   function changeInput(value) {
     setInput(value);
-    setResults([]);
-    setSelectedId('');
     setError('');
-    setHasRun(false);
   }
 
   function chooseRange(nextRangeId) {
@@ -1106,7 +1102,7 @@ export function TransactionHistoryTool(props) {
     <ToolShell
       toolName={toolName}
       activeCase={activeCase}
-      question="Search and review supplied transaction records without predicting the case outcome."
+      question="Review and filter supplied transaction records without predicting the case outcome."
       reference
       icon="payment"
       onBack={props.onBackToWorkspace}
@@ -1177,9 +1173,9 @@ export function TransactionHistoryTool(props) {
           <header className="sky-reference-search-heading">
             <span aria-hidden="true"><SkyIcon name="search" size={20} /></span>
             <div>
-              <small>Search before reveal</small>
-              <strong>Find supplied transaction records</strong>
-              <p>Totals, rows, and details remain hidden until a case record matches this search.</p>
+              <small>Record filter</small>
+              <strong>Filter supplied transaction records</strong>
+              <p>The active case’s transactions open automatically. Filter by merchant, amount, ID, account, date, channel, or status.</p>
             </div>
           </header>
           <form className="sky-transaction-search-form" onSubmit={runSearch} noValidate>
@@ -1193,9 +1189,9 @@ export function TransactionHistoryTool(props) {
                 autoComplete="off"
               />
             </label>
-            <button className="sky-button" type="submit" title="Run search">
+            <button className="sky-button" type="submit" title="Apply filter">
               <SkyIcon name="search" size={18} />
-              <span>Run search</span>
+              <span>Apply filter</span>
             </button>
             <button
               className="sky-button-secondary sky-transaction-filter-toggle"
@@ -2724,10 +2720,13 @@ export function EmployeeProfileTool(props) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    setInput(query);
-    setRecord(null);
+    const directRecord = query
+      ? resolveEmployeeProfileLookup(records, lower(query)).record
+      : records[0] ?? null;
+    setInput(query || directRecord?.id || '');
+    setRecord(directRecord);
     setError('');
-  }, [activeCase.id, query]);
+  }, [activeCase.id, query, records]);
 
   function runSearch(event) {
     event.preventDefault();
@@ -2756,7 +2755,6 @@ export function EmployeeProfileTool(props) {
 
   function changeInput(value) {
     setInput(value);
-    setRecord(null);
     setError('');
   }
 
@@ -2815,7 +2813,7 @@ export function EmployeeProfileTool(props) {
     <ToolShell
       toolName={toolName}
       activeCase={activeCase}
-      question="Search the supplied employee, pay, and payment-history records."
+      question="Review the supplied employee, pay, and payment-history records."
       reference
       icon="user"
       onBack={props.onBackToWorkspace}
@@ -2830,9 +2828,9 @@ export function EmployeeProfileTool(props) {
           <header className="sky-reference-search-heading">
             <span aria-hidden="true"><SkyIcon name="search" size={20} /></span>
             <div>
-              <small>Search before reveal</small>
-              <strong>Find an exact employee profile</strong>
-              <p>Employment, paycheck, and destination facts remain hidden until an exact Employee ID or unique exact name matches.</p>
+              <small>Profile selector</small>
+              <strong>Open another employee profile</strong>
+              <p>The active employee profile opens automatically. Use an exact Employee ID or unique name to switch profiles.</p>
             </div>
           </header>
           <form className="sky-employee-search-form" onSubmit={runSearch} noValidate>
@@ -3224,6 +3222,24 @@ export function PayrollHistoryTool(props) {
     () => (workspace ? payrollHistoryOverview(workspace) : null),
     [workspace],
   );
+  useEffect(() => {
+    if (!workspace) return;
+    const routedMatch = clean(query) ? findPayrollRecord(workspace, clean(query)) : null;
+    const directRun = routedMatch?.run ?? overview?.latestRun ?? orderedRuns[0] ?? null;
+    const directResult = routedMatch ?? (directRun ? {
+      type: 'run',
+      identifierType: 'payroll-run-id',
+      identifierLabel: 'Payroll Run ID',
+      matchedIdentifier: directRun.id,
+      occurrences: [{ run: directRun }],
+      matchCount: 1,
+      run: directRun,
+    } : null);
+    setInput(query || directRun?.id || '');
+    setResult(directResult);
+    setSelectedRunId(directRun?.id ?? '');
+    setError('');
+  }, [overview, orderedRuns, query, workspace]);
   const filteredRuns = useMemo(
     () => filterPayrollRuns(orderedRuns, filters),
     [filters, orderedRuns],
@@ -3271,12 +3287,8 @@ export function PayrollHistoryTool(props) {
 
   function changeInput(value) {
     setInput(value);
-    setResult(null);
     setError('');
-    setSelectedRunId('');
     setFiltersOpen(false);
-    setFilters({ runType: 'all', status: 'all' });
-    setShowAllRuns(false);
   }
 
   function openRun(run) {
@@ -3375,7 +3387,7 @@ export function PayrollHistoryTool(props) {
     <ToolShell
       toolName={toolName}
       activeCase={activeCase}
-      question="Search immutable payroll runs, employee pay records, paystubs, and destinations."
+      question="Review immutable payroll runs, employee pay records, paystubs, and destinations."
       reference
       icon="calendar"
       onBack={props.onBackToWorkspace}
@@ -3437,9 +3449,9 @@ export function PayrollHistoryTool(props) {
           <header className="sky-reference-search-heading">
             <span aria-hidden="true"><SkyIcon name="search" size={20} /></span>
             <div>
-              <small>Search before reveal</small>
-              <strong>Find an exact payroll record</strong>
-              <p>Payroll totals, employee rows, paystubs, and destinations remain hidden until a supplied identifier matches.</p>
+              <small>Payroll record selector</small>
+              <strong>Open another immutable payroll record</strong>
+              <p>The latest supplied payroll run opens automatically. Use an exact identifier to switch records.</p>
             </div>
           </header>
           <form className="sky-payroll-search-form" onSubmit={runSearch} noValidate>
@@ -4004,24 +4016,18 @@ export function DocumentViewerTool(props) {
   const [hasRun, setHasRun] = useState(false);
 
   useEffect(() => {
-    setAccountId(routedIdentifier);
-    setMatchedCase(null);
-    setDocuments([]);
-    setSelectedId('');
-    setPageIndex(0);
-    setFilter('');
-    setError('');
-    setHasRun(false);
-  }, [activeCase.id, routedIdentifier]);
+    const directIdentifier = routedIdentifier || activeCase.accountId || activeCase.id;
+    setAccountId(directIdentifier);
+    openDocuments(directIdentifier);
+  }, [activeCase, documentRequests, routedIdentifier]);
 
-  function runAccountSearch(event) {
-    event.preventDefault();
+  function openDocuments(identifier) {
     setHasRun(true);
     setMatchedCase(null);
     setDocuments([]);
     setSelectedId('');
     setPageIndex(0);
-    const requested = clean(accountId).toUpperCase();
+    const requested = clean(identifier).toUpperCase();
     if (!requested) {
       setError('Enter an exact Account ID or Document ID.');
       return;
@@ -4056,6 +4062,11 @@ export function DocumentViewerTool(props) {
     setSelectedId(matchedDocument?.id ?? suppliedDocuments[0]?.id ?? '');
   }
 
+  function runAccountSearch(event) {
+    event.preventDefault();
+    openDocuments(accountId);
+  }
+
   const visibleDocuments = documents.filter((document) => (
     !lower(filter) || documentSearchText(document).includes(lower(filter))
   ));
@@ -4084,9 +4095,9 @@ export function DocumentViewerTool(props) {
           <header className="sky-reference-search-heading">
             <span aria-hidden="true"><SkyIcon name="evidence" size={20} /></span>
             <div>
-              <small>Search before reveal</small>
-              <strong>Open an exact source document</strong>
-              <p>Document titles, pages, fields, sources, and statuses remain locked until the active case’s Account ID or Document ID matches.</p>
+              <small>Document selector</small>
+              <strong>Open another source document</strong>
+              <p>The active case’s document inbox opens automatically. Use an exact Document ID to jump to a specific source.</p>
             </div>
           </header>
           <form className="sky-reference-search-row" onSubmit={runAccountSearch} noValidate>
@@ -4096,13 +4107,7 @@ export function DocumentViewerTool(props) {
                 value={accountId}
                 onChange={(event) => {
                   setAccountId(event.target.value);
-                  setMatchedCase(null);
-                  setDocuments([]);
-                  setSelectedId('');
-                  setPageIndex(0);
-                  setFilter('');
                   setError('');
-                  setHasRun(false);
                 }}
                 placeholder="Enter exact Account ID or Document ID"
                 aria-label="Search Document Viewer by Account ID or Document ID"
@@ -4129,11 +4134,7 @@ export function DocumentViewerTool(props) {
             </button>
           </div>
           {error ? <div className="sky-reference-search-message" data-tone="pink" role="alert">{error}</div> : null}
-          {!hasRun ? (
-            <div className="sky-reference-search-message" role="status">
-              Customer documents are locked.
-            </div>
-          ) : null}
+          {!hasRun ? <div className="sky-reference-search-message" role="status">Opening the active case inbox…</div> : null}
         </div>
       </article>
 
@@ -4385,6 +4386,25 @@ export function DocumentRequestTool(props) {
       title: record.documentType,
     })),
   ], [templates, inbox]);
+  useEffect(() => {
+    if (!hasSource) {
+      setResults([]);
+      setSelectedKey('');
+      setHasRun(true);
+      return;
+    }
+    const requested = lower(routedIdentifier);
+    const directResults = requested
+      ? candidates.filter((item) => (
+          [item.id, item.sourceDocumentId, item.documentViewerId]
+            .some((value) => lower(value) === requested)
+          || requestSearchText(item).includes(requested)
+        ))
+      : candidates;
+    setResults(directResults);
+    setSelectedKey(directResults[0]?.key ?? '');
+    setHasRun(true);
+  }, [candidates, hasSource, routedIdentifier]);
 
   function publishRequestState(next) {
     setRequestState(next);
@@ -4399,8 +4419,9 @@ export function DocumentRequestTool(props) {
     setSelectedKey('');
     setConfirmation('');
     if (!requested) {
-      setResults([]);
-      setError('Enter a document title, type, status, category, or request ID.');
+      setResults(candidates);
+      setSelectedKey(candidates[0]?.key ?? '');
+      setError('');
       return;
     }
     if (!hasSource) {
@@ -4586,8 +4607,8 @@ export function DocumentRequestTool(props) {
           <header className="sky-reference-search-heading">
             <span aria-hidden="true"><SkyIcon name="evidence" size={20} /></span>
             <div>
-              <small>Search before reveal</small>
-              <strong>Open requestable paperwork or request history</strong>
+              <small>Request inbox filter</small>
+              <strong>Filter requestable paperwork or request history</strong>
               <p>Sending is always a separate learner action. It records an outbound request and never creates a customer document.</p>
             </div>
           </header>
@@ -4598,13 +4619,10 @@ export function DocumentRequestTool(props) {
                 value={input}
                 onChange={(event) => {
                   setInput(event.target.value);
-                  setResults([]);
-                  setSelectedKey('');
                   setError('');
                   setConfirmation('');
                   setDueDate('');
                   setReason('');
-                  setHasRun(false);
                 }}
                 placeholder="Document title, type, status, category, or request ID"
                 aria-label="Search Document Request"
@@ -4613,7 +4631,7 @@ export function DocumentRequestTool(props) {
             </label>
             <button className="sky-button" type="submit">
               <SkyIcon name="sparkle" size={18} />
-              Search
+              Apply filter
             </button>
           </form>
           {error ? <div className="sky-reference-search-message" data-tone="pink" role="alert">{error}</div> : null}
