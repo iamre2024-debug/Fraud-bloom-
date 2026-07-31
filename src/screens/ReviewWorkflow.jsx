@@ -57,7 +57,7 @@ function ReviewHero({
           <p>{description}</p>
         </div>
         <div className="sky-review-luna">
-          <img src="/assets/luna-sky-vector-v1.svg" alt="Luna" />
+          <img src="/assets/luna-anime-purple-v1.webp" alt="Luna" />
           <span>Luna <i aria-hidden="true">♥</i></span>
         </div>
       </div>
@@ -144,7 +144,7 @@ function ReferenceReviewHeader({
       </div>
       {luna ? (
         <div className="sky-review-reference-luna" aria-hidden="true">
-          <img src="/assets/luna-sky-vector-v1.svg" alt="" />
+          <img src="/assets/luna-anime-purple-v1.webp" alt="" />
           <i>♥</i>
         </div>
       ) : <span className="sky-review-reference-slot" aria-hidden="true" />}
@@ -1046,7 +1046,7 @@ export function LunaDebrief({
         <SkyCard tone="pink" shape="shield" sparkle>
           <div className="sky-luna-locked-layout">
             <div className="sky-luna-locked-art">
-              <img src="/assets/luna-sky-vector-v1.svg" alt="Luna" />
+              <img src="/assets/luna-anime-purple-v1.webp" alt="Luna" />
             </div>
             <div>
               <p className="sky-eyebrow">Luna is waiting</p>
@@ -1102,7 +1102,7 @@ export function LunaDebrief({
       <section className="sky-luna-coach-hero sky-luna-debrief">
         <SkySparkles />
         <div className="sky-luna-coach-art">
-          <img src="/assets/luna-sky-vector-v1.svg" alt="Luna, your AI coach" />
+          <img src="/assets/luna-anime-purple-v1.webp" alt="Luna, your AI coach" />
           <i aria-hidden="true">♥</i>
         </div>
         <div className="sky-luna-speech">

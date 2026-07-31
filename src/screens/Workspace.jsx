@@ -94,7 +94,7 @@ export default function Workspace({
           <span>Switch case</span>
         </button>
         <div className="sky-toolmap-luna" aria-hidden="true">
-          <img src="/assets/luna-sky-vector-v1.svg" alt="" />
+          <img src="/assets/luna-anime-purple-v1.webp" alt="" />
           <i>♥</i>
         </div>
       </header>

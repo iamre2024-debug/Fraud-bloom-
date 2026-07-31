@@ -134,7 +134,7 @@ export default function CaseQueue({
           </span>
         </button>
         <div className="sky-queue-luna" aria-hidden="true">
-          <img src="/assets/luna-sky-vector-v1.svg" alt="" />
+          <img src="/assets/luna-anime-purple-v1.webp" alt="" />
           <i>♥</i>
         </div>
       </header>

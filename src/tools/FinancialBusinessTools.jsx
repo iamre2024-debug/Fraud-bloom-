@@ -290,7 +290,7 @@ function ReferenceToolHero({
       </div>
       {showLuna ? (
         <div className="sky-reference-tool-luna" aria-hidden="true">
-          <img src="/assets/luna-sky-vector-v1.svg" alt="" />
+          <img src="/assets/luna-anime-purple-v1.webp" alt="" />
           <i aria-hidden="true">♥</i>
         </div>
       ) : null}
@@ -1730,7 +1730,7 @@ export function MerchantIntelligenceTool(props) {
               </div>
             </div>
             <div className="sky-merchant-profile-luna" aria-hidden="true">
-              <img src="/assets/luna-sky-vector-v1.svg" alt="" />
+              <img src="/assets/luna-anime-purple-v1.webp" alt="" />
               <i>♥</i>
             </div>
           </div>

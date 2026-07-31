@@ -624,7 +624,7 @@ for (const [file, source, anchors] of [
     'sky-dashboard-academy',
     'SkyProgressRing',
     'sky-dashboard-lower',
-    'luna-sky-vector-v1.svg',
+    'luna-anime-purple-v1.webp',
   ]],
   ['Case Briefing', briefingSource, [
     'sky-case-banner',

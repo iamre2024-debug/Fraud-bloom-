@@ -99,7 +99,7 @@ export default function Dashboard({
         </div>
         <div className="sky-hero-luna">
           <div className="sky-luna-art sky-luna-orbit">
-            <img src="/assets/luna-sky-vector-v1.svg" alt="Luna, the Fraud Bloom assistant" />
+            <img src="/assets/luna-anime-purple-v1.webp" alt="Luna, the Fraud Bloom assistant" />
             <span className="sky-luna-heart" aria-hidden="true">♥</span>
           </div>
           <div>
@@ -184,7 +184,7 @@ export default function Dashboard({
             </StatusChip>
           </div>
           <div className="sky-agent-panel">
-            <img src="/assets/luna-sky-vector-v1.svg" alt="" aria-hidden="true" />
+            <img src="/assets/luna-anime-purple-v1.webp" alt="" aria-hidden="true" />
             <div>
               <p>
                 {latestPackage

@@ -192,7 +192,21 @@ function AppScreen({ state }) {
         </>
       );
     case 'briefing':
-      return <CaseBriefing {...state} />;
+      return (
+        <>
+          <CaseBriefing {...state} />
+          <QuickPad
+            tray={state.tray}
+            quickPad={state.quickPad}
+            setQuickPad={state.setQuickPad}
+            navigate={state.navigate}
+            activeCaseId={state.activeCase.id}
+            activeCaseTrainingId={state.activeCase.trainingId}
+            activeCaseAvailableTools={state.activeCase.availableTools}
+            variant="floating"
+          />
+        </>
+      );
     case 'workspace':
       return (
         <>
