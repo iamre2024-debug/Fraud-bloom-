@@ -159,9 +159,24 @@ function ToolWorkspace({ state }) {
         activeCaseId={activeCase.id}
         activeCaseTrainingId={activeCase.trainingId}
         activeCaseAvailableTools={activeCase.availableTools}
-        variant={['Employee Profile', 'System Access Lane'].includes(toolName) ? 'floating' : 'card'}
+        variant="floating"
       />
     </>
+  );
+}
+
+function CaseQuickPadLayer({ state }) {
+  return (
+    <QuickPad
+      tray={state.tray}
+      quickPad={state.quickPad}
+      setQuickPad={state.setQuickPad}
+      navigate={state.navigate}
+      activeCaseId={state.activeCase.id}
+      activeCaseTrainingId={state.activeCase.trainingId}
+      activeCaseAvailableTools={state.activeCase.availableTools}
+      variant="floating"
+    />
   );
 }
 
@@ -179,58 +194,46 @@ function AppScreen({ state }) {
             createCase={state.createCase}
             navigate={state.navigate}
           />
-          <QuickPad
-            tray={state.tray}
-            quickPad={state.quickPad}
-            setQuickPad={state.setQuickPad}
-            navigate={state.navigate}
-            activeCaseId={state.activeCase.id}
-            activeCaseTrainingId={state.activeCase.trainingId}
-            activeCaseAvailableTools={state.activeCase.availableTools}
-            variant="floating"
-          />
+          <CaseQuickPadLayer state={state} />
         </>
       );
     case 'briefing':
       return (
         <>
           <CaseBriefing {...state} />
-          <QuickPad
-            tray={state.tray}
-            quickPad={state.quickPad}
-            setQuickPad={state.setQuickPad}
-            navigate={state.navigate}
-            activeCaseId={state.activeCase.id}
-            activeCaseTrainingId={state.activeCase.trainingId}
-            activeCaseAvailableTools={state.activeCase.availableTools}
-            variant="floating"
-          />
+          <CaseQuickPadLayer state={state} />
         </>
       );
     case 'workspace':
       return (
         <>
           <Workspace {...state} />
-          <QuickPad
-            tray={state.tray}
-            quickPad={state.quickPad}
-            setQuickPad={state.setQuickPad}
-            navigate={state.navigate}
-            activeCaseId={state.activeCase.id}
-            activeCaseTrainingId={state.activeCase.trainingId}
-            activeCaseAvailableTools={state.activeCase.availableTools}
-            variant="floating"
-          />
+          <CaseQuickPadLayer state={state} />
         </>
       );
     case 'tool':
       return <ToolWorkspace state={state} />;
     case 'summary':
-      return <InvestigationSummary {...state} />;
+      return (
+        <>
+          <InvestigationSummary {...state} />
+          <CaseQuickPadLayer state={state} />
+        </>
+      );
     case 'indicators':
-      return <IndicatorsReview {...state} />;
+      return (
+        <>
+          <IndicatorsReview {...state} />
+          <CaseQuickPadLayer state={state} />
+        </>
+      );
     case 'determination':
-      return <Determination {...state} />;
+      return (
+        <>
+          <Determination {...state} />
+          <CaseQuickPadLayer state={state} />
+        </>
+      );
     case 'submit':
       return <SubmitDecision {...state} />;
     case 'luna':
