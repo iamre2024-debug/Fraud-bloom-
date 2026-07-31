@@ -16,6 +16,35 @@ async function expectNoPageOverflow(page, width) {
   expect(layout.document).toBeLessThanOrEqual(width + 1);
 }
 
+async function expectToolMapControlsDoNotOverlap(page) {
+  const controls = await page.locator('.sky-toolmap-node, .sky-toolmap-core').evaluateAll(
+    (elements) => elements.map((element) => {
+      const rect = element.getBoundingClientRect();
+      return {
+        label: element.textContent?.replace(/\s+/g, ' ').trim(),
+        left: rect.left,
+        right: rect.right,
+        top: rect.top,
+        bottom: rect.bottom,
+      };
+    }),
+  );
+
+  for (let first = 0; first < controls.length; first += 1) {
+    for (let second = first + 1; second < controls.length; second += 1) {
+      const a = controls[first];
+      const b = controls[second];
+      const overlaps = (
+        a.left < b.right
+        && a.right > b.left
+        && a.top < b.bottom
+        && a.bottom > b.top
+      );
+      expect(overlaps, `${a.label} overlaps ${b.label}`).toBe(false);
+    }
+  }
+}
+
 for (const width of [420, 390, 360, 320]) {
   test(`Case Queue and Tool Map remain functional at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
@@ -55,6 +84,7 @@ for (const width of [420, 390, 360, 320]) {
     await expect(page.locator('.sky-toolmap-canvas')).toBeVisible();
     await expect(page.locator('.sky-toolmap-node')).toHaveCount(5);
     await expect(page.locator('.sky-toolmap-lines-mobile')).toBeVisible();
+    await expectToolMapControlsDoNotOverlap(page);
 
     const renderedTools = [];
     const nodes = page.locator('.sky-toolmap-node');
@@ -68,3 +98,28 @@ for (const width of [420, 390, 360, 320]) {
     await expectNoPageOverflow(page, width);
   });
 }
+
+test.describe('tablet Tool Map', () => {
+  test.use({
+    hasTouch: true,
+    viewport: { width: 1180, height: 820 },
+  });
+
+  test('keeps every navigation group separate from Case Briefing', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('navigation', { name: 'Primary navigation' })
+      .getByRole('button', { name: /Workspace/i })
+      .click();
+
+    await expect(page.locator('.sky-toolmap-node')).toHaveCount(5);
+    await expectToolMapControlsDoNotOverlap(page);
+
+    const nodes = page.locator('.sky-toolmap-node');
+    for (let index = 0; index < 5; index += 1) {
+      await nodes.nth(index).click();
+      await expect(page.locator('.sky-toolmap-tool-button').first()).toBeVisible();
+    }
+
+    await expectNoPageOverflow(page, 1180);
+  });
+});
