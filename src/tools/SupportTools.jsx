@@ -297,34 +297,54 @@ export function LinkAnalysisTool(props) {
   } = props;
   const prefilledQuery = clean(initialPayload?.query ?? routedQuery);
   const prefilledType = clean(initialPayload?.identifierType);
-  const [query, setQuery] = useState(prefilledQuery);
-  const [type, setType] = useState(prefilledType);
-  const [result, setResult] = useState(null);
-  const [selected, setSelected] = useState(null);
-  const [hasRun, setHasRun] = useState(false);
-  const [showAll, setShowAll] = useState(false);
   const knownIdentifiers = useMemo(
     () => getLinkIdentifiersForCase(activeCase),
     [activeCase],
   );
+  const defaultIdentifier = knownIdentifiers.find((item) => item.type === 'phone')
+    ?? knownIdentifiers.find((item) => item.type === 'training-id')
+    ?? knownIdentifiers[0]
+    ?? null;
+  const initialQuery = prefilledQuery || clean(defaultIdentifier?.value);
+  const initialType = prefilledType || clean(defaultIdentifier?.type);
+  const [query, setQuery] = useState(initialQuery);
+  const [type, setType] = useState(initialType);
+  const [result, setResult] = useState(() => (
+    initialQuery
+      ? searchLinkRelationships({
+          query: initialQuery,
+          identifierType: initialType,
+          cases,
+          activeCase,
+        })
+      : null
+  ));
+  const [selected, setSelected] = useState(null);
+  const [showAll, setShowAll] = useState(false);
   const availableTypes = useMemo(
     () => new Set(knownIdentifiers.map((item) => item.type)),
     [knownIdentifiers],
   );
 
   useEffect(() => {
-    setQuery(prefilledQuery);
-    setType(prefilledType);
-    setResult(null);
+    const nextQuery = prefilledQuery || clean(defaultIdentifier?.value);
+    const nextType = prefilledType || clean(defaultIdentifier?.type);
+    setQuery(nextQuery);
+    setType(nextType);
+    setResult(nextQuery
+      ? searchLinkRelationships({
+          query: nextQuery,
+          identifierType: nextType,
+          cases,
+          activeCase,
+        })
+      : null);
     setSelected(null);
-    setHasRun(false);
     setShowAll(false);
-  }, [activeCase?.id, prefilledQuery, prefilledType]);
+  }, [activeCase, cases, defaultIdentifier, prefilledQuery, prefilledType]);
 
-  function clearResult() {
-    setResult(null);
+  function resetSelection() {
     setSelected(null);
-    setHasRun(false);
     setShowAll(false);
   }
 
@@ -338,7 +358,6 @@ export function LinkAnalysisTool(props) {
     });
     setResult(next);
     setSelected(null);
-    setHasRun(true);
     setShowAll(false);
     props.onAction?.(
       'Ran exact link search',
@@ -361,7 +380,7 @@ export function LinkAnalysisTool(props) {
       <SupportReferenceHero
         title="Link Analysis"
         eyebrow="Connections · Exact records"
-        subtitle="Search one identifier and inspect only its source-backed account relationships."
+        subtitle="Inspect the active record’s source-backed relationships and switch identifiers when needed."
         activeCase={activeCase}
         onBack={props.onBackToWorkspace}
         icon="workspace"
@@ -377,9 +396,9 @@ export function LinkAnalysisTool(props) {
           <header className="sky-reference-search-heading">
             <span aria-hidden="true"><SkyIcon name="sparkle" size={20} /></span>
             <div>
-              <small>Search before reveal</small>
-              <strong>Search one exact identifier</strong>
-              <p>Results show stored exact matches only. A shared identifier is evidence, not a case outcome.</p>
+              <small>Active connected record</small>
+              <strong>View a different exact identifier</strong>
+              <p>The current case connection opens automatically. Use this control only to switch the record being mapped.</p>
             </div>
           </header>
         <form
@@ -393,7 +412,7 @@ export function LinkAnalysisTool(props) {
               value={type}
               onChange={(event) => {
                 setType(event.target.value);
-                  clearResult();
+                  resetSelection();
               }}
             >
               <option value="">Infer from exact value</option>
@@ -410,7 +429,7 @@ export function LinkAnalysisTool(props) {
               value={query}
               onChange={(event) => {
                 setQuery(event.target.value);
-                  clearResult();
+                  resetSelection();
               }}
               placeholder="Enter a complete Training ID, device ID, IP, Bank Code…"
                 aria-label="Exact Link Analysis identifier"
@@ -422,19 +441,14 @@ export function LinkAnalysisTool(props) {
               Run exact search
             </button>
         </form>
-          {prefilledQuery && !hasRun ? (
-            <div className="sky-reference-search-message" role="status">
-              The routed identifier is ready. Run the exact search to reveal relationships.
-            </div>
-          ) : null}
         </SkyCard>
 
-        {!hasRun ? (
+        {!result ? (
           <SkyCard className="span-12 sky-support-reference-locked" shape="notched">
             <SkyIcon name="workspace" size={23} />
             <div>
-              <strong>Account relationships are hidden</strong>
-              <p>Choose a type or allow exact-value inference, enter the complete identifier, and run the search.</p>
+              <strong>No connected identifier is supplied</strong>
+              <p>This case does not contain a source-backed identifier that Link Analysis can map.</p>
             </div>
           </SkyCard>
         ) : null}
