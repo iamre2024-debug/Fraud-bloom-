@@ -505,10 +505,11 @@ for (const anchor of [
   if (!quickPadSource.includes(anchor)) fail(`Functional floating Quick Pad is missing ${anchor}.`);
 }
 if (
-  !appSource.includes("['Employee Profile', 'System Access Lane'].includes(toolName)")
+  !appSource.includes('function CaseQuickPadLayer({ state })')
+  || !appSource.includes('variant="floating"')
   || !quickPadSource.includes("'System Access Lane': 'System Access Record ID'")
 ) {
-  fail('System Access Lane is missing its floating Quick Pad and exact identifier label.');
+  fail('The case-wide floating Quick Pad or System Access exact identifier label is missing.');
 }
 for (const anchor of ['sky-toolmap-lines-mobile', 'aria-live="polite"']) {
   if (!workspaceSource.includes(anchor)) fail(`Responsive accessible Tool Map is missing ${anchor}.`);
