@@ -254,7 +254,8 @@ for (const anchor of [
   'rangeTransactionRecords(results, rangeId',
   'filterTransactionRecords(rangedResults, filters)',
   'summarizeTransactionRecords(displayedResults)',
-  'Run search',
+  'Apply filter',
+  'The active case’s transactions open automatically.',
   'reference',
 ]) {
   if (!transactionHistorySource.includes(anchor)) {
@@ -396,8 +397,8 @@ for (const anchor of [
   'sky-system-access-summary',
   'sky-system-access-lane',
   'sky-system-access-event',
-  'System access records are hidden',
-  'Run access search',
+  'All active-case events open automatically.',
+  'Apply filter',
 ]) {
   if (!supportSource.includes(anchor)) fail(`Support tool module is missing ${anchor}.`);
 }
