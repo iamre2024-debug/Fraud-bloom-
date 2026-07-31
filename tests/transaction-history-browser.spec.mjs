@@ -19,23 +19,20 @@ async function openTransactionHistory(page) {
 
 async function runPostedSearch(page) {
   await page.getByLabel('Search Transaction History').fill('Posted');
-  await page.getByRole('button', { name: 'Run search' }).click();
+  await page.getByRole('button', { name: 'Apply filter' }).click();
   await expect(page.locator('.sky-transaction-summary')).toBeVisible();
   await expect(page.locator('.sky-transaction-record')).toHaveCount(3);
 }
 
-test('Transaction History preserves its gate and functional Sky investigation workflow', async ({ page }) => {
+test('Transaction History opens directly and preserves its functional Sky investigation workflow', async ({ page }) => {
   await openTransactionHistory(page);
 
   await expect(page.locator('.sky-tool-heading')).toHaveCount(0);
-  await expect(page.locator('.sky-transaction-summary')).toHaveCount(0);
-  await expect(page.locator('.sky-transaction-record')).toHaveCount(0);
-  await expect(page.getByText('No transaction result is open.')).toBeVisible();
+  await expect(page.locator('.sky-transaction-summary')).toBeVisible();
+  await expect(page.locator('.sky-transaction-record').first()).toBeVisible();
 
-  await page.getByRole('button', { name: 'Run search' }).click();
-  await expect(page.getByRole('alert')).toContainText('Enter a transaction ID');
   await page.getByLabel('Search Transaction History').fill('not-a-source-transaction');
-  await page.getByRole('button', { name: 'Run search' }).click();
+  await page.getByRole('button', { name: 'Apply filter' }).click();
   await expect(page.getByRole('alert')).toContainText('No supplied transaction matched');
 
   await runPostedSearch(page);
@@ -77,20 +74,15 @@ test('Transaction History preserves its gate and functional Sky investigation wo
   await quickPad.getByRole('button', { name: 'Open Transaction History' }).click();
 
   await expect(page.getByLabel('Search Transaction History')).toHaveValue('TXN-1001');
-  await expect(page.locator('.sky-transaction-summary')).toHaveCount(0);
-  await expect(page.locator('.sky-transaction-record')).toHaveCount(0);
-  await expect(page.getByText('No transaction result is open.')).toBeVisible();
-
-  await page.getByRole('button', { name: 'Run search' }).click();
   await expect(page.locator('.sky-transaction-record')).toHaveCount(1);
   await expect(page.locator('.sky-transaction-summary')).toContainText('Exact transaction view');
 
   await page.getByLabel('Search Transaction History').fill('Metro Fuel');
-  await page.getByRole('button', { name: 'Run search' }).click();
+  await page.getByRole('button', { name: 'Apply filter' }).click();
   await expect(page.locator('.sky-transaction-record')).toHaveCount(1);
   await page.getByLabel('Search Transaction History').fill('Metro');
-  await expect(page.locator('.sky-transaction-summary')).toHaveCount(0);
-  await expect(page.locator('.sky-transaction-record')).toHaveCount(0);
+  await expect(page.locator('.sky-transaction-summary')).toBeVisible();
+  await expect(page.locator('.sky-transaction-record')).toHaveCount(1);
 });
 
 test('Transaction History has no horizontal overflow at supported phone widths', async ({ page }) => {
