@@ -82,16 +82,13 @@ async function runEmployeeSearch(page, identifier) {
   await page.getByRole('button', { name: 'Run employee search' }).click();
 }
 
-test('Employee Profile keeps exact search locked and preserves actions plus Payroll handoffs', async ({ page }) => {
+test('Employee Profile opens directly and preserves exact switching, actions, and Payroll handoffs', async ({ page }) => {
   await openEmployeeProfile(page);
 
   await expect(page.locator('.sky-tool-heading')).toHaveCount(0);
-  await expect(page.locator('.sky-employee-hero')).toHaveCount(0);
-  await expect(page.locator('[aria-label="Employee pay details"]')).toHaveCount(0);
-  await expect(page.getByText('No employee profile is open.')).toBeVisible();
+  await expect(page.locator('.sky-employee-hero')).toBeVisible();
+  await expect(page.locator('[aria-label="Employee pay details"]')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Run employee search' }).click();
-  await expect(page.getByRole('alert')).toContainText('Enter an exact employee');
   await runEmployeeSearch(page, `${verifiedProfile.id}-PARTIAL`);
   await expect(page.getByRole('alert')).toContainText('No supplied employee profile matched');
   await expect(page.locator('.sky-employee-hero')).toHaveCount(0);
@@ -120,27 +117,23 @@ test('Employee Profile keeps exact search locked and preserves actions plus Payr
   await quickPad.getByRole('button', { name: 'Open Employee Profile' }).click();
 
   await expect(page.getByLabel('Search Employee Profile')).toHaveValue(verifiedProfile.id);
-  await expect(page.locator('.sky-employee-hero')).toHaveCount(0);
-  await expect(page.getByText('No employee profile is open.')).toBeVisible();
-  await page.getByRole('button', { name: 'Run employee search' }).click();
   await expect(page.locator('.sky-employee-hero')).toContainText(verifiedProfile.name);
 
   await page.getByRole('button', { name: 'Open Payroll History', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Payroll History', exact: true })).toBeVisible();
   await expect(page.getByLabel('Search Payroll History')).toHaveValue(verifiedProfile.id);
-  await expect(page.locator('.sky-payroll-overview')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Run payroll search' }).click();
+  await expect(page.locator('.sky-payroll-overview')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Employee Pay Records Preview', exact: true })).toBeVisible();
   await expect(page.locator('.sky-payroll-employees')).toContainText(verifiedProfile.name);
 
   await page.getByRole('button', { name: /Open Employee Profile/i }).click();
   await expect(page.getByRole('heading', { name: 'Employee Profile', exact: true })).toBeVisible();
   await expect(page.getByLabel('Search Employee Profile')).toHaveValue(verifiedProfile.id);
-  await expect(page.locator('.sky-employee-hero')).toHaveCount(0);
+  await expect(page.locator('.sky-employee-hero')).toContainText(verifiedProfile.name);
 
   await page.getByLabel('Search Employee Profile').fill(`${verifiedProfile.id}-edited`);
-  await expect(page.locator('.sky-employee-hero')).toHaveCount(0);
-  await expect(page.locator('[aria-label="Employee pay details"]')).toHaveCount(0);
+  await expect(page.locator('.sky-employee-hero')).toContainText(verifiedProfile.name);
+  await expect(page.locator('[aria-label="Employee pay details"]')).toBeVisible();
 });
 
 test('Employee Profile exposes only source-backed Payment Verification handoffs', async ({ page }) => {
