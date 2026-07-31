@@ -420,6 +420,11 @@ export function useWorkspaceState() {
       ...current,
       [caseId]: [reviewPackage, ...(current[caseId] ?? [])],
     }));
+    setQuickPadByCase((current) => {
+      const next = { ...current };
+      delete next[caseId];
+      return next;
+    });
     markReviewed('Submit Decision');
     recordAction(
       'Submitted review package',
@@ -459,12 +464,19 @@ export function useWorkspaceState() {
 
   const updateQuickPad = useCallback((nextValue) => {
     if (!caseId) return;
-    setQuickPadByCase((current) => ({
-      ...current,
-      [caseId]: typeof nextValue === 'function'
-        ? nextValue(current[caseId] ?? { items: [], scratch: '' })
-        : nextValue,
-    }));
+    setQuickPadByCase((current) => {
+      const existing = current[caseId] ?? { items: [], scratch: '' };
+      const updated = typeof nextValue === 'function'
+        ? nextValue(existing)
+        : nextValue;
+      return {
+        ...current,
+        [caseId]: {
+          ...updated,
+          lastSavedAt: new Date().toISOString(),
+        },
+      };
+    });
   }, [caseId]);
 
   return {
