@@ -131,16 +131,17 @@ function recordIdentifiers(values = []) {
   return [...new Set(identifiers)];
 }
 
-function useExactLookup(activeCase, initialQuery = '') {
-  const [query, setQuery] = useState(String(initialQuery ?? ''));
-  const [selected, setSelected] = useState(null);
-  const [attempted, setAttempted] = useState(false);
+function useExactLookup(activeCase, initialQuery = '', directRecord = null, directQuery = '') {
+  const openedQuery = String(initialQuery || directQuery || '');
+  const [query, setQuery] = useState(openedQuery);
+  const [selected, setSelected] = useState(directRecord);
+  const [attempted, setAttempted] = useState(Boolean(directRecord));
 
   useEffect(() => {
-    setQuery(String(initialQuery ?? ''));
-    setSelected(null);
-    setAttempted(false);
-  }, [activeCase?.id, initialQuery]);
+    setQuery(String(initialQuery || directQuery || ''));
+    setSelected(directRecord);
+    setAttempted(Boolean(directRecord));
+  }, [activeCase?.id, directQuery, directRecord, initialQuery]);
 
   function updateQuery(value) {
     setQuery(value);
@@ -1276,7 +1277,8 @@ export function LoginHistoryTool({
 }) {
   const tool = IDENTITY_DIGITAL_TOOLS.LOGIN_HISTORY;
   const records = useMemo(() => getLoginRecords(activeCase), [activeCase]);
-  const lookup = useExactLookup(activeCase, initialQuery);
+  const directRecord = records.find((record) => exactText(record.id, initialQuery)) ?? records[0] ?? null;
+  const lookup = useExactLookup(activeCase, initialQuery, directRecord, directRecord?.id);
   const rawRecord = lookup.selected ? sourceLogin(activeCase, lookup.selected.id) : null;
 
   function runSearch() {
@@ -1293,7 +1295,7 @@ export function LoginHistoryTool({
       tool={tool}
       eyebrow="Authentication evidence"
       title="Login History"
-      subtitle="Search one complete Login ID to examine the recorded authentication event."
+      subtitle="Open the active case’s authentication history and switch to another Login ID when needed."
       count={records.length}
       activeCase={activeCase}
       icon="login"
@@ -1302,8 +1304,9 @@ export function LoginHistoryTool({
     >
       <ReferenceSearchCard
         icon="search"
-        title="Search one authentication event"
-        description="Use the complete Login ID. Event details stay hidden until an exact record is returned."
+        eyebrow="Record filter"
+        title="Open another authentication event"
+        description="The first supplied event opens automatically. Enter a complete Login ID to switch records."
       >
         <ExactSearchForm onSubmit={runSearch} reference>
           <SearchField
@@ -1478,7 +1481,8 @@ export function SessionHistoryTool({
 }) {
   const tool = IDENTITY_DIGITAL_TOOLS.SESSION_HISTORY;
   const records = useMemo(() => getSessionRecords(activeCase), [activeCase]);
-  const lookup = useExactLookup(activeCase, initialQuery);
+  const directRecord = records.find((record) => exactText(record.session, initialQuery)) ?? records[0] ?? null;
+  const lookup = useExactLookup(activeCase, initialQuery, directRecord, directRecord?.session);
   const rawLogin = lookup.selected ? sourceLogin(activeCase, lookup.selected.id) : null;
   const selectedDeviceId = lookup.selected
     ? exactDeviceId(activeCase, rawLogin?.deviceId ?? rawLogin?.device)
@@ -1497,7 +1501,7 @@ export function SessionHistoryTool({
       tool={tool}
       eyebrow="Post-login evidence"
       title="Session History"
-      subtitle="Search one complete Session ID to inspect its source-linked authentication and profile activity."
+      subtitle="Open the active case’s session history and switch to another Session ID when needed."
       count={records.length}
       activeCase={activeCase}
       icon="session"
@@ -1506,8 +1510,9 @@ export function SessionHistoryTool({
     >
       <ReferenceSearchCard
         icon="search"
-        title="Search one authenticated session"
-        description="Use the complete Session ID. The recorded activity path remains hidden until an exact match is returned."
+        eyebrow="Record filter"
+        title="Open another authenticated session"
+        description="The first supplied session opens automatically. Enter a complete Session ID to switch records."
       >
         <ExactSearchForm onSubmit={runSearch} reference>
           <SearchField
@@ -1752,7 +1757,12 @@ export function DeviceIntelligenceTool({
 }) {
   const tool = IDENTITY_DIGITAL_TOOLS.DEVICE_INTELLIGENCE;
   const records = useMemo(() => getDeviceProfiles(activeCase), [activeCase]);
-  const lookup = useExactLookup(activeCase, initialQuery);
+  const directRecord = records.find((record) => (
+    exactText(record.id, initialQuery)
+    || exactText(record.deviceFingerprint, initialQuery)
+    || exactText(record.browserFingerprint, initialQuery)
+  )) ?? records[0] ?? null;
+  const lookup = useExactLookup(activeCase, initialQuery, directRecord, directRecord?.id);
 
   function runSearch() {
     lookup.setAttempted(true);
@@ -1768,7 +1778,7 @@ export function DeviceIntelligenceTool({
       tool={tool}
       eyebrow="Exact device lookup"
       title="Device Intelligence"
-      subtitle="Search the complete Device ID, device fingerprint, or browser fingerprint."
+      subtitle="Open the active case’s device record and switch devices by an exact identifier when needed."
       count={records.length}
       activeCase={activeCase}
       icon="device"
@@ -1777,8 +1787,9 @@ export function DeviceIntelligenceTool({
     >
       <ReferenceSearchCard
         icon="search"
-        title="Find one device record"
-        description="Use a complete Device ID, device fingerprint, or browser fingerprint. No candidate device is exposed before search."
+        eyebrow="Record filter"
+        title="Open another device record"
+        description="The first supplied device opens automatically. Use a complete Device ID or fingerprint to switch records."
       >
         <ExactSearchForm onSubmit={runSearch} reference>
           <SearchField
@@ -1966,7 +1977,8 @@ export function IpIntelligenceTool({
 }) {
   const tool = IDENTITY_DIGITAL_TOOLS.IP_INTELLIGENCE;
   const records = useMemo(() => getIpRecords(activeCase), [activeCase]);
-  const lookup = useExactLookup(activeCase, initialQuery);
+  const directRecord = records.find((record) => exactText(record.ip, initialQuery)) ?? records[0] ?? null;
+  const lookup = useExactLookup(activeCase, initialQuery, directRecord, directRecord?.ip);
 
   function runSearch() {
     lookup.setAttempted(true);
@@ -1978,7 +1990,7 @@ export function IpIntelligenceTool({
       tool={tool}
       eyebrow="Exact network lookup"
       title="IP Intelligence"
-      subtitle="Search one complete IP address. No candidate addresses are exposed before lookup."
+      subtitle="Open the active case’s IP records and switch to another exact address when needed."
       count={records.length}
       activeCase={activeCase}
       icon="globe"
@@ -1987,8 +1999,9 @@ export function IpIntelligenceTool({
     >
       <ReferenceSearchCard
         icon="search"
-        title="Find one network record"
-        description="Use the complete IP address. Observed access records remain hidden until an exact match is returned."
+        eyebrow="Record filter"
+        title="Open another network record"
+        description="The first supplied IP record opens automatically. Enter a complete address to switch records."
       >
         <ExactSearchForm onSubmit={runSearch} reference>
           <SearchField
