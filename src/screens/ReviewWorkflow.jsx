@@ -357,7 +357,8 @@ export function IndicatorsReview({
           meta={`${completedCount} / ${checklist.flags.length}`}
         />
         <p className="sky-review-guidance">
-          No risk color, weight, score, or correct response is shown. Expand each row to make your own assessment.
+          Prompts alternate between unresolved concerns and legitimate or consistent evidence.
+          No risk color, weight, score, or correct response is shown.
         </p>
         <div className="sky-indicator-rows">
           {checklist.flags.map((indicator, index) => {
@@ -512,13 +513,12 @@ export function IndicatorsReview({
             <button
               className="sky-button"
               type="button"
-              disabled={!complete}
               onClick={() => {
-                markReviewed('Case Indicators Review');
+                if (complete) markReviewed('Case Indicators Review');
                 navigate('determination');
               }}
             >
-              Continue to determination →
+              {complete ? 'Continue to determination →' : 'Open determination with warning →'}
             </button>
           </div>
         </div>
