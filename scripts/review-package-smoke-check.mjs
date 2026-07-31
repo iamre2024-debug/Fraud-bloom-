@@ -1,5 +1,6 @@
 import {
   buildReviewPackage,
+  countRationaleWords,
   getDecisionCallGroups,
   getFinalFindingChoices,
   getReviewDisplaySnapshot,
@@ -21,6 +22,11 @@ import * as decisionChecklistApi from '../src/data/decisionChecklist.js';
 function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
+
+assert(
+  countRationaleWords('Record\u00a0one\u200btwo\u202fthree four') === 5,
+  'Determination word counting should recognize tablet keyboard spaces and zero-width separators.',
+);
 
 const requiredTools = ['Case Briefing', 'Customer 360'];
 const cardCase = {
