@@ -6885,9 +6885,9 @@
   right: 50%;
   bottom: calc(max(12px, env(safe-area-inset-bottom)) + 88px);
   overflow: auto;
-  width: min(920px, calc(100vw - 28px));
-  max-height: calc(100vh - 125px);
-  padding: 18px;
+  width: min(430px, calc(100vw - 28px));
+  max-height: min(560px, calc(100vh - 125px));
+  padding: 15px;
   border: 1px solid rgba(255, 99, 209, 0.45);
   border-radius: 26px 38px 26px 26px;
   background:
@@ -6931,6 +6931,12 @@
 .sky-quick-pad-content {
   position: relative;
   z-index: 1;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.sky-quick-pad-content > .span-6 {
+  grid-column: 1 / -1;
 }
 
 .sky-quick-pad-sheet .sky-summary-list li {
