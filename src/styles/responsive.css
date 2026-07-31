@@ -4270,6 +4270,44 @@
   }
 }
 
+/*
+ * Tablets in landscape commonly expose a desktop-width viewport even though
+ * the workspace is still touch-sized. Keep the orbital map from squeezing five
+ * text-heavy nodes around the center at those widths.
+ */
+@media (orientation: landscape) and (min-width: 681px) and (max-width: 1366px) and (pointer: coarse) {
+  .sky-toolmap-lines,
+  .sky-toolmap-lines-mobile {
+    display: none;
+  }
+
+  .sky-toolmap-orbit {
+    grid-template: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    width: min(900px, 100%);
+    padding: 4px;
+  }
+
+  .sky-toolmap-node {
+    grid-area: auto !important;
+    min-height: 132px;
+    padding: 12px 10px;
+  }
+
+  .sky-toolmap-node > strong {
+    max-width: 24ch;
+  }
+
+  .sky-toolmap-core {
+    grid-area: auto;
+    grid-column: 1 / -1;
+    grid-row: 1;
+    width: 156px;
+    margin-block: 6px;
+  }
+}
+
 @media (max-width: 680px) {
   .sky-app[data-reference-screen="true"] .sky-shell {
     padding: 8px 10px 112px;
