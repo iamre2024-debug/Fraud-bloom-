@@ -31,7 +31,6 @@ import {
 import {
   buildExplicitMerchantWorkspace,
   formatMerchantPin,
-  merchantLookupTypes,
   resolveMerchantLookup,
 } from '../data/explicitMerchantWorkspace.js';
 import {
@@ -1584,43 +1583,21 @@ export function MerchantIntelligenceTool(props) {
     ?? initialPayload?.identifierType
     ?? 'auto',
   );
-  const [input, setInput] = useState(routedLookup);
-  const [lookupType, setLookupType] = useState(routedLookupType);
-  const [resolved, setResolved] = useState(null);
+  const resolveWorkspaceRecord = () => {
+    if (!workspace) return null;
+    const lookup = routedLookup
+      || clean(workspace.profile?.name)
+      || clean(workspace.primaryTransaction?.id);
+    return lookup ? resolveMerchantLookup(workspace, lookup, routedLookupType) : null;
+  };
+  const [resolved, setResolved] = useState(resolveWorkspaceRecord);
   const [section, setSection] = useState('claim-details');
-  const [error, setError] = useState('');
-  const [hasRun, setHasRun] = useState(false);
 
   useEffect(() => {
-    setInput(routedLookup);
-    setLookupType(routedLookupType);
-    setResolved(null);
-    setSection('claim-details');
-    setError('');
-    setHasRun(false);
-  }, [activeCase.id, routedLookup, routedLookupType]);
-
-  function runSearch(event) {
-    event.preventDefault();
-    setResolved(null);
-    setHasRun(true);
-    if (!clean(input)) {
-      setError('Enter a merchant name, descriptor, MCC, or supplied merchant record ID.');
-      return;
-    }
-    if (!workspace) {
-      setError('No supplied merchant intelligence packet is attached to this case.');
-      return;
-    }
-    const match = resolveMerchantLookup(workspace, input, lookupType);
-    if (!match) {
-      setError('No exact supplied merchant identity or record ID matched that search.');
-      return;
-    }
-    setError('');
-    setResolved(match);
-    setSection(match.match.recordKind === 'response' ? 'merchant-response' : 'claim-details');
-  }
+    const nextResolved = resolveWorkspaceRecord();
+    setResolved(nextResolved);
+    setSection(nextResolved?.match?.recordKind === 'response' ? 'merchant-response' : 'claim-details');
+  }, [activeCase.id, routedLookup, routedLookupType, workspace]);
 
   const primary = workspace?.primaryTransaction ?? null;
   const focusTransaction = resolved?.match?.recordKind === 'transaction'
@@ -1644,65 +1621,13 @@ export function MerchantIntelligenceTool(props) {
       onBack={props.onBackToWorkspace}
       showLuna={false}
     >
-      <article
-        className="sky-card span-12 sky-reference-search sky-merchant-reference-search"
-        data-shape="ribbon"
-        data-sparkle="true"
-      >
-        <span className="sky-card-sheen" aria-hidden="true" />
-        <SkySparkles />
-        <div className="sky-card-inner">
-          <header className="sky-reference-search-heading">
-            <span aria-hidden="true"><SkyIcon name="merchant" size={20} /></span>
-            <div>
-              <small>Search before reveal</small>
-              <strong>Find an exact supplied merchant record</strong>
-              <p>Only a complete merchant identity, descriptor, MCC, or source record ID unlocks the packet.</p>
-            </div>
-          </header>
-          <form className="sky-merchant-search-row" onSubmit={runSearch} noValidate>
-            <label>
-              <span>Lookup type</span>
-              <select
-                value={lookupType}
-                onChange={(event) => {
-                  setLookupType(event.target.value);
-                  setResolved(null);
-                  setError('');
-                  setHasRun(false);
-                }}
-              >
-                <option value="auto">Detect exact type</option>
-                {merchantLookupTypes.map((type) => (
-                  <option value={type.id} key={type.id}>{type.label}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span>Merchant search</span>
-              <input
-                value={input}
-                onChange={(event) => {
-                  setInput(event.target.value);
-                  setResolved(null);
-                  setSection('claim-details');
-                  setError('');
-                  setHasRun(false);
-                }}
-                placeholder="Exact merchant name, descriptor, MCC, or record ID"
-                aria-label="Search Merchant Intelligence"
-                autoComplete="off"
-              />
-            </label>
-            <button className="sky-button" type="submit">
-              <SkyIcon name="sparkle" size={18} />
-              Search
-            </button>
-          </form>
-          {error ? <div className="sky-reference-search-message" data-tone="pink" role="alert">{error}</div> : null}
-          {!hasRun ? <div className="sky-reference-search-message" role="status">Merchant evidence is locked.</div> : null}
-        </div>
-      </article>
+      {!workspace || !resolved ? (
+        <article className="sky-card span-12" data-shape="notched">
+          <div className="sky-card-inner">
+            <strong>No merchant packet is supplied for this case.</strong>
+          </div>
+        </article>
+      ) : null}
 
       {resolved && workspace && (
         <article
