@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { getDecisionChecklist } from '../data/decisionChecklist.js';
 import {
+  countRationaleWords,
   getDecisionCallGroups,
   getFinalFindingChoices,
 } from '../data/reviewPackage.js';
@@ -556,10 +557,7 @@ export function Determination({
   const finalFindings = getFinalFindingChoices(activeCase);
   const operationalOptions = groups.flatMap((group) => group.options);
   const reviewed = completedTools.includes('Determination');
-  const rationaleWordCount = String(decisionDraft.findingBasis ?? '')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean).length;
+  const rationaleWordCount = countRationaleWords(decisionDraft.findingBasis);
   const determinationComplete = Boolean(
     operationalOptions.includes(decisionDraft.operationalDecision)
     && finalFindings.includes(decisionDraft.finalFinding)
@@ -732,6 +730,10 @@ export function Determination({
               <textarea
                 value={decisionDraft.findingBasis}
                 onChange={(event) => updateDecision('findingBasis', event.target.value)}
+                inputMode="text"
+                autoCapitalize="sentences"
+                autoCorrect="on"
+                spellCheck="true"
                 placeholder="Cite exact records and explain how they support, contradict, or leave the finding unresolved."
               />
             </label>
