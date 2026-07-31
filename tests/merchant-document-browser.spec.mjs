@@ -23,48 +23,38 @@ async function expectNoHorizontalOverflow(page) {
   expect(layout.bodyWidth).toBeLessThanOrEqual(layout.viewportWidth + 1);
 }
 
-test('Merchant and document tools keep exact gates and functional Sky workflows', async ({ page }) => {
+test('Merchant and document tools open directly with functional Sky workflows', async ({ page }) => {
   await openChargebackWorkspace(page);
 
   await page.getByRole('button', { name: /Transactions, Merchant & Financial/i }).click();
   await page.getByRole('button', { name: /Merchant Intelligence Open tool/i }).click();
   await expect(page.getByRole('heading', { name: 'Merchant Intelligence' })).toBeVisible();
-  await expect(page.locator('.sky-merchant-profile-card')).toHaveCount(0);
-  await page.getByLabel('Search Merchant Intelligence').fill('StreamBox Premium');
-  await page.locator('.sky-merchant-search-row').getByRole('button', { name: /Search/i }).click();
   await expect(page.locator('.sky-merchant-profile-card')).toContainText('StreamBox Premium');
   await expect(page.locator('.sky-merchant-transaction-card')).toContainText('TXN-2201');
   await expect(page.locator('.sky-merchant-history-grid')).toContainText('$558.32');
   await expect(page.getByText(/High Risk|Active Merchant|Returning Customer/i)).toHaveCount(0);
-  await page.getByLabel('Search Merchant Intelligence').fill('StreamBox');
-  await expect(page.locator('.sky-merchant-profile-card')).toHaveCount(0);
-  await page.locator('.sky-merchant-search-row').getByRole('button', { name: /Search/i }).click();
-  await expect(page.getByRole('alert')).toContainText('No exact supplied merchant');
   await expectNoHorizontalOverflow(page);
 
   await returnToToolMap(page);
   await page.getByRole('button', { name: /Evidence, Links & Workflow/i }).click();
   await page.getByRole('button', { name: /Document Viewer Open tool/i }).click();
   await expect(page.getByRole('heading', { name: 'Document Viewer' })).toBeVisible();
-  await expect(page.locator('.sky-document-focus-strip')).toHaveCount(0);
-  await page.getByLabel('Search Document Viewer by Account ID or Document ID')
-    .fill('ACCT-24007-8841');
-  await page.locator('.sky-document-reference-search').getByRole('button', { name: /Open/i }).click();
+  await expect(page.locator('.sky-document-focus-strip')).toBeVisible();
   await expect(page.locator('.sky-document-result-rail')).toContainText('DOC-510');
   await expect(page.locator('.sky-document-preview-layout')).toBeVisible();
   await expect(page.locator('.sky-document-sheet')).toContainText('Customer dispute form');
   await page.getByLabel('Search Document Viewer by Account ID or Document ID')
     .fill('DOC-511');
-  await expect(page.locator('.sky-document-focus-strip')).toHaveCount(0);
+  await expect(page.locator('.sky-document-focus-strip')).toBeVisible();
   await expectNoHorizontalOverflow(page);
 
   await returnToToolMap(page);
   await page.getByRole('button', { name: /Evidence, Links & Workflow/i }).click();
   await page.getByRole('button', { name: /Document Request Open tool/i }).click();
   await expect(page.getByRole('heading', { name: 'Document Request' })).toBeVisible();
-  await expect(page.locator('.sky-request-inbox-card')).toHaveCount(0);
+  await expect(page.locator('.sky-request-inbox-card')).toBeVisible();
   await page.getByLabel('Search Document Request').fill('DOC-511');
-  await page.locator('.sky-document-reference-search').getByRole('button', { name: /Search/i }).click();
+  await page.locator('.sky-document-reference-search').getByRole('button', { name: /Apply filter/i }).click();
   await expect(page.locator('.sky-request-composer')).toContainText('Cancellation confirmation');
   await page.getByLabel('Follow-up due').fill('2026-08-15');
   await page.getByLabel('Request reason').fill('Request the customer-supplied cancellation confirmation.');
