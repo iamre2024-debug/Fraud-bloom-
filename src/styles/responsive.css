@@ -4579,6 +4579,14 @@
     min-height: 80px;
   }
 
+  .sky-quick-id-form {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-quick-id-form > button {
+    grid-column: auto;
+  }
+
   .sky-quick-pad-sheet .sky-button-secondary {
     min-height: 44px;
     padding: 8px 10px;
