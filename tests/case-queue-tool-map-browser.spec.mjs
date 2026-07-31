@@ -100,12 +100,11 @@ for (const width of [420, 390, 360, 320]) {
 }
 
 test.describe('tablet Tool Map', () => {
-  test.use({
-    hasTouch: true,
-    viewport: { width: 1180, height: 820 },
-  });
-
-  test('keeps every navigation group separate from Case Briefing', async ({ page }) => {
+  for (const viewport of [
+    { width: 1180, height: 820, label: 'landscape tablet' },
+    { width: 962, height: 1280, label: 'Motorola tablet portrait' },
+  ]) test(`keeps every navigation group separate from Case Briefing on ${viewport.label}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto('/');
     await page.getByRole('navigation', { name: 'Primary navigation' })
       .getByRole('button', { name: /Workspace/i })
@@ -120,6 +119,6 @@ test.describe('tablet Tool Map', () => {
       await expect(page.locator('.sky-toolmap-tool-button').first()).toBeVisible();
     }
 
-    await expectNoPageOverflow(page, 1180);
+    await expectNoPageOverflow(page, viewport.width);
   });
 });
