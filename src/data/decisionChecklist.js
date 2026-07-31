@@ -221,6 +221,19 @@ function publicChecklistFlag(item = {}) {
   };
 }
 
+function alternateChecklistPerspectives(flags = []) {
+  const concernPrompts = flags.filter((item) => item.type === 'red');
+  const legitimatePrompts = flags.filter((item) => item.type === 'green');
+  const remainingPrompts = flags.filter((item) => item.type !== 'red' && item.type !== 'green');
+  const balanced = [];
+  const count = Math.max(concernPrompts.length, legitimatePrompts.length);
+  for (let index = 0; index < count; index += 1) {
+    if (concernPrompts[index]) balanced.push(concernPrompts[index]);
+    if (legitimatePrompts[index]) balanced.push(legitimatePrompts[index]);
+  }
+  return [...balanced, ...remainingPrompts];
+}
+
 export function getDecisionChecklist(activeCase = {}) {
   const { base, domain } = resolveChecklistDefinition(activeCase);
   const labels = caseDomainLabels(domain);
@@ -228,7 +241,7 @@ export function getDecisionChecklist(activeCase = {}) {
   return {
     title: base.title,
     description: base.description,
-    flags: base.flags.map(publicChecklistFlag),
+    flags: alternateChecklistPerspectives(base.flags).map(publicChecklistFlag),
     customerType: domain.customerType,
     productType: domain.productType,
     workflowType: domain.workflowType,

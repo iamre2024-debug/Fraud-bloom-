@@ -218,7 +218,7 @@ export default function QuickPad({
   )).map((toolName) => ({
     toolName,
     route: buildQuickPadDestinationRoute(toolName, routeItems),
-  })).filter((item) => item.route), [activeCaseAvailableTools, routeItems]);
+  })), [activeCaseAvailableTools, routeItems]);
 
   function addPin(pin) {
     const additions = itemsFromPin(pin, activeCaseTrainingId);
@@ -344,8 +344,8 @@ export default function QuickPad({
               key={toolName}
               onClick={() => navigate('tool', {
                 tool: toolName,
-                query: route.payload.query ?? '',
-                initialPayload: route.payload,
+                query: route?.payload?.query ?? '',
+                initialPayload: route?.payload,
               })}
             >
               Open {toolName}
@@ -354,7 +354,7 @@ export default function QuickPad({
         </div>
         {!destinations.length ? (
           <div className="sky-empty">
-            Add one destination-valid ID, or a paired Bank Code and Destination ID from the same payment record.
+            No investigation tools are assigned to the active case.
           </div>
         ) : null}
       </div>
