@@ -124,13 +124,14 @@ if (!generatedCases) fail('No generated Device Intelligence cases were exercised
 const panel = fs.readFileSync(new URL('../src/tools/IdentityDigitalTools.jsx', import.meta.url), 'utf8');
 for (const anchor of [
   'export function DeviceIntelligenceTool',
-  'Search the complete Device ID, device fingerprint, or browser fingerprint.',
+  'The first supplied device opens automatically.',
+  'const directRecord = records.find',
   'Run exact search',
   'No exact record matched the submitted search.',
   'lookup.setSelected(records.find',
   'exactText(record.id, lookup.query)',
 ]) {
-  if (!panel.includes(anchor)) fail(`Device Intelligence search UI is missing: ${anchor}`);
+  if (!panel.includes(anchor)) fail(`Device Intelligence direct-open UI is missing: ${anchor}`);
 }
 
 if (failures.length) {
@@ -138,4 +139,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`Device Intelligence smoke check passed for ${builtInProfiles} built-in profiles and ${generatedProfiles} profiles across ${generatedCases} eligible generated scenarios. Device IDs resolve to complete, non-placeholder profiles and unmatched searches cannot reveal a stale record.`);
+console.log(`Device Intelligence smoke check passed for ${builtInProfiles} built-in profiles and ${generatedProfiles} profiles across ${generatedCases} eligible generated scenarios. The active device opens directly, exact switching remains available, and unmatched searches cannot reveal a stale record.`);
