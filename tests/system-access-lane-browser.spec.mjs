@@ -22,19 +22,16 @@ async function openSystemAccessLane(page, caseRecord = activeCase) {
 
 async function runAccessSearch(page, query) {
   await page.getByLabel('Search System Access Lane').fill(query);
-  await page.getByRole('button', { name: 'Run access search' }).click();
+  await page.getByRole('button', { name: 'Apply filter' }).click();
 }
 
-test('System Access Lane preserves the search gate and expands only supplied records', async ({ page }) => {
+test('System Access Lane opens directly, filters, and expands only supplied records', async ({ page }) => {
   await openSystemAccessLane(page);
 
   await expect(page.locator('.sky-tool-heading')).toHaveCount(0);
-  await expect(page.getByText('System access records are hidden')).toBeVisible();
-  await expect(page.locator('.sky-system-access-summary')).toHaveCount(0);
-  await expect(page.locator('.sky-system-access-event')).toHaveCount(0);
+  await expect(page.locator('.sky-system-access-summary')).toBeVisible();
+  await expect(page.locator('.sky-system-access-event').first()).toBeVisible();
 
-  await page.getByRole('button', { name: 'Run access search' }).click();
-  await expect(page.getByRole('alert')).toContainText('Enter a record ID');
   await runAccessSearch(page, 'NOT-A-SUPPLIED-ACCESS-RECORD');
   await expect(page.getByText('No supplied access event matched')).toBeVisible();
   await expect(page.locator('.sky-system-access-summary')).toHaveCount(0);
@@ -61,8 +58,8 @@ test('System Access Lane preserves the search gate and expands only supplied rec
   await expect(detail.getByRole('button', { name: 'Reviewed' })).toBeDisabled();
 
   await page.getByLabel('Search System Access Lane').fill('edited query');
-  await expect(page.locator('.sky-system-access-summary')).toHaveCount(0);
-  await expect(page.locator('.sky-system-access-event')).toHaveCount(0);
+  await expect(page.locator('.sky-system-access-summary')).toBeVisible();
+  await expect(page.locator('.sky-system-access-event')).toHaveCount(1);
 
   const toolText = (await page.locator('.sky-system-access-page').innerText()).toLowerCase();
   for (const forbidden of [
@@ -96,9 +93,6 @@ test('System Access Lane pins and reopens the exact record through the floating 
   await quickPad.getByRole('button', { name: 'Open System Access Lane' }).click();
 
   await expect(page.getByLabel('Search System Access Lane')).toHaveValue(primaryRecord.id);
-  await expect(page.getByText('System access records are hidden')).toBeVisible();
-  await expect(page.locator('.sky-system-access-summary')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Run access search' }).click();
   await expect(page.locator('.sky-system-access-event')).toHaveCount(1);
   await expect(page.locator('.sky-system-access-event')).toContainText(primaryRecord.id);
 });
