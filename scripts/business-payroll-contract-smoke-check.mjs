@@ -529,7 +529,8 @@ if (resolvePaymentLookup(paymentRecords, { bankCode: payment.bankCode, destinati
 const payrollPanel = fs.readFileSync('src/tools/FinancialBusinessTools.jsx', 'utf8');
 for (const anchor of [
   'export function EmployeeProfileTool',
-  'Find an exact employee profile',
+  'Open another employee profile',
+  'The active employee profile opens automatically.',
   'Run employee search',
   'Latest Paycheck',
   'Payment Destinations',
