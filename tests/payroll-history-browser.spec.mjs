@@ -57,16 +57,13 @@ async function runExactSearch(page, identifier) {
   await page.getByRole('button', { name: 'Run payroll search' }).click();
 }
 
-test('Payroll History preserves the exact-search lock and the full Sky evidence workflow', async ({ page }) => {
+test('Payroll History opens directly and preserves exact switching plus the full Sky evidence workflow', async ({ page }) => {
   await openPayrollHistory(page);
 
   await expect(page.locator('.sky-tool-heading')).toHaveCount(0);
-  await expect(page.locator('.sky-payroll-overview')).toHaveCount(0);
-  await expect(page.locator('[aria-label="Payroll runs"]')).toHaveCount(0);
-  await expect(page.getByText('No payroll result is open.')).toBeVisible();
+  await expect(page.locator('.sky-payroll-overview')).toBeVisible();
+  await expect(page.locator('[aria-label="Payroll runs"]')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Run payroll search' }).click();
-  await expect(page.getByRole('alert')).toContainText('Enter an exact payroll');
   await runExactSearch(page, 'PAYROLL-PARTIAL');
   await expect(page.getByRole('alert')).toContainText('No supplied payroll record matched');
   await expect(page.locator('.sky-payroll-overview')).toHaveCount(0);
@@ -112,15 +109,13 @@ test('Payroll History preserves the exact-search lock and the full Sky evidence 
   await quickPad.getByRole('button', { name: 'Open Payroll History' }).click();
 
   await expect(page.getByLabel('Search Payroll History')).toHaveValue(correctionPaystub.id);
-  await expect(page.locator('.sky-payroll-overview')).toHaveCount(0);
-  await expect(page.locator('[aria-label="Payroll runs"]')).toHaveCount(0);
-  await expect(page.getByText('No payroll result is open.')).toBeVisible();
-  await page.getByRole('button', { name: 'Run payroll search' }).click();
+  await expect(page.locator('.sky-payroll-overview')).toBeVisible();
+  await expect(page.locator('[aria-label="Payroll runs"]')).toBeVisible();
   await expect(page.getByText(correctionPaystub.id, { exact: true })).toBeVisible();
 
   await page.getByLabel('Search Payroll History').fill(`${correctionPaystub.id}-edited`);
-  await expect(page.locator('.sky-payroll-overview')).toHaveCount(0);
-  await expect(page.locator('[aria-label="Payroll runs"]')).toHaveCount(0);
+  await expect(page.locator('.sky-payroll-overview')).toBeVisible();
+  await expect(page.locator('[aria-label="Payroll runs"]')).toBeVisible();
 });
 
 test('Payroll History keeps historical destinations immutable and exposes only valid payment handoffs', async ({ page }) => {
