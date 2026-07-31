@@ -51,6 +51,29 @@ const linkLabelByIdentifierType = {
   'destination-id': 'Destination ID',
 };
 
+const quickIdLabels = [
+  'Training ID',
+  'Account ID',
+  'Login ID',
+  'Session ID',
+  'Device ID',
+  'IP Address',
+  'Transaction ID',
+  'Merchant Name',
+  'Business ID',
+  'Employee ID',
+  'Payroll Run ID',
+  'Bank Code',
+  'Destination ID',
+  'Document ID',
+  'Document Request ID',
+  'System Access Record ID',
+  'Timeline Event ID',
+  'Phone Number',
+  'Email',
+  'Address',
+];
+
 function itemsFromPin(pin, activeCaseTrainingId = '') {
   const sourceRecordId = pin.sourceRecordId ?? pin.recordId ?? pin.id;
   const record = pin.record ?? {};
@@ -185,6 +208,8 @@ export default function QuickPad({
   activeCaseAvailableTools = null,
 }) {
   const [open, setOpen] = useState(false);
+  const [quickIdLabel, setQuickIdLabel] = useState('Training ID');
+  const [quickIdValue, setQuickIdValue] = useState('');
   const panelId = useId();
   const triggerRef = useRef(null);
   const panelRef = useRef(null);
@@ -233,6 +258,38 @@ export default function QuickPad({
         ],
       };
     });
+  }
+
+  function addQuickId(event) {
+    event.preventDefault();
+    const value = quickIdValue.trim();
+    if (!value) return;
+    const normalizedLabel = quickIdLabel.toLowerCase().replace(/\s+/g, '-');
+    const id = `manual:${activeCaseId}:${normalizedLabel}:${value}`;
+    const item = {
+      id,
+      label: quickIdLabel,
+      value,
+      sourceTool: 'Quick Pad',
+      sourceRecordId: `manual:${activeCaseId}`,
+      routeGroupId: `manual:${activeCaseId}`,
+      identifierType: normalizedLabel,
+    };
+    setQuickPad((current) => ({
+      ...current,
+      items: [
+        item,
+        ...(current.items ?? []).filter((saved) => saved.id !== id),
+      ],
+    }));
+    setQuickIdValue('');
+  }
+
+  function removeQuickId(itemId) {
+    setQuickPad((current) => ({
+      ...current,
+      items: (current.items ?? []).filter((item) => item.id !== itemId),
+    }));
   }
 
   const closePad = useCallback(() => {
@@ -294,7 +351,7 @@ export default function QuickPad({
     <div className="sky-grid sky-quick-pad-content">
       <div className="span-6">
         <label className="sky-field wide">
-          <span>Scratch notes</span>
+          <span>Temporary scratch note</span>
           <textarea
             value={quickPad.scratch ?? ''}
             onChange={(event) => setQuickPad((current) => ({
@@ -302,40 +359,81 @@ export default function QuickPad({
               scratch: event.target.value,
             }))}
             placeholder="Temporary working notes for this case…"
+            aria-label="Case Quick Pad scratch note"
           />
         </label>
-        <h3 className="sky-subheading">Add pinned objects</h3>
-        <div className="sky-record-list">
-          {tray.map((pin, index) => (
-            <button
-              className="sky-record"
-              type="button"
-              key={pin.id ?? index}
-              onClick={() => addPin(pin)}
+        <small className="sky-quick-pad-autosave">
+          Auto-saved for {activeCaseId}. Cleared automatically after case submission.
+        </small>
+        <h3 className="sky-subheading">Add a Quick ID</h3>
+        <form className="sky-quick-id-form" onSubmit={addQuickId}>
+          <label className="sky-field">
+            <span>ID type</span>
+            <select
+              value={quickIdLabel}
+              onChange={(event) => setQuickIdLabel(event.target.value)}
+              aria-label="Quick ID type"
             >
-              <span>
-                <strong>{pin.label ?? pin.id ?? pin}</strong>
-                <small>{pin.tool ?? 'Case evidence'}</small>
-              </span>
-              <span>+</span>
-            </button>
-          ))}
-        </div>
-        {!tray.length ? <div className="sky-empty">Pin an evidence object to add it here.</div> : null}
+              {quickIdLabels.map((label) => <option key={label}>{label}</option>)}
+            </select>
+          </label>
+          <label className="sky-field">
+            <span>Value</span>
+            <input
+              value={quickIdValue}
+              onChange={(event) => setQuickIdValue(event.target.value)}
+              placeholder={quickIdLabel}
+              aria-label="Quick ID value"
+              autoComplete="off"
+            />
+          </label>
+          <button className="sky-button-secondary" type="submit" disabled={!quickIdValue.trim()}>
+            Save Quick ID
+          </button>
+        </form>
+        {tray.length ? (
+          <>
+            <h3 className="sky-subheading">Copy from current evidence tray</h3>
+            <div className="sky-record-list">
+              {tray.map((pin, index) => (
+                <button
+                  className="sky-record"
+                  type="button"
+                  key={pin.id ?? index}
+                  onClick={() => addPin(pin)}
+                >
+                  <span>
+                    <strong>{pin.label ?? pin.id ?? pin}</strong>
+                    <small>Copy only · does not change pinned evidence</small>
+                  </span>
+                  <span>+</span>
+                </button>
+              ))}
+            </div>
+          </>
+        ) : null}
       </div>
       <div className="span-6">
-        <h3 className="sky-subheading">Typed notebook items</h3>
+        <h3 className="sky-subheading">Quick IDs</h3>
         <ul className="sky-summary-list">
           {items.map((item) => (
             <li key={item.id}>
               <strong>{item.label}</strong>
               <span>{item.value}</span>
-              <small>{item.sourceTool} · {item.sourceRecordId}</small>
+              <small>{item.sourceTool === 'Quick Pad' ? 'Entered here' : `Copied from ${item.sourceTool}`}</small>
+              <button
+                className="sky-button-secondary"
+                type="button"
+                onClick={() => removeQuickId(item.id)}
+                aria-label={`Remove ${item.label} ${item.value} from Quick Pad`}
+              >
+                Remove
+              </button>
             </li>
           ))}
         </ul>
-        {!items.length ? <div className="sky-empty">No typed items saved.</div> : null}
-        <h3 className="sky-subheading">Valid routes</h3>
+        {!items.length ? <div className="sky-empty">No Quick IDs saved for this case.</div> : null}
+        <h3 className="sky-subheading">Open a case tool</h3>
         <div className="sky-action-row">
           {destinations.map(({ toolName, route }) => (
             <button
