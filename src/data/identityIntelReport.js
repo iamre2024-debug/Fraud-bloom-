@@ -5,7 +5,7 @@ import { publicCaseTaxonomy } from './publicCaseView.js';
 const builtInProfiles = {
   'FA-ATO-24018': { profileId: 'PRF-8842', confidence: 'Profile name, DOB, Training ID, phone, email, and address matched in the fictional packet', applicationHistory: 'Consumer deposit relationship opened in 2018', employer: 'Cedar Health Services', watchlist: 'No fictional training watchlist record returned' },
   'FA-CB-24007': { profileId: 'PRF-5510', confidence: 'Profile name, DOB, Training ID, phone, email, and address matched in the fictional packet', applicationHistory: 'Cardholder relationship opened in 2021', employer: 'Fort Worth Creative Studio', watchlist: 'No fictional training watchlist record returned' },
-  'FA-CR-24003': { profileId: 'PRF-2044', confidence: 'New-profile fields matched with limited relationship history', applicationHistory: 'New consumer credit relationship opened in 2026', employer: 'Avery Training Consulting', watchlist: 'No fictional training watchlist record returned' },
+  'FA-CR-24003': { profileId: 'PRF-2044', confidence: 'New-profile fields matched with limited relationship history', applicationHistory: 'New personal line of credit opened Jul 7, 2026', employer: 'Lakeside Office Supply', watchlist: 'No fictional training watchlist record returned' },
 };
 
 const firstNames = ['Elena', 'Marcus', 'Nina', 'Caleb', 'Tessa', 'Andre', 'Monica', 'Darius'];

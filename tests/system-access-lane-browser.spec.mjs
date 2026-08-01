@@ -6,7 +6,8 @@ import { getSystemAccessRecords } from '../src/data/systemAccessRecords.js';
 
 const cases = enrichTrainingCases(trainingCases);
 const activeCase = cases[0];
-const [primaryRecord] = getSystemAccessRecords(activeCase);
+const suppliedRecords = getSystemAccessRecords(activeCase);
+const [primaryRecord] = suppliedRecords;
 
 async function openSystemAccessLane(page, caseRecord = activeCase) {
   await page.goto('/');
@@ -35,6 +36,10 @@ test('System Access Lane opens directly, filters, and expands only supplied reco
   await runAccessSearch(page, 'NOT-A-SUPPLIED-ACCESS-RECORD');
   await expect(page.getByText('No supplied access event matched')).toBeVisible();
   await expect(page.locator('.sky-system-access-summary')).toHaveCount(0);
+
+  await runAccessSearch(page, '');
+  await expect(page.locator('.sky-system-access-event')).toHaveCount(suppliedRecords.length);
+  await expect(page.locator('.sky-system-access-summary')).toContainText(`${suppliedRecords.length}`);
 
   await runAccessSearch(page, primaryRecord.id);
   await expect(page.locator('.sky-system-access-summary')).toContainText('1');

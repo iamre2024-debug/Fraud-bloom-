@@ -104,14 +104,14 @@ const caseIntake = {
   },
   'FA-CR-24003': {
     claimId: 'CLM-CR-24003',
-    transactionInfo: 'Credit line usage request · payment setup packet · Destination ID token',
-    shortSummary: 'New credit relationship has limited history. Review identity, payment setup, session activity, and early account behavior before any final package is submitted.',
+    transactionInfo: '$2,400 personal credit-line draw request · payment setup packet · Destination ID token',
+    shortSummary: 'A $2,400 draw was requested from a personal line of credit opened the previous day, five minutes after a new external payment destination was added. Review identity, payment setup, session activity, and the limited account history before submitting a final package.',
     intakeAnswers: [
-      { id: 'FA-CR-24003-INT-1', prompt: 'What type of credit request or account review opened this case?', answer: 'A system alert opened a credit-line-increase review after the new account requested $2,400.00 of an $8,000.00 line five minutes after external destination DST-7740 was added.' },
+      { id: 'FA-CR-24003-INT-1', prompt: 'What type of credit request or account review opened this case?', answer: 'A system alert opened a credit-line draw review after the account requested $2,400.00 from an $8,000.00 personal line of credit opened the previous day. External destination DST-7740 had been added five minutes before the request.' },
       { id: 'FA-CR-24003-INT-2', prompt: 'What employer, income source, gross/net income, or business revenue was stated?', answer: 'The stated employer is Lakeside Office Supply. The linked checking history shows payroll deposits of $1,280.00 on Jul 1, $1,280.00 on Jun 17, and a $1,240.00 mobile check deposit on Jun 8; no separate gross/net income figure is recorded.' },
       { id: 'FA-CR-24003-INT-3', prompt: 'What payment, utilization, NSF, late-payment, or cash-flow history is available?', answer: 'The $2,400.00 request equals 30% of the $8,000.00 line. Monthly deposits are $3,800.00, monthly outflow is $2,240.00, one returned item is recorded, DST-7740 is the first external destination, and no cash advance or transfer has posted.' },
       { id: 'FA-CR-24003-INT-4', prompt: 'Are bank statements, paystubs, credit-file, or business documents available?', answer: 'The system alert packet and account setup record are available. The supporting bank-statement activity is summarized in Financial Investigation; payment verification detail remains requested, and no paystub or business document is attached.' },
-      { id: 'FA-CR-24003-INT-5', prompt: 'What debt obligations, bankruptcy/public-record, or business changes should be documented?', answer: 'No debt-obligation, bankruptcy, or public-record result is included in this new consumer packet. The documented change is the addition of DST-7740 immediately before the $2,400.00 usage request.' },
+      { id: 'FA-CR-24003-INT-5', prompt: 'What debt obligations, bankruptcy/public-record, or business changes should be documented?', answer: 'No debt-obligation, bankruptcy, or public-record result is included in this new consumer packet. The documented change is the addition of DST-7740 immediately before the $2,400.00 credit-line draw request.' },
       { id: 'FA-CR-24003-INT-6', prompt: 'Which documents and verification records are still needed?', answer: 'Payment verification detail remains requested. Ownership of Bank Code BC-204 and Destination ID DST-7740, the partial name match to Avery Brooks, and the pending callback must be resolved and documented.' },
     ],
     profile: { employer: 'Lakeside Office Supply', entityRole: 'Credit applicant' },
@@ -146,7 +146,7 @@ const caseIntake = {
 const claimContext = {
   'FA-ATO-24018': { claimTypeId: 'account-takeover', scenarioId: 'ato-phishing-wallet', subtype: 'phishing', reportedDate: 'Jul 8, 2026', issueStartDate: 'Jul 8, 2026', statement: 'I did not authorize this card purchase and was home when the transaction occurred.' },
   'FA-CB-24007': { claimTypeId: 'non-fraud-chargeback', scenarioId: 'ncb-recurring-cancellation', subtype: 'canceled service billed', reportedDate: 'Jul 8, 2026', issueStartDate: 'May 8, 2026', statement: 'I canceled the subscription and continued to see the same charge on my card statement.' },
-  'FA-CR-24003': { claimTypeId: 'credit-risk', scenarioId: 'cr-new-consumer', subtype: 'credit line increase', reportedDate: 'Jul 8, 2026', issueStartDate: 'Jul 7, 2026', statement: 'I recently opened the account and requested access to the available credit line.' },
+  'FA-CR-24003': { claimTypeId: 'credit-risk', scenarioId: 'cr-first-party-credit-abuse', subtype: 'personal credit-line draw request', reportedDate: 'Jul 8, 2026', issueStartDate: 'Jul 7, 2026', statement: 'I recently opened the account and requested a $2,400 draw from the available credit line.' },
 };
 
 function dedupeById(records = []) {

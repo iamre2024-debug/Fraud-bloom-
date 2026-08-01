@@ -136,6 +136,13 @@ expect(workspace?.matchingTransactions?.length === 2, 'Unrelated transaction lea
 expect(workspace?.history?.transactionCount === 2, 'Merchant history count is not source-backed.');
 expect(workspace?.history?.totalAmount === 2550, 'Merchant history total is incorrect.');
 expect(workspace?.history?.totalAmountDisplay === '$2,550.00', 'Merchant history formatted total is incorrect.');
+expect(
+  workspace?.history?.earliestRecordId === 'TXN-TS-100'
+    && workspace?.history?.earliestPosted === 'Jun 12, 2026'
+    && workspace?.history?.latestRecordId === 'TXN-TS-200'
+    && workspace?.history?.latestPosted === 'Jul 12, 2026',
+  'Merchant history did not derive its earliest and latest activity from chronological source dates.',
+);
 expect(workspace?.authorization?.id === 'AUTH-TS-200', 'Supplied authorization record was not preserved.');
 expect(workspace?.authorization?.entryMode === 'Card not present', 'Packet authorization did not override the direct fallback.');
 expect(workspace?.response?.id === 'MRC-TS-RESPONSE', 'Supplied response record was not preserved.');

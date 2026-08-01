@@ -47,7 +47,7 @@ const loginDetailsById = {
   },
   'LOG-3314': {
     mfaStatus: 'No additional MFA event recorded', authChannel: 'Mobile browser', browserSource: 'Mobile Safari', sessionDuration: '9 minutes recorded',
-    sessionBehavior: 'Profile review opened after the limit usage request.', passwordResetLink: 'No password reset recorded in case window', profileChangeLink: 'PCH-3302', moneyMovementLink: 'EVT-3308 · Limit usage request submitted before login', investigatorUse: 'Compare the new-account sequence with payment and identity records.',
+    sessionBehavior: 'Profile review opened seven minutes after the $2,400 credit-line draw request.', passwordResetLink: 'No password reset recorded in case window', profileChangeLink: 'No profile change linked to this login', moneyMovementLink: 'EVT-3308 · $2,400 credit-line draw request submitted before login', investigatorUse: 'Compare the new-account sequence with payment and identity records.',
   },
   'LOG-3309': {
     mfaStatus: 'No additional MFA event recorded', authChannel: 'Mobile browser', browserSource: 'Mobile Safari', sessionDuration: '6 minutes recorded',

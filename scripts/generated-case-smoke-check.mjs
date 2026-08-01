@@ -65,7 +65,7 @@ for (let index = 0; index < 124; index += 1) {
 }
 
 const batch = await generateAndSaveCases({
-  count: 5,
+  count: 30,
   claimTypeId: 'non-fraud-chargeback',
   scenarioId: 'ncb-recurring-cancellation',
   difficulty: 'deep',
@@ -77,7 +77,7 @@ const ids = new Set(saved.map((item) => item.id));
 const enrichedSaved = enrichTrainingCases(saved);
 const accountIds = new Set(enrichedSaved.map((item) => item.accountId));
 
-if (saved.length !== 130) failures.push(`Expected 130 generated cases after single and batch generation, found ${saved.length}.`);
+if (saved.length !== 155) failures.push(`Expected 155 generated cases after single and unbounded batch generation, found ${saved.length}.`);
 if (!ids.has(legacyCase.id)) failures.push('Legacy localStorage case was not preserved.');
 if (ids.size !== saved.length) failures.push('Generated case IDs are not unique.');
 if (accountIds.size !== enrichedSaved.length || enrichedSaved.some((item) => !item.accountId?.startsWith('ACCT-'))) failures.push('Every saved case must expose a unique Account ID after catalog enrichment.');
@@ -92,7 +92,7 @@ if (saved.filter((item) => item.generatedPacketVersion).some((item) => (
   failures.push('The generated-case repository did not persist the versioned Customer 360 source packet.');
 }
 if (batch[batch.length - 1]?.id !== saved[0]?.id) failures.push('Newest generated batch case was not added to the front of the queue.');
-if (batch.length !== 5) failures.push('Batch generation did not return every requested fictional case.');
+if (batch.length !== 30) failures.push('Batch generation still applies the former 25-case artificial cap.');
 
 for (const item of saved) {
   for (const field of ['id', 'type', 'person', 'trainingId', 'claimId', 'allegation', 'queueReason']) {
@@ -368,4 +368,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('Generated case smoke check passed. The repository adapter preserves legacy cases and keeps more than 50 unique Evidence First cases.');
+console.log('Generated case smoke check passed. The repository adapter preserves legacy cases and keeps an unbounded queue of unique Evidence First cases.');

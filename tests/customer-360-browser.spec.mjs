@@ -49,6 +49,9 @@ test('Customer 360 is a gated Sky structure with working source routes and pins'
   await expect(page.locator('.sky-customer-reference-dashboard')).not.toContainText(
     /Engagement score|Security status/i,
   );
+  await expect(page.locator('.sky-customer-profile-heading')).toContainText(defaultCase.customer.segment);
+  await expect(page.locator('.sky-customer-relationship-facts')
+    .getByText('Relationship length', { exact: true })).toHaveCount(1);
   await expect(page.locator('.sky-customer-devices-card')).not.toHaveAttribute('data-tone');
 
   await page.getByLabel('Complete Training ID').fill(`${defaultCase.trainingId}-changed`);
@@ -75,8 +78,8 @@ test('Customer 360 is a gated Sky structure with working source routes and pins'
 
   await page.getByRole('button', { name: 'Pin update' }).first().click();
   await page.getByRole('button', { name: 'Pin contact' }).first().click();
-  const quickPad = page.locator('.sky-quick-pad');
-  await quickPad.getByRole('button', { name: /^Open/ }).click();
+  const quickPad = page.locator('.sky-quick-pad-floating');
+  await quickPad.getByRole('button', { name: /^Open Quick Pad/ }).click();
   await quickPad.locator('.sky-record', { hasText: 'Profile update' }).click();
   await quickPad.locator('.sky-record', { hasText: 'Service contact' }).click();
   await expect(quickPad.getByText(defaultCase.trainingId, { exact: true })).toHaveCount(2);

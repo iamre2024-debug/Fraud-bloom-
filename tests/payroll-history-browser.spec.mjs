@@ -101,8 +101,8 @@ test('Payroll History opens directly and preserves exact switching plus the full
   await evidenceActions.getByRole('button', { name: 'Mark Payroll History reviewed' }).click();
   await expect(evidenceActions.getByRole('button', { name: '✓ Payroll History reviewed' })).toBeDisabled();
 
-  const quickPad = page.locator('.sky-quick-pad');
-  await quickPad.getByRole('button', { name: /^Open/ }).click();
+  const quickPad = page.locator('.sky-quick-pad-floating');
+  await quickPad.getByRole('button', { name: /^Open Quick Pad/ }).click();
   await quickPad.locator('.sky-record', { hasText: correctionPaystub.id }).click();
   await expect(quickPad.locator('.sky-summary-list').getByText('Paystub ID', { exact: true })).toBeVisible();
   await expect(quickPad.locator('.sky-summary-list').getByText(correctionPaystub.id, { exact: true })).toBeVisible();

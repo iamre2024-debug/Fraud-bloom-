@@ -68,8 +68,8 @@ assert(
   exactRecord.length === 1
     && exactRecord[0].id === 'SYS-ATO-002'
     && broadRecords.length >= 2
-    && searchSystemAccessRecords(builtInRecords, '').length === 0,
-  'System Access search should prioritize an exact ID, support supplied terms, and keep blank searches locked.',
+    && searchSystemAccessRecords(builtInRecords, '').length === builtInRecords.length,
+  'System Access should open every supplied event, prioritize an exact ID, and support optional filtering.',
 );
 assert(
   builtInSummary.total === builtInRecords.length

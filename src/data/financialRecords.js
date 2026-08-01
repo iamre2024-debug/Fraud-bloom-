@@ -215,13 +215,13 @@ export const financialRecordsByCase = {
   },
   'FA-CR-24003': {
     transactions: [
-      { id: 'TXN-3301', posted: 'Jul 8, 2026', time: '7:36 AM', merchant: 'Credit line transfer request', amount: '$2,400.00', direction: 'Debit', channel: 'Account request', category: 'Credit line activity', entryMode: 'Account request', location: 'Not supplied', instrument: 'Credit line', status: 'Requested', context: 'Requested usage record tied to system review.' },
-      { id: 'TXN-3302', posted: 'Jul 8, 2026', time: '7:31 AM', merchant: 'External destination setup', amount: '$0.00', direction: 'Non-monetary', channel: 'Payment setup', category: 'Account setup', entryMode: 'Payment setup', location: 'Not supplied', instrument: 'Destination ID token', status: 'Recorded', context: 'Destination setup occurred before the usage request.' },
+      { id: 'TXN-3301', posted: 'Jul 8, 2026', time: '7:36 AM', merchant: 'Personal credit-line draw request', amount: '$2,400.00', direction: 'Debit', channel: 'Account request', category: 'Credit-line draw activity', entryMode: 'Account request', location: 'Not supplied', instrument: 'Personal line of credit', status: 'Requested · not released', context: '$2,400 draw requested from the $8,000 line one day after opening and five minutes after external destination DST-7740 was added.' },
+      { id: 'TXN-3302', posted: 'Jul 8, 2026', time: '7:31 AM', merchant: 'External destination setup', amount: '$0.00', direction: 'Non-monetary', channel: 'Payment setup', category: 'Account setup', entryMode: 'Payment setup', location: 'Not supplied', instrument: 'Destination ID token', status: 'Recorded', context: 'Destination setup occurred five minutes before the $2,400 credit-line draw request.' },
       { id: 'TXN-3303', posted: 'Jul 7, 2026', time: '5:18 PM', merchant: 'New account opening', amount: '$0.00', direction: 'Non-monetary', channel: 'Account setup', category: 'Account setup', entryMode: 'Account setup', location: 'Not supplied', instrument: 'Credit line', status: 'Recorded', context: 'Account setup event available for early-history review.' },
     ],
     financialIntel: [
       { id: 'FIN-3301', type: 'Account age', value: 'New account history', observed: 'Jul 8, 2026', context: 'Early account activity is available for comparison.' },
-      { id: 'FIN-3302', type: 'Usage request', value: '$2,400.00 requested', observed: 'Jul 8, 2026', context: 'Request should be reviewed with payment verification and identity records.' },
+      { id: 'FIN-3302', type: 'Credit-line draw request', value: '$2,400.00 requested from $8,000.00 available line', observed: 'Jul 8, 2026', context: 'The requested draw had not been released and should be reviewed with payment-verification and identity records.' },
       { id: 'FIN-3303', type: 'Destination setup', value: 'New external destination token', observed: 'Jul 8, 2026', context: 'Destination object is available in payment verification.' },
     ],
     paymentVerification: [
@@ -243,7 +243,7 @@ export const financialRecordsByCase = {
         destinationId: 'DST-7740',
         oldDestination: 'No prior external destination on file',
         newDestination: 'BC-204 / DST-7740',
-        changeComparison: 'New external destination added 5 minutes before credit line transfer request.',
+        changeComparison: 'New external destination added 5 minutes before the $2,400 personal credit-line draw request.',
         status: 'Tokenized',
         lastSeen: 'Jul 8, 2026',
         verificationOutcome: 'Unable to verify',
@@ -253,7 +253,7 @@ export const financialRecordsByCase = {
         ],
         relatedRecords: ['TXN-3302', 'TXN-3301', 'PCH-3301', 'IDR-3304'],
         actions: ['Document available account controls', 'Escalate senior review', 'Add Bank Code to Link Analysis'],
-        notes: 'This Bank Code should be compared with the new Destination ID, profile event, and usage request timing.',
+        notes: 'This Bank Code should be compared with the new Destination ID, profile event, and $2,400 credit-line draw timing.',
         context: 'Payment packet shows the training-safe Bank Code object, setup timestamp, and linked Destination ID for neutral verification.',
       },
       {
@@ -269,12 +269,12 @@ export const financialRecordsByCase = {
         priorUse: 'First seen today; no prior repayment or transfer history',
         firstSeen: 'Jul 8, 2026',
         verificationMethod: 'Destination setup event + profile history',
-        recoverability: 'Funds may be recoverable if transfer is paused before release',
+        recoverability: 'Funds have not been released; recovery is not yet required',
         bankCode: 'BC-204',
         destinationId: 'DST-7740',
         oldDestination: 'No external destination',
         newDestination: 'DST-7740',
-        changeComparison: 'Destination added after profile setup and before usage request.',
+        changeComparison: 'Destination added after profile setup and five minutes before the $2,400 credit-line draw request.',
         status: 'Tokenized',
         lastSeen: 'Jul 8, 2026',
         verificationOutcome: 'Destination setup and callback evidence recorded',
@@ -285,7 +285,7 @@ export const financialRecordsByCase = {
         relatedRecords: ['TXN-3302', 'TXN-3301', 'LOGIN-3301', 'SESSION-3301'],
         actions: ['Document pending transfer state', 'Compare destination setup controls', 'Route record to account review queue'],
         notes: 'This is the clearest old-vs-new comparison object for the credit-risk case.',
-        context: 'Destination packet connects DST-7740 to the external setup event, usage request, and profile-history packet.',
+        context: 'Destination packet connects DST-7740 to the external setup event, $2,400 credit-line draw request, and profile-history packet.',
       },
       {
         id: 'PAY-3303',

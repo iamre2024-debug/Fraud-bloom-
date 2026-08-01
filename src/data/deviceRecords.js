@@ -142,7 +142,7 @@ const deviceProfilesByCase = {
         'Jul 7, 2026 5:05 PM · Password setup · Arlington, TX · SES-9094',
       ],
       relatedRecords: ['LOG-3314', 'LOG-3309', 'LOG-3301', 'LOG-3298', 'PAY-3302'],
-      investigatorUse: 'Use this to separate normal early-history behavior from the rapid payment setup and credit usage sequence.',
+      investigatorUse: 'Use this to compare the early-history device with the payment-destination setup and $2,400 credit-line draw sequence.',
     },
   ],
 };

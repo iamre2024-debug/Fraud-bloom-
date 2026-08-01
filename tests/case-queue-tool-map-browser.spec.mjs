@@ -78,6 +78,8 @@ for (const width of [420, 390, 360, 320]) {
 
     await page.locator('.sky-case-card', { hasText: defaultCase.id }).click();
     if (await page.locator('.sky-briefing').isVisible()) {
+      await expect(page.locator('.sky-quick-pad-floating')).toHaveCount(1);
+      await expect(page.locator('.sky-quick-pad-sheet')).toHaveCount(0);
       await page.getByRole('button', { name: /Open workspace/i }).last().click();
     }
 
@@ -103,6 +105,7 @@ test.describe('tablet Tool Map', () => {
   for (const viewport of [
     { width: 1180, height: 820, label: 'landscape tablet' },
     { width: 962, height: 1280, label: 'Motorola tablet portrait' },
+    { width: 1280, height: 1600, label: 'large Android tablet portrait' },
   ]) test(`keeps every navigation group separate from Case Briefing on ${viewport.label}`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto('/');

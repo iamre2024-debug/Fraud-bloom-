@@ -150,10 +150,10 @@ export const trainingCases = [
   {
     id: 'FA-CR-24003',
     customerType: 'personal',
-    productType: 'personal-loan',
+    productType: 'personal-line-of-credit',
     workflowType: 'credit-risk-review',
-    alertReason: 'Rapid use request on a new credit relationship',
-    reportedAllegation: 'A system alert identified unusual early account usage for review.',
+    alertReason: '$2,400 credit-line draw requested one day after account opening',
+    reportedAllegation: 'A system alert opened review after a $2,400 draw was requested from the newly opened personal line of credit.',
     suspectedPatterns: [],
     operationalDecision: null,
     finalFinding: null,
@@ -166,13 +166,13 @@ export const trainingCases = [
     accountId: 'ACCT-24003-3011',
     amount: '$2,400.00',
     opened: 'Jul 8, 2026',
-    allegation: 'System alert opened a credit risk review after a new account requested rapid limit usage. The case requires identity, payment, and account behavior review.',
-    queueReason: 'System alert tied to new account activity and payment verification needs.',
+    allegation: 'A system alert opened a credit risk review after a $2,400 draw was requested from a personal line of credit opened the previous day. A new external payment destination had been added five minutes before the draw request.',
+    queueReason: '$2,400 credit-line draw requested one day after opening and five minutes after a new external destination was added.',
     briefingQuestions: ['What triggered the system review?', 'Which identity and payment records should be opened first?', 'What should be documented before the decision remains locked?'],
     intake: { channel: 'System alert', contactTime: '7:45 AM', customerLocation: 'Arlington, TX', statedDevice: 'Not customer-reported' },
     customer: {
       relationshipSince: '2026',
-      segment: 'New credit account',
+      segment: 'New personal line of credit',
       contact: { phone: '(682) 555-0167', email: 'avery.training@example.test', address: 'Arlington, TX training address', preferredChannel: 'Email' },
       relationship: [
         { label: 'Open products', value: 'Credit line' },
@@ -181,7 +181,7 @@ export const trainingCases = [
         { label: 'Payment profile', value: 'New external destination' },
       ],
       profileChanges: [
-        { id: 'PCH-3301', paymentRecordId: 'PAY-3301', bankCode: 'BC-204', destinationId: 'DST-7740', oldDestination: 'No prior external destination on file', newDestination: 'BC-204 / DST-7740', changeComparison: 'New external destination added 5 minutes before credit line transfer request.', date: 'Jul 8, 2026', time: '7:31 AM', eventType: 'External payment account add', item: 'Payment destination added', oldValue: 'No prior external destination on file', newValue: 'Bank Code BC-204 · Destination ID DST-7740', channel: 'Mobile web', source: 'Payment profile maintenance', user: 'Avery Brooks', device: 'DEV-AVERY-SAF-001', ip: '192.0.2.44', session: 'SES-9299', mfaMethod: 'Password', notes: 'Compare ownership, prior use, alert delivery, and the subsequent account request.', detail: 'The payment profile changed from no prior external destination to Bank Code BC-204 and Destination ID DST-7740 five minutes before the credit-line usage request.' },
+        { id: 'PCH-3301', paymentRecordId: 'PAY-3301', bankCode: 'BC-204', destinationId: 'DST-7740', oldDestination: 'No prior external destination on file', newDestination: 'BC-204 / DST-7740', changeComparison: 'New external destination added 5 minutes before the $2,400 credit-line draw request.', date: 'Jul 8, 2026', time: '7:31 AM', eventType: 'External payment account add', item: 'Payment destination added', oldValue: 'No prior external destination on file', newValue: 'Bank Code BC-204 · Destination ID DST-7740', channel: 'Mobile web', source: 'Payment profile maintenance', user: 'Avery Brooks', device: 'DEV-AVERY-SAF-001', ip: '192.0.2.44', session: 'SES-9299', mfaMethod: 'Password', notes: 'Compare ownership, prior use, alert delivery, and the subsequent account request.', detail: 'The payment profile changed from no prior external destination to Bank Code BC-204 and Destination ID DST-7740 five minutes before the $2,400 credit-line draw request.' },
         { id: 'PCH-3302', date: 'Jul 7, 2026', time: '5:18 PM', eventType: 'Recovery contact enrollment', item: 'Recovery phone verified', oldValue: 'No recovery phone', newValue: '(682) 555-0167', channel: 'Mobile web', source: 'Digital onboarding', user: 'Avery Brooks', device: 'DEV-AVERY-SAF-001', ip: '192.0.2.21', session: 'SES-9100', mfaMethod: 'Email code', notes: 'New-account setup event; compare with Identity Intel and document verification.', detail: 'The recovery phone was enrolled and verified during initial profile setup.' },
         { id: 'PCH-3303', date: 'Jul 7, 2026', time: '5:05 PM', eventType: 'Profile creation', item: 'Digital banking profile created', oldValue: 'No customer profile', newValue: 'PRF-2044', channel: 'Mobile web', source: 'Digital onboarding', user: 'Avery Brooks', device: 'DEV-AVERY-SAF-001', ip: '192.0.2.21', session: 'SES-9094', mfaMethod: 'Password setup', notes: 'Initial profile event. Limited history is available before this timestamp.', detail: 'A new digital banking profile was created for the fictional credit relationship.' },
       ],
@@ -201,7 +201,7 @@ export const trainingCases = [
     progress: ['Case Summary'],
     events: [
       { id: 'EVT-3302', time: '7:31 AM', label: 'Payment method added', detail: 'No prior external destination on file → Bank Code BC-204 · Destination ID DST-7740', chip: 'Payment', object: 'PAY-3301' },
-      { id: 'EVT-3308', time: '7:36 AM', label: 'Limit usage request submitted', detail: '$2,400 requested from available line', chip: 'Credit', object: 'Account' },
+      { id: 'EVT-3308', time: '7:36 AM', label: 'Credit-line draw request submitted', detail: '$2,400 draw requested from the $8,000 personal line of credit', chip: 'Credit', object: 'Account' },
       { id: 'EVT-3314', time: '7:43 AM', label: 'Profile review opened', detail: 'System queued identity and payment verification records', chip: 'System', object: 'Profile' },
     ],
     documents: [

@@ -28,7 +28,7 @@ export const evidenceRecordsByCase = {
     evidence: [
       { id: 'EVD-3301', status: 'Received', type: 'System packet', name: 'Credit review alert packet', source: 'System alert', received: 'Jul 8, 2026 7:45 AM', summary: 'System-generated packet opened the review and grouped identity, account, and payment records.', linkedObject: 'DOC-620' },
       { id: 'EVD-3302', status: 'Available', type: 'Payment verification', name: 'Payment setup packet', source: 'Payment Verification', received: 'Jul 8, 2026 7:31 AM', summary: 'Bank Code and Destination ID tokenized records are available for training review.', linkedObject: 'PV-24003' },
-      { id: 'EVD-3303', status: 'Available', type: 'Account activity', name: 'Usage request event', source: 'Financial Investigation', received: 'Jul 8, 2026 7:36 AM', summary: 'Credit line usage request and related account setup records are available.', linkedObject: 'TXN-3301' },
+      { id: 'EVD-3303', status: 'Available', type: 'Account activity', name: 'Credit-line draw request event', source: 'Financial Investigation', received: 'Jul 8, 2026 7:36 AM', summary: 'The $2,400 personal credit-line draw request and related account-setup records are available.', linkedObject: 'TXN-3301' },
     ],
     documents: [
       { id: 'DOC-620', title: 'System alert packet', category: 'System record', status: 'Received', updated: 'Jul 8, 2026', preview: 'Packet preview: system packet contains queue reason, linked identity objects, payment objects, account activity references, and timeline anchors.', fields: 'Alert ID, customer profile, account activity, linked records, queue reason, opened time' },

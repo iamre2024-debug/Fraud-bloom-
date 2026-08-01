@@ -175,9 +175,11 @@ function isApplicationReview(record, context) {
 function inferCreditDomain(record, context, business) {
   const applicationReview = isApplicationReview(record, context);
   if (business) {
-    const productType = legacyClaimId(record) === 'business-loan-bust-out' || /business loan/i.test(context)
-      ? PRODUCT_TYPES.BUSINESS_LOAN
-      : PRODUCT_TYPES.BUSINESS_CREDIT_CARD;
+    const productType = /credit line|line usage|line increase|sudden draw|available line/i.test(context)
+      ? PRODUCT_TYPES.BUSINESS_LINE_OF_CREDIT
+      : legacyClaimId(record) === 'business-loan-bust-out' || /business loan/i.test(context)
+        ? PRODUCT_TYPES.BUSINESS_LOAN
+        : PRODUCT_TYPES.BUSINESS_CREDIT_CARD;
     return {
       customerType: CUSTOMER_TYPES.BUSINESS,
       productType,
@@ -188,7 +190,9 @@ function inferCreditDomain(record, context, business) {
   }
   return {
     customerType: CUSTOMER_TYPES.PERSONAL,
-    productType: /\bloan\b/i.test(context) ? PRODUCT_TYPES.PERSONAL_LOAN : PRODUCT_TYPES.CREDIT_CARD,
+    productType: /credit line|line usage|line increase|available line/i.test(context)
+      ? PRODUCT_TYPES.PERSONAL_LINE_OF_CREDIT
+      : /\bloan\b/i.test(context) ? PRODUCT_TYPES.PERSONAL_LOAN : PRODUCT_TYPES.CREDIT_CARD,
     workflowType: applicationReview
       ? WORKFLOW_TYPES.CREDIT_APPLICATION_REVIEW
       : WORKFLOW_TYPES.CREDIT_RISK_REVIEW,
@@ -197,10 +201,20 @@ function inferCreditDomain(record, context, business) {
 
 export function classifyLegacyCase(record = {}) {
   const current = explicitDomain(record);
-  if (current) return current;
-
   const claimId = legacyClaimId(record);
   const context = lowerContext(record);
+  if (current) {
+    if (
+      current.productType === PRODUCT_TYPES.PERSONAL_LOAN
+      && /credit line|line usage|line increase|available line/i.test(context)
+    ) return { ...current, productType: PRODUCT_TYPES.PERSONAL_LINE_OF_CREDIT };
+    if (
+      current.productType === PRODUCT_TYPES.BUSINESS_LOAN
+      && /credit line|line usage|line increase|sudden draw|available line/i.test(context)
+    ) return { ...current, productType: PRODUCT_TYPES.BUSINESS_LINE_OF_CREDIT };
+    return current;
+  }
+
   const business = businessPattern.test(context)
     || ['payroll-direct-deposit', 'email-bec', 'business-loan-bust-out', 'ach-wire-check'].includes(claimId);
   const generatedIdDomain = !claimId ? domainFromLegacyGeneratedId(record) : null;
@@ -1125,7 +1139,7 @@ function inferredLegacyPatterns(record, truth = {}) {
   ].filter(Boolean).join(' ').toLowerCase();
   const patterns = [...(Array.isArray(truth.suspectedPatterns) ? truth.suspectedPatterns : [])];
   if (/synthetic/.test(value)) patterns.push(SUSPECTED_PATTERNS.SYNTHETIC_IDENTITY);
-  if (/bust[- ]?out|sleeper llc|rapid credit line stacking/.test(value)) patterns.push(SUSPECTED_PATTERNS.BUST_OUT);
+  if (/bust[- ]?out|sleeper llc|rapid credit (?:line|facility) stacking/.test(value)) patterns.push(SUSPECTED_PATTERNS.BUST_OUT);
   if (/first[- ]party|friendly fraud|household member use|digital goods used|refund\/return abuse/.test(value)) {
     patterns.push(SUSPECTED_PATTERNS.FIRST_PARTY_FRAUD);
   }

@@ -166,10 +166,12 @@ assert(
   'Transaction History exact-ID search is ambiguous when another source ID contains the same text.',
 );
 assert(
-  rangeTransactionRecords(fixture, '7d').length === 1
+  rangeTransactionRecords(fixture).length === fixture.length
+  && rangeTransactionRecords(fixture, 'all').length === fixture.length
+  && rangeTransactionRecords(fixture, '7d').length === 1
   && rangeTransactionRecords(fixture, '30d').length === 2
   && rangeTransactionRecords(fixture, '90d').length === 2,
-  'Transaction History preset ranges do not use inclusive calendar-day boundaries.',
+  'Transaction History should open every supplied record before optional inclusive date filtering.',
 );
 assert(
   rangeTransactionRecords(fixture, 'custom', {

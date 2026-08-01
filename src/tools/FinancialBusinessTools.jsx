@@ -992,7 +992,7 @@ export function TransactionHistoryTool(props) {
   const [selectedId, setSelectedId] = useState('');
   const [error, setError] = useState('');
   const [hasRun, setHasRun] = useState(false);
-  const [rangeId, setRangeId] = useState('30d');
+  const [rangeId, setRangeId] = useState('all');
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -1008,7 +1008,7 @@ export function TransactionHistoryTool(props) {
     setSelectedId('');
     setError('');
     setHasRun(true);
-    setRangeId('30d');
+    setRangeId('all');
     setCustomStart('');
     setCustomEnd('');
     setFiltersOpen(false);
@@ -1022,6 +1022,7 @@ export function TransactionHistoryTool(props) {
     setHasRun(true);
     if (!requested) {
       setResults(records);
+      setRangeId('all');
       setError('');
       return;
     }
@@ -1037,7 +1038,7 @@ export function TransactionHistoryTool(props) {
     );
     setResults(matches);
     setError(matches.length ? '' : 'No supplied transaction matched that search.');
-    setRangeId(isExactIdSearch ? 'exact' : '30d');
+    setRangeId(isExactIdSearch ? 'exact' : 'all');
     setCustomStart('');
     setCustomEnd('');
     setFilters({ direction: 'all', status: 'all', channel: 'all' });
@@ -1092,7 +1093,7 @@ export function TransactionHistoryTool(props) {
   const selectedRange = rangeId === 'exact'
     ? { id: 'exact', label: 'Exact' }
     : transactionHistoryRanges.find((item) => item.id === rangeId)
-      ?? transactionHistoryRanges[2];
+      ?? transactionHistoryRanges[0];
   const directionOptions = uniqueTransactionValues(results, 'direction');
   const statusOptions = uniqueTransactionValues(results, 'status');
   const channelOptions = uniqueTransactionValues(results, 'channel');
@@ -1601,9 +1602,6 @@ export function MerchantIntelligenceTool(props) {
         clean(transaction.id) === clean(resolved.match.sourceRecordId)
       )) ?? primary
     : primary;
-  const matchingTransactions = asArray(workspace?.matchingTransactions);
-  const firstSupplied = matchingTransactions[0] ?? null;
-  const lastSupplied = matchingTransactions.at(-1) ?? null;
   const merchantPin = resolved ? formatMerchantPin(workspace, resolved) : null;
 
   return (
@@ -1703,9 +1701,9 @@ export function MerchantIntelligenceTool(props) {
           </article>
           <article>
             <span aria-hidden="true"><SkyIcon name="calendar" size={19} /></span>
-            <small>First / last supplied</small>
-            <strong>{firstSupplied?.posted ?? 'Not supplied'}</strong>
-            <em>{lastSupplied?.posted ?? 'No second record'}</em>
+            <small>Earliest / latest activity</small>
+            <strong>{workspace.history.earliestPosted || 'Not supplied'}</strong>
+            <em>{workspace.history.latestPosted || 'Not supplied'}</em>
           </article>
         </section>
       )}
@@ -2105,9 +2103,13 @@ export function PaymentVerificationTool(props) {
                 </article>
                 <article>
                   <span aria-hidden="true"><SkyIcon name="calendar" size={18} /></span>
-                  <small>Time on record</small>
+                  <small>Account age</small>
                   <strong>{result.accountAgeLabel}</strong>
-                  <p>{record.firstSeen}</p>
+                  <p>
+                    {result.accountOpenedDate
+                      ? `Opened ${result.accountOpenedDate} · status as of ${result.statusAsOf}`
+                      : `First observed ${record.firstSeen} · account open date not supplied`}
+                  </p>
                 </article>
               </div>
             </div>

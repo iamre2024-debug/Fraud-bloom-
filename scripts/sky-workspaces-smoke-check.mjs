@@ -698,6 +698,23 @@ for (const anchor of [
 for (const anchor of ['@media (max-width: 900px)', '@media (max-width: 680px)', 'prefers-reduced-motion']) {
   if (!responsiveCss.includes(anchor)) fail(`Responsive Sky CSS is missing ${anchor}.`);
 }
+if (!responsiveCss.includes('@media (min-width: 681px) and (max-width: 1280px)')) {
+  fail('Tablet portrait Tool Map protection must include Android viewports through 1280px.');
+}
+for (const anchor of [
+  '.sky-toolmap-orbit',
+  '.sky-toolmap-node',
+  '.sky-toolmap-core',
+  'grid-template-columns: repeat(2, minmax(0, 1fr))',
+  'grid-column: 1 / -1',
+]) {
+  const tabletToolMapCss = responsiveCss.slice(
+    responsiveCss.indexOf('@media (min-width: 681px) and (max-width: 1280px)'),
+  );
+  if (!tabletToolMapCss.includes(anchor)) {
+    fail(`Tablet portrait Tool Map protection is missing ${anchor}.`);
+  }
+}
 if (!/\.sky-dashboard-metrics\s*\{[^}]*grid-template-columns:\s*repeat\(3/m.test(responsiveCss)) {
   fail('The mobile Dashboard no longer preserves its three-card metric row.');
 }

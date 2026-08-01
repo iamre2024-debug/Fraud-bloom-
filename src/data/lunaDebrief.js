@@ -73,8 +73,8 @@ const debriefGuides = {
     riskTip: 'Keep credit risk and fraud findings separate. A payment, utilization, income, or repayment concern can support a credit action without proving fraud.',
     focusAreas: [
       {
-        label: 'System alert and credit usage request',
-        keywords: ['system alert', 'credit', 'limit', 'usage', 'EVT-3308', 'DOC-620'],
+        label: '$2,400 personal credit-line draw request',
+        keywords: ['system alert', 'credit line', 'draw request', '$2,400', 'EVT-3308', 'DOC-620'],
         tool: 'Case Briefing',
         detail: 'Anchor the review to the exact request and the neutral reason the case entered the queue.',
       },

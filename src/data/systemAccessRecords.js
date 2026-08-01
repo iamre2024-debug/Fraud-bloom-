@@ -78,8 +78,8 @@ const builtInSystemAccessRecordsByCase = {
       id: 'SYS-CR-002',
       lane: 'API event',
       actor: 'Credit decisioning service',
-      event: 'Usage request queued for system review',
-      object: 'Credit line usage request',
+      event: 'Credit-line draw request queued for system review',
+      object: '$2,400 personal credit-line draw request',
       observed: 'Jul 8, 2026 · 7:36 AM',
       status: 'Queued',
       context: 'System queue event for account activity review. It is not a final risk decision.',
@@ -116,7 +116,8 @@ function observedTimestamp(value = '') {
 
 export function searchSystemAccessRecords(records = [], query = '') {
   const normalizedQuery = normalizedSearchText(query);
-  if (!normalizedQuery || !Array.isArray(records)) return [];
+  if (!Array.isArray(records)) return [];
+  if (!normalizedQuery) return [...records];
 
   const exactIdMatches = records.filter((record) => (
     normalizedSearchText(record?.id) === normalizedQuery

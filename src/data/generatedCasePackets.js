@@ -81,6 +81,7 @@ function productRailFor(claimType, scenario) {
   const productType = scenario.productType ?? scenario.taxonomyTags?.productType;
   if (productType === PRODUCT_TYPES.CREDIT_CARD || productType === PRODUCT_TYPES.BUSINESS_CREDIT_CARD) return 'card';
   if (productType === PRODUCT_TYPES.PAYROLL_PRODUCT) return 'payroll';
+  if (productType === PRODUCT_TYPES.PERSONAL_LINE_OF_CREDIT || productType === PRODUCT_TYPES.BUSINESS_LINE_OF_CREDIT) return 'line';
   if (productType === PRODUCT_TYPES.PERSONAL_LOAN || productType === PRODUCT_TYPES.BUSINESS_LOAN) return 'loan';
   if (scenario.workflowType === WORKFLOW_TYPES.ACH_TRANSACTION_CLAIM || scenario.workflowType === WORKFLOW_TYPES.ACH_TRANSACTION_REVIEW) return 'ach';
   if ([WORKFLOW_TYPES.WIRE_TRANSACTION_CLAIM, WORKFLOW_TYPES.WIRE_TRANSACTION_REVIEW, WORKFLOW_TYPES.BUSINESS_PAYMENT_INSTRUCTION_CHANGE_ALERT].includes(scenario.workflowType)) return 'wire';
@@ -313,6 +314,7 @@ function makeCreditProfile({ id, index, claimType, scenario, person, business, a
 
 function makeTransactions({ id, claimType, scenario, amount, reportedDate, issueStartDate, recordCount, difficulty, merchantPacket }) {
   if (!claimType.availableTools.includes('Transaction History')) return [];
+  if (scenario.workflowType === WORKFLOW_TYPES.CREDIT_APPLICATION_REVIEW) return [];
   const rail = productRailFor(claimType, scenario);
   const signal = generationSignal(scenario);
   const primaryName = merchantPacket?.profile.name ?? scenario.transactionInfo.split(' - ')[0];
@@ -345,9 +347,13 @@ function makeTransactions({ id, claimType, scenario, amount, reportedDate, issue
       merchant = current ? scenario.transactionInfo.split(' - ')[0] : `Established beneficiary ${itemIndex}`;
       category = 'Wire activity';
       entryMode = 'Account instruction';
-    } else if (/credit|loan/.test(rail)) {
-      channel = current ? 'Credit exposure activity' : itemIndex % 2 ? 'Scheduled payment history' : 'Line utilization history';
-      instrument = rail === 'loan' ? 'Training business credit line' : 'Training credit account';
+    } else if (/credit|loan|line/.test(rail)) {
+      channel = current
+        ? rail === 'line' ? 'Credit-line draw activity' : 'Credit exposure activity'
+        : rail === 'line' ? 'Line utilization history' : 'Scheduled payment history';
+      instrument = rail === 'line'
+        ? scenario.productType === PRODUCT_TYPES.BUSINESS_LINE_OF_CREDIT ? 'Training business line of credit' : 'Training personal line of credit'
+        : scenario.productType === PRODUCT_TYPES.BUSINESS_LOAN ? 'Training business installment loan' : 'Training personal installment loan';
       merchant = current ? scenario.transactionInfo.split(' - ')[0] : `Credit relationship record ${itemIndex}`;
       category = 'Credit relationship activity';
       entryMode = 'Account record';
@@ -398,15 +404,20 @@ function makePaymentVerification({ id, claimType, scenario, person, business, re
   if (!claimType.availableTools.includes('Payment Verification')) return [];
   const seed = stableNumber(`${id}-payment`);
   const rail = productRailFor(claimType, scenario);
-  const destinationType = rail === 'payroll' ? 'Payroll destination' : rail === 'wire' ? 'Beneficiary destination' : /credit|loan/.test(rail) ? 'Payment account' : 'Card authorization object';
+  const applicationReview = scenario.workflowType === WORKFLOW_TYPES.CREDIT_APPLICATION_REVIEW;
+  const destinationType = applicationReview
+    ? 'Application repayment account'
+    : rail === 'payroll' ? 'Payroll destination' : rail === 'wire' ? 'Beneficiary destination' : /credit|loan|line/.test(rail) ? 'Payment account' : 'Card authorization object';
   const destination = `DST-${String(seed).slice(-7).padStart(7, '0')}`;
   const bankCode = `BC-${String(seed).slice(-5)}`;
-  const tone = claimType.id === WORKFLOW_TYPES.MERCHANT_NON_FRAUD_DISPUTE ? 'established' : /credit|loan/.test(rail) ? creditDeterminationTone(scenario) : determinationTone(scenario);
-  const recordedOwner = rail === 'wire' || rail === 'loan' ? business : person;
+  const tone = claimType.id === WORKFLOW_TYPES.MERCHANT_NON_FRAUD_DISPUTE ? 'established' : /credit|loan|line/.test(rail) ? creditDeterminationTone(scenario) : determinationTone(scenario);
+  const recordedOwner = rail === 'wire' || (scenario.customerType === CUSTOMER_TYPES.BUSINESS && /loan|line/.test(rail)) ? business : person;
   return [{
     id: `${id}-PV-1`, type: destinationType, object: `Destination ID ${destination}`, status: 'Lookup completed', lastSeen: `${reportedDate} - 9:18 AM`,
-    context: `${destinationType} ${destination} is linked to ${scenario.transactionInfo} and ${transactions.length} transaction record(s).`, bankName: pick(['Training Atlantic Bank', 'Training Community Bank', 'Training Mobile Money Network', 'Training Federal Credit Union'], seed),
-    accountType: rail === 'payroll' ? 'Payroll destination account' : rail === 'wire' ? 'Business beneficiary account' : /credit|loan/.test(rail) ? 'External payment account' : 'Card network object',
+    context: applicationReview
+      ? `${destinationType} ${destination} appears in the application packet; no transaction is in scope.`
+      : `${destinationType} ${destination} is linked to ${scenario.transactionInfo} and ${transactions.length} transaction record(s).`, bankName: pick(['Training Atlantic Bank', 'Training Community Bank', 'Training Mobile Money Network', 'Training Federal Credit Union'], seed),
+    accountType: applicationReview ? 'Proposed repayment account' : rail === 'payroll' ? 'Payroll destination account' : rail === 'wire' ? 'Business beneficiary account' : /credit|loan|line/.test(rail) ? 'External payment account' : 'Card network object',
     accountHolder: tone === 'established'
       ? recordedOwner
       : tone === 'mixed'
@@ -414,8 +425,8 @@ function makePaymentVerification({ id, claimType, scenario, person, business, re
         : `Training holder ${String(seed).slice(-4)}`,
     ownerMatch: tone === 'established' ? 'Match' : tone === 'mixed' ? 'Partial Match' : 'No Match',
     accountStatus: 'Open', standing: tone === 'exception' ? 'Limited history' : 'Good standing', priorUse: tone === 'established' ? 'Prior use recorded' : 'No prior use located', firstSeen: issueStartDate,
-    verificationMethod: rail === 'card' ? 'Network authorization packet' : 'Training ownership and history comparison', recoverability: rail === 'wire' ? 'Recall status pending receiving-bank response' : 'Review path documented in the payment packet',
-    bankCode, destinationId: destination, oldDestination: rail === 'payroll' || rail === 'wire' ? 'Established destination ending 2204' : 'Prior payment object on file', newDestination: `Bank Code ${bankCode} · Destination ID ${destination}`,
+    verificationMethod: applicationReview ? 'Application account ownership comparison' : rail === 'card' ? 'Network authorization packet' : 'Training ownership and history comparison', recoverability: applicationReview ? 'Not applicable — no funds moved' : rail === 'wire' ? 'Recall status pending receiving-bank response' : 'Review path documented in the payment packet',
+    bankCode, destinationId: destination, oldDestination: applicationReview ? 'No prior application repayment account supplied' : rail === 'payroll' || rail === 'wire' ? 'Established destination ending 2204' : 'Prior payment object on file', newDestination: `Bank Code ${bankCode} · Destination ID ${destination}`,
     changeComparison: `${destination} was ${tone === 'established' ? 'used before the current activity window' : `first observed ${issueStartDate}`}.`, verificationOutcome: `${destinationType}, ownership, status, prior use, and first-seen date recorded`, relatedRecords: transactions.map((item) => item.id),
     actions: ['Compare ownership and prior use', 'Document the trusted verification source'], verificationLog: [{ time: `${reportedDate} - 9:30 AM`, method: 'Training lookup', result: tone === 'mixed' ? 'Unable to Verify' : 'Recorded', note: 'The log records source evidence only.' }], notes: `Generated payment object ${index} for ${scenario.subtype}.`,
   }];

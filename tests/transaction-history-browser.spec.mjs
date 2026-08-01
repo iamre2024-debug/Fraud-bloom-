@@ -37,7 +37,7 @@ test('Transaction History opens directly and preserves its functional Sky invest
 
   await runPostedSearch(page);
   await expect(page.locator('.sky-transaction-summary')).toContainText('$865.09');
-  await expect(page.getByRole('button', { name: '30D' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'All supplied' })).toHaveAttribute('aria-pressed', 'true');
 
   await page.getByRole('button', { name: /^Filters/ }).click();
   await page.getByLabel('Channel').selectOption({ label: 'Card present' });
@@ -49,7 +49,7 @@ test('Transaction History opens directly and preserves its functional Sky invest
   await page.getByLabel('Transaction custom start date').fill('2026-07-08');
   await page.getByLabel('Transaction custom end date').fill('2026-07-08');
   await expect(page.locator('.sky-transaction-record')).toHaveCount(1);
-  await page.getByRole('button', { name: '30D' }).click();
+  await page.getByRole('button', { name: 'All supplied' }).click();
   await expect(page.locator('.sky-transaction-record')).toHaveCount(3);
 
   const primaryRecord = page.locator('.sky-transaction-record', { hasText: 'Northstar Digital Market' });
@@ -66,8 +66,8 @@ test('Transaction History opens directly and preserves its functional Sky invest
   await evidenceActions.getByRole('button', { name: 'Mark Transaction History reviewed' }).click();
   await expect(evidenceActions.getByRole('button', { name: '✓ Transaction History reviewed' })).toBeDisabled();
 
-  const quickPad = page.locator('.sky-quick-pad');
-  await quickPad.getByRole('button', { name: /^Open/ }).click();
+  const quickPad = page.locator('.sky-quick-pad-floating');
+  await quickPad.getByRole('button', { name: /^Open Quick Pad/ }).click();
   await quickPad.locator('.sky-record', { hasText: 'TXN-1001' }).click();
   await expect(quickPad.locator('.sky-summary-list').getByText('Transaction ID', { exact: true })).toBeVisible();
   await expect(quickPad.locator('.sky-summary-list').getByText('TXN-1001', { exact: true })).toBeVisible();

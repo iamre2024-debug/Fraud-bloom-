@@ -456,7 +456,7 @@ export async function generateAndSaveCase(config = {}) {
 }
 
 export async function generateAndSaveCases({ count = 1, ...config } = {}) {
-  const normalizedCount = Math.min(25, Math.max(1, Number.parseInt(count, 10) || 1));
+  const normalizedCount = Math.max(1, Number.parseInt(count, 10) || 1);
   const created = [];
   for (let index = 0; index < normalizedCount; index += 1) {
     created.push(await generateAndSaveCase(config));

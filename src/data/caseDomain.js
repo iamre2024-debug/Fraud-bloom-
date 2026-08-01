@@ -1,4 +1,4 @@
-export const CASE_DOMAIN_VERSION = 2;
+export const CASE_DOMAIN_VERSION = 3;
 export const CASE_RELATIONSHIP_VIEW_SCHEMA_VERSION = 1;
 export const CASE_RELATIONSHIP_DATA_VERSION = 1;
 export const LEGACY_RELATIONSHIP_DATA_VERSION = 0;
@@ -12,10 +12,12 @@ export const PRODUCT_TYPES = Object.freeze({
   CREDIT_CARD: 'credit-card',
   DEPOSIT_ACCOUNT: 'deposit-account',
   PERSONAL_LOAN: 'personal-loan',
+  PERSONAL_LINE_OF_CREDIT: 'personal-line-of-credit',
   BUSINESS_ACCOUNT: 'business-account',
   PAYROLL_PRODUCT: 'payroll-product',
   BUSINESS_CREDIT_CARD: 'business-credit-card',
   BUSINESS_LOAN: 'business-loan',
+  BUSINESS_LINE_OF_CREDIT: 'business-line-of-credit',
 });
 
 export const WORKFLOW_TYPES = Object.freeze({
@@ -173,10 +175,12 @@ export const productTypeDefinitions = Object.freeze([
   Object.freeze({ id: PRODUCT_TYPES.CREDIT_CARD, customerType: CUSTOMER_TYPES.PERSONAL, label: 'Credit card' }),
   Object.freeze({ id: PRODUCT_TYPES.DEPOSIT_ACCOUNT, customerType: CUSTOMER_TYPES.PERSONAL, label: 'Deposit account' }),
   Object.freeze({ id: PRODUCT_TYPES.PERSONAL_LOAN, customerType: CUSTOMER_TYPES.PERSONAL, label: 'Personal loan' }),
+  Object.freeze({ id: PRODUCT_TYPES.PERSONAL_LINE_OF_CREDIT, customerType: CUSTOMER_TYPES.PERSONAL, label: 'Personal line of credit' }),
   Object.freeze({ id: PRODUCT_TYPES.BUSINESS_ACCOUNT, customerType: CUSTOMER_TYPES.BUSINESS, label: 'Business account' }),
   Object.freeze({ id: PRODUCT_TYPES.PAYROLL_PRODUCT, customerType: CUSTOMER_TYPES.BUSINESS, label: 'Payroll or payroll-funding product' }),
   Object.freeze({ id: PRODUCT_TYPES.BUSINESS_CREDIT_CARD, customerType: CUSTOMER_TYPES.BUSINESS, label: 'Business credit card' }),
   Object.freeze({ id: PRODUCT_TYPES.BUSINESS_LOAN, customerType: CUSTOMER_TYPES.BUSINESS, label: 'Business loan' }),
+  Object.freeze({ id: PRODUCT_TYPES.BUSINESS_LINE_OF_CREDIT, customerType: CUSTOMER_TYPES.BUSINESS, label: 'Business line of credit' }),
 ]);
 
 const transactionClaimDecisions = ['Support Customer Claim', 'Do Not Support Customer Claim', 'Partial Credit', 'Insufficient Evidence', 'Escalate'];
@@ -221,6 +225,10 @@ export const enabledWorkflowMatrix = Object.freeze({
       WORKFLOW_TYPES.CREDIT_APPLICATION_REVIEW,
       WORKFLOW_TYPES.CREDIT_RISK_REVIEW,
     ]),
+    [PRODUCT_TYPES.PERSONAL_LINE_OF_CREDIT]: Object.freeze([
+      WORKFLOW_TYPES.CREDIT_APPLICATION_REVIEW,
+      WORKFLOW_TYPES.CREDIT_RISK_REVIEW,
+    ]),
   }),
   [CUSTOMER_TYPES.BUSINESS]: Object.freeze({
     [PRODUCT_TYPES.BUSINESS_ACCOUNT]: Object.freeze([
@@ -232,8 +240,6 @@ export const enabledWorkflowMatrix = Object.freeze({
     [PRODUCT_TYPES.PAYROLL_PRODUCT]: Object.freeze([
       WORKFLOW_TYPES.PAYROLL_CHANGE_ALERT,
       WORKFLOW_TYPES.PAYROLL_ACCOUNT_TAKEOVER,
-      WORKFLOW_TYPES.CREDIT_APPLICATION_REVIEW,
-      WORKFLOW_TYPES.CREDIT_RISK_REVIEW,
     ]),
     [PRODUCT_TYPES.BUSINESS_CREDIT_CARD]: Object.freeze([
       WORKFLOW_TYPES.CREDIT_APPLICATION_REVIEW,
@@ -241,6 +247,11 @@ export const enabledWorkflowMatrix = Object.freeze({
       WORKFLOW_TYPES.BUSINESS_ACCOUNT_TAKEOVER,
     ]),
     [PRODUCT_TYPES.BUSINESS_LOAN]: Object.freeze([
+      WORKFLOW_TYPES.CREDIT_APPLICATION_REVIEW,
+      WORKFLOW_TYPES.CREDIT_RISK_REVIEW,
+      WORKFLOW_TYPES.BUSINESS_ACCOUNT_TAKEOVER,
+    ]),
+    [PRODUCT_TYPES.BUSINESS_LINE_OF_CREDIT]: Object.freeze([
       WORKFLOW_TYPES.CREDIT_APPLICATION_REVIEW,
       WORKFLOW_TYPES.CREDIT_RISK_REVIEW,
       WORKFLOW_TYPES.BUSINESS_ACCOUNT_TAKEOVER,

@@ -62,7 +62,7 @@ const sessionDetailsById = {
   },
   'SES-9302': {
     end: '7:52 AM', duration: '9 minutes', logoutStatus: 'Session timeout recorded', pagesViewed: ['Profile review', 'Credit line overview'], securitySettings: ['No security setting opened'],
-    profileActions: ['PCH-3302 · Limit usage request submitted'], payeeTokenActivity: ['No token change recorded in session'], moneyMovement: ['EVT-3308 · Limit usage request submitted before session'],
+    profileActions: ['No profile change recorded'], payeeTokenActivity: ['No token change recorded in session'], moneyMovement: ['EVT-3308 · $2,400 credit-line draw request submitted before session'],
     sessionPath: ['7:43 AM · Password login', '7:43 AM · Profile review opened', '7:52 AM · Session timeout'], investigatorUse: 'Compare the early-account session with payment and identity records.',
   },
   'SES-9299': {

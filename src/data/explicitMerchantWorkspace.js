@@ -1,4 +1,5 @@
 import { financialRecordsByCase } from './financialRecords.js';
+import { transactionRecordTimestamp } from './transactionHistoryRecords.js';
 
 const EMPTY_LIST = Object.freeze([]);
 const MERCHANT_TOOL = 'Merchant Intelligence';
@@ -99,6 +100,21 @@ function validLookup(value, type) {
 
 function firstPresent(...values) {
   return values.find((value) => clean(value)) ?? '';
+}
+
+function merchantHistoryBoundary(records = []) {
+  const dated = records
+    .map((record, index) => ({
+      record,
+      index,
+      timestamp: transactionRecordTimestamp(record),
+    }))
+    .filter((item) => Number.isFinite(item.timestamp))
+    .sort((left, right) => left.timestamp - right.timestamp || left.index - right.index);
+  return {
+    earliest: dated[0]?.record ?? records[0] ?? null,
+    latest: dated.at(-1)?.record ?? records.at(-1) ?? null,
+  };
 }
 
 function sourceRows(groups = []) {
@@ -456,6 +472,7 @@ export function buildExplicitMerchantWorkspace(activeCase = {}) {
       suppliedAmounts.reduce((total, amount) => total + amount, 0) * 100,
     ) / 100
     : null;
+  const historyBoundary = merchantHistoryBoundary(matchingTransactions);
   const documents = explicitDocuments(activeCase, packetObject);
   const policyDocument = policyDocumentFrom(documents);
   const requestableDocument = requestableDocumentFrom(documents);
@@ -509,6 +526,10 @@ export function buildExplicitMerchantWorkspace(activeCase = {}) {
       totalAmount,
       totalAmountDisplay: formatMoney(totalAmount),
       recordIds: matchingTransactions.map((item) => clean(item.id)).filter(Boolean),
+      earliestRecordId: clean(historyBoundary.earliest?.id),
+      earliestPosted: clean(historyBoundary.earliest?.posted),
+      latestRecordId: clean(historyBoundary.latest?.id),
+      latestPosted: clean(historyBoundary.latest?.posted),
     },
     authorization,
     authorizationSourcePath,

@@ -180,7 +180,7 @@ export function useWorkspaceState() {
         if (mounted) setGeneratedCases(items);
       })
       .catch(() => {
-        if (mounted) setGeneratedCases([]);
+        // Keep the last successfully loaded queue when a transient storage read fails.
       });
     refreshGeneratedCases();
     window.addEventListener('fraud-academy:generated-cases-updated', refreshGeneratedCases);
@@ -446,8 +446,15 @@ export function useWorkspaceState() {
 
   const createCase = useCallback(async (config = {}) => {
     const created = await generateAndSaveCase(config);
-    const items = await listGeneratedCases();
-    setGeneratedCases(items);
+    setGeneratedCases((current) => [
+      created,
+      ...current.filter((item) => item.id !== created.id),
+    ]);
+    listGeneratedCases()
+      .then(setGeneratedCases)
+      .catch(() => {
+        // The newly persisted case remains usable from the optimistic queue update.
+      });
     openCase(created.id);
     return created;
   }, [openCase]);

@@ -1,4 +1,5 @@
 export const transactionHistoryRanges = Object.freeze([
+  Object.freeze({ id: 'all', label: 'All supplied', days: null }),
   Object.freeze({ id: '7d', label: '7D', days: 7 }),
   Object.freeze({ id: '14d', label: '14D', days: 14 }),
   Object.freeze({ id: '30d', label: '30D', days: 30 }),
@@ -61,7 +62,7 @@ export function searchTransactionRecords(records = [], query = '') {
 
 export function rangeTransactionRecords(
   records = [],
-  rangeId = '30d',
+  rangeId = 'all',
   {
     customStart = '',
     customEnd = '',
@@ -69,7 +70,7 @@ export function rangeTransactionRecords(
   } = {},
 ) {
   if (!records.length) return [];
-  if (rangeId === 'exact') return [...records];
+  if (rangeId === 'all' || rangeId === 'exact') return [...records];
 
   let start = null;
   let end = null;

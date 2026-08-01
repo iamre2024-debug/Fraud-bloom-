@@ -132,7 +132,7 @@ function generatedParties({ id, index, domain, person, business, employer, scena
       party(3, 'Beneficial owner', generatedPartyName(index, 1), 'Relevant owner identified for verification', 'Ownership record'),
       party(4, 'Control person', generatedPartyName(index, 2), 'Person with significant control identified for verification', 'Business application'),
     );
-    if ([PRODUCT_TYPES.BUSINESS_CREDIT_CARD, PRODUCT_TYPES.BUSINESS_LOAN].includes(domain.productType)) {
+    if ([PRODUCT_TYPES.BUSINESS_CREDIT_CARD, PRODUCT_TYPES.BUSINESS_LOAN, PRODUCT_TYPES.BUSINESS_LINE_OF_CREDIT].includes(domain.productType)) {
       parties.push(party(5, 'Personal guarantor', generatedPartyName(index, 3), 'Guarantor identified for this fictional credit product', 'Guaranty record'));
     }
     parties.push(party(6, 'Authorized administrator', generatedPartyName(index, 4), 'Administrator identified when applicable', 'Administrator record'));

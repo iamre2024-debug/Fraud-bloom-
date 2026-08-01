@@ -57,6 +57,25 @@ function displayValue(value, fallback = EMPTY_VALUE) {
   return text && !UNSAFE_HINT.test(text) ? text : fallback;
 }
 
+function uniqueAdditionalRelationshipFacts(facts = []) {
+  const displayedCoreLabels = new Set([
+    'customer since',
+    'relationship length',
+    'previous address',
+    'preferred contact',
+  ]);
+  const seen = new Set();
+  return facts.filter((item) => {
+    const label = String(item?.label ?? '').trim().toLowerCase();
+    const value = String(item?.value ?? '').trim().toLowerCase();
+    if (!label || !value || displayedCoreLabels.has(label)) return false;
+    const identity = `${label}:${value}`;
+    if (seen.has(identity)) return false;
+    seen.add(identity);
+    return true;
+  });
+}
+
 function recordLabel(value, fallback = 'Evidence record') {
   const text = displayValue(value, fallback);
   return text.length > 84 ? `${text.slice(0, 81)}…` : text;
@@ -614,7 +633,10 @@ export function Customer360Tool({
   const lookup = useExactLookup(activeCase, initialQuery);
   const trainingId = dossier.identity?.trainingId ?? activeCase.trainingId;
   const linkedBusinessCount = dossier.relationship?.businessRelationships?.length ?? 0;
-  const relationshipFacts = dossier.relationship?.facts ?? [];
+  const relationshipFacts = useMemo(
+    () => uniqueAdditionalRelationshipFacts(dossier.relationship?.facts ?? []),
+    [dossier.relationship?.facts],
+  );
   const customerSnapshot = useMemo(() => ({
     id: trainingId,
     recordId: trainingId,
@@ -683,7 +705,7 @@ export function Customer360Tool({
                     <p>
                       Customer since {displayValue(dossier.identity?.customerSince)}
                       {' · '}
-                      {displayValue(dossier.identity?.relationshipLength)}
+                      {displayValue(dossier.identity?.segment)}
                     </p>
                   </div>
                   <span className="sky-chip">Source record</span>
