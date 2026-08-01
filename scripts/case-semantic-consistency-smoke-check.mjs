@@ -15,8 +15,10 @@ const creditLineCase = cases.find((item) => item.id === 'FA-CR-24003');
 assert.ok(creditLineCase, 'The built-in personal credit-line case must remain available.');
 assert.equal(creditLineCase.productType, PRODUCT_TYPES.PERSONAL_LINE_OF_CREDIT);
 assert.equal(creditLineCase.productTypeLabel, 'Personal line of credit');
-assert.match(creditLineCase.alertReason, /\$2,400.*draw.*one day/i);
-assert.match(creditLineCase.reportedAllegation, /\$2,400 draw.*personal line of credit/i);
+assert.match(creditLineCase.alertReason, /\$2,400.*five minutes.*one-day-old.*\$8,000/i);
+assert.match(creditLineCase.reportedAllegation, /\$2,400 draw.*one-day-old.*\$8,000 personal line of credit/i);
+assert.match(creditLineCase.reportedAllegation, /draw itself is normal.*not a fraud finding/i);
+assert.match(creditLineCase.alertHandlingNote, /draw alone would not become a case/i);
 
 const drawEvent = creditLineCase.events.find((item) => item.id === 'EVT-3308');
 assert.equal(drawEvent?.label, 'Credit-line draw request submitted');

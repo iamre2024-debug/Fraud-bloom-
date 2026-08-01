@@ -1524,6 +1524,58 @@
   margin: 13px 0 16px 34px;
 }
 
+.sky-briefing-routing {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.65fr) minmax(0, 1.6fr);
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.sky-briefing-routing > div,
+.sky-briefing-routing > p {
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(84, 220, 255, 0.22);
+  border-radius: 16px;
+  background: rgba(2, 25, 73, 0.52);
+}
+
+.sky-briefing-routing > div {
+  display: grid;
+  gap: 5px;
+}
+
+.sky-briefing-routing small {
+  color: var(--cyan);
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sky-briefing-routing strong,
+.sky-briefing-routing p {
+  color: var(--text);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.sky-briefing-routing > p {
+  grid-column: 1 / -1;
+  border-color: rgba(255, 111, 207, 0.25);
+  color: var(--muted);
+}
+
+@media (max-width: 700px) {
+  .sky-briefing-routing {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-briefing-routing > p {
+    grid-column: auto;
+  }
+}
+
 .sky-briefing-facts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

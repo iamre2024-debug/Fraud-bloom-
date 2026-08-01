@@ -891,9 +891,10 @@ export function buildScenarioDecisionData({ claimType, scenario, reportedDate, t
 export function buildScenarioEvents({ id, scenario, claimType, reportedDate, issueStartDate, difficulty, evidenceDepth, documents = [] }) {
   const availableDocuments = documents.filter((item) => item.status !== 'Requested');
   const requestedDocuments = documents.filter((item) => item.status === 'Requested');
+  const isCustomerReport = scenario.caseOriginType === 'customer-reported-claim';
   const events = [
-    { id: `${id}-EVT-1`, time: `${issueStartDate} - 10:10 AM`, label: 'Alerted activity recorded', detail: `${scenario.transactionInfo} for ${scenario.amount} entered the activity window.`, chip: 'Case event', object: 'Case' },
-    { id: `${id}-EVT-2`, time: `${reportedDate} - 9:05 AM`, label: 'Intake or alert received', detail: `${scenario.channel} opened the case with this statement: ${scenario.statement}`, chip: 'Intake', object: 'Statement' },
+    { id: `${id}-EVT-1`, time: `${issueStartDate} - 10:10 AM`, label: 'Activity in review window', detail: `${scenario.transactionInfo} for ${scenario.amount} was recorded. This activity alone is not a finding.`, chip: 'Case event', object: 'Case' },
+    { id: `${id}-EVT-2`, time: `${reportedDate} - 9:05 AM`, label: isCustomerReport ? 'Claim or report received' : 'Alert routed to manual review', detail: isCustomerReport ? `${scenario.channel} received this report: ${scenario.statement}` : scenario.caseEscalationReason, chip: 'Intake', object: 'Statement' },
     { id: `${id}-EVT-3`, time: `${reportedDate} - 9:18 AM`, label: 'Evidence packet initialized', detail: `${evidenceDepth} packet created with ${availableDocuments.length} available document(s) and ${requestedDocuments.length} requested document(s) for ${claimType.label}.`, chip: 'Packet', object: 'Document' },
   ];
   if (difficulty !== 'light') events.push({ id: `${id}-EVT-C1`, time: `${reportedDate} - 10:20 AM`, label: 'Cross-source comparison added', detail: `Compare the ${scenario.channel} statement with ${scenario.transactionInfo}, payment ownership, and dated profile records.`, chip: 'Comparison', object: 'Record' });

@@ -215,6 +215,14 @@ function buildClaimFields(item, context = {}) {
   const reportedAllegation = item.reportedAllegation && !containsHiddenAnswer(item.reportedAllegation)
     ? item.reportedAllegation
     : scenario.reportedAllegation ?? statementValue;
+  const caseOriginType = item.caseOriginType ?? scenario.caseOriginType;
+  const caseOrigin = item.caseOrigin ?? scenario.caseOrigin ?? item.intake?.channel ?? 'Case queue';
+  const caseEscalationReason = item.caseEscalationReason && !containsHiddenAnswer(item.caseEscalationReason)
+    ? item.caseEscalationReason
+    : scenario.caseEscalationReason ?? item.queueReason ?? reportedAllegation;
+  const alertHandlingNote = item.alertHandlingNote && !containsHiddenAnswer(item.alertHandlingNote)
+    ? item.alertHandlingNote
+    : scenario.alertHandlingNote ?? 'The intake record is a review trigger, not a finding. Evidence must support the determination.';
   const statementLabel = item.statement?.label
     ?? (/credit|application/i.test(claimType.id) ? 'Applicant statement' : item.intake?.channel === 'System alert' ? 'Reported alert' : 'Reported allegation');
   const intakeAnswers = item.intakeAnswers?.length ? item.intakeAnswers : buildCaseIntakeAnswers({
@@ -290,6 +298,10 @@ function buildClaimFields(item, context = {}) {
     workflowTypeLabel: domainLabels.workflowTypeLabel,
     alertReason,
     reportedAllegation,
+    caseOriginType,
+    caseOrigin,
+    caseEscalationReason,
+    alertHandlingNote,
     suspectedPatterns: [],
     operationalDecision: item.operationalDecision ?? null,
     finalFinding: item.finalFinding ?? null,
@@ -333,6 +345,8 @@ function buildClaimFields(item, context = {}) {
       ['Customer type', domainLabels.customerTypeLabel],
       ['Product', domainLabels.productTypeLabel],
       ['Review workflow', domainLabels.workflowTypeLabel],
+      ['Case origin', caseOrigin],
+      ['Escalation context', caseEscalationReason],
       ['Alert reason', alertReason],
       ['Reported date', reportedDate],
       ['Issue start date', issueStartDate],

@@ -318,23 +318,107 @@ function publicAlertReason(workflowType, spec) {
   return 'Activity requires review';
 }
 
-function reportedAllegation(workflowType, alertReason) {
-  if (workflowType === WORKFLOW_TYPES.PAYROLL_CHANGE_ALERT) {
-    return `${alertReason}. The platform does not know how the change was requested at intake.`;
-  }
-  if (workflowType === WORKFLOW_TYPES.PAYROLL_ACCOUNT_TAKEOVER) {
-    return `${alertReason}. Authorization and administrator control have not been established.`;
-  }
-  if (workflowType === WORKFLOW_TYPES.BUSINESS_PAYMENT_INSTRUCTION_CHANGE_ALERT) {
-    return `${alertReason}. The instruction source and validity require trusted verification.`;
+const customerReportedWorkflows = new Set([
+  WORKFLOW_TYPES.UNAUTHORIZED_CARD_TRANSACTION_CLAIM,
+  WORKFLOW_TYPES.MERCHANT_NON_FRAUD_DISPUTE,
+  WORKFLOW_TYPES.CARD_ACCOUNT_TAKEOVER,
+  WORKFLOW_TYPES.PERSONAL_ACCOUNT_TAKEOVER,
+  WORKFLOW_TYPES.ACH_TRANSACTION_CLAIM,
+  WORKFLOW_TYPES.WIRE_TRANSACTION_CLAIM,
+  WORKFLOW_TYPES.BUSINESS_ACCOUNT_TAKEOVER,
+]);
+
+function cleanSentence(value = '') {
+  const text = String(value).trim().replace(/\s+/g, ' ').replace(/[.]+$/, '');
+  return text ? `${text}.` : '';
+}
+
+function publicTransactionInfo(spec) {
+  return String(spec.transactionInfo ?? '')
+    .replace(/compromised mailbox|email request|mailbox thread|reply-to mismatch|forwarding rule|email/gi, 'instruction source pending verification');
+}
+
+function caseOriginFor(workflowType) {
+  if (customerReportedWorkflows.has(workflowType)) {
+    return { type: 'customer-reported-claim', label: 'Customer or business report' };
   }
   if (workflowType === WORKFLOW_TYPES.CREDIT_APPLICATION_REVIEW) {
-    return `${alertReason}. Missing or conflicting information requires verification and is not itself a fraud finding.`;
+    return { type: 'verification-review', label: 'Application verification review' };
   }
   if (workflowType === WORKFLOW_TYPES.CREDIT_RISK_REVIEW) {
-    return `${alertReason}. The alert does not establish intent or a fraud finding.`;
+    return { type: 'credit-policy-review', label: 'Credit monitoring or policy review' };
   }
-  return `${alertReason}. The allegation or alert remains unconfirmed pending investigation.`;
+  return { type: 'operations-alert', label: 'Operations or monitoring alert' };
+}
+
+function creditRiskTrigger(spec, transactionInfo) {
+  const source = `${spec.subtype} ${transactionInfo}`.toLowerCase();
+  if (/line increase/.test(source)) {
+    return `A ${spec.amount} line-increase request and its updated income documents required a manual credit-policy comparison`;
+  }
+  if (/first.payment|missed/.test(source)) {
+    return `The first scheduled payment was missed on a recently opened credit account, requiring account-age, payment, and contact-history comparison`;
+  }
+  if (/repayment stress|utilization and payment/.test(source)) {
+    return 'A change across utilization and payment behavior required comparison with the established account history';
+  }
+  if (/payment setup|destination/.test(source)) {
+    return `A ${spec.amount} credit-line draw was paired with a newly established payment destination whose ownership and prior use required verification`;
+  }
+  if (/concurrent|stacking|facilities/.test(source)) {
+    return 'Multiple credit facilities appeared in the same review window and required exposure, application-timing, and repayment-capacity comparison';
+  }
+  if (/dormant|line increase history|revolving-credit|draw|utilization/.test(source)) {
+    return `The ${spec.amount} draw or utilization change differed from the supplied account-history context and required revenue, payment, and authorization comparison`;
+  }
+  return 'The existing exposure crossed a configured credit-policy review condition and required comparison with payment, income, and account-history records';
+}
+
+function caseEscalationReason(workflowType, spec, transactionInfo) {
+  const activity = cleanSentence(`${transactionInfo} for ${spec.amount}`).replace(/[.]$/, '');
+  const statement = cleanSentence(spec.statement).replace(/[.]$/, '');
+  if (customerReportedWorkflows.has(workflowType)) {
+    return `A report identified ${activity} and stated: “${statement}” The report opened the applicable claim review; it did not establish authorization, responsibility, or the outcome.`;
+  }
+  if (workflowType === WORKFLOW_TYPES.BUSINESS_PAYMENT_INSTRUCTION_CHANGE_ALERT) {
+    return `A changed business payment instruction involving ${activity} was routed to manual review because trusted-source and destination-ownership verification were not complete at intake.`;
+  }
+  if ([WORKFLOW_TYPES.ACH_TRANSACTION_REVIEW, WORKFLOW_TYPES.WIRE_TRANSACTION_REVIEW].includes(workflowType)) {
+    return `The business activity involving ${activity} was routed to manual review because instruction authority and destination ownership required cross-source verification.`;
+  }
+  if (workflowType === WORKFLOW_TYPES.PAYROLL_CHANGE_ALERT) {
+    return `The payroll change involving ${activity} was routed to manual review because the platform does not know how the change was requested at intake; the request method is unknown at intake, and trusted employee or manager validation was not yet established.`;
+  }
+  if (workflowType === WORKFLOW_TYPES.PAYROLL_ACCOUNT_TAKEOVER) {
+    return `The payroll change involving ${activity} followed a new off-hours administrator session, so the initiator, approver, device, IP, and funds status required manual comparison.`;
+  }
+  if (workflowType === WORKFLOW_TYPES.CREDIT_APPLICATION_REVIEW) {
+    return `${cleanSentence(`The application involving ${activity}`).replace(/[.]$/, '')} was routed to verification review because two or more application fields, identity records, or supporting documents required cross-source reconciliation.`;
+  }
+  if (workflowType === WORKFLOW_TYPES.CREDIT_RISK_REVIEW) {
+    return `${cleanSentence(creditRiskTrigger(spec, transactionInfo)).replace(/[.]$/, '')}. The review condition did not establish intent or a fraud finding.`;
+  }
+  return `${cleanSentence(`${activity} met a configured manual-review condition`).replace(/[.]$/, '')}. The condition is a routing event, not a finding.`;
+}
+
+function alertHandlingNote(workflowType) {
+  if (customerReportedWorkflows.has(workflowType)) {
+    return 'This case began with a report or claim. Recording that report opens a review but does not prove the activity was unauthorized, valid, or fraudulent.';
+  }
+  if (workflowType === WORKFLOW_TYPES.CREDIT_APPLICATION_REVIEW) {
+    return 'A verification review is not automatically a fraud case. Routine applications can pass automated checks; unresolved cross-source conditions are routed for manual review.';
+  }
+  if (workflowType === WORKFLOW_TYPES.CREDIT_RISK_REVIEW) {
+    return 'Credit use, draws, limit requests, and payment changes can be normal. Only configured policy conditions or unresolved cross-source comparisons are routed to this manual-review queue.';
+  }
+  return 'Not every alert becomes a case. This training queue contains alerts routed to manual review because multiple conditions or unresolved control checks were present; other alerts may remain monitoring events or close without a case.';
+}
+
+function reportedAllegation(workflowType, spec, escalationReason) {
+  if (customerReportedWorkflows.has(workflowType)) {
+    return `${cleanSentence(spec.statement)} The report remains unconfirmed pending investigation.`;
+  }
+  return escalationReason;
 }
 
 function suspectedPatternsFor(spec, workflowType) {
@@ -438,17 +522,9 @@ function finalFindingFor(spec, workflowType, patterns, operationalDecision) {
   return FINAL_FINDINGS.FRAUD_CONFIRMED;
 }
 
-function publicStatement(workflowType, alertReason) {
-  if (workflowType === WORKFLOW_TYPES.PAYROLL_CHANGE_ALERT) {
-    return `${alertReason}. The request method is unknown at intake and trusted verification has not yet occurred.`;
-  }
-  if (workflowType === WORKFLOW_TYPES.PAYROLL_ACCOUNT_TAKEOVER) {
-    return `${alertReason}. Review the initiator, approver, device, IP, session, payroll history, and funds status.`;
-  }
-  if (workflowType === WORKFLOW_TYPES.BUSINESS_PAYMENT_INSTRUCTION_CHANGE_ALERT) {
-    return `${alertReason}. The business has not yet established how the instruction was received or whether it was valid.`;
-  }
-  return reportedAllegation(workflowType, alertReason);
+function publicStatement(workflowType, spec, escalationReason) {
+  if (customerReportedWorkflows.has(workflowType)) return cleanSentence(spec.statement);
+  return escalationReason;
 }
 
 function publicEntityRole(workflowType, customerType, suppliedRole) {
@@ -474,7 +550,11 @@ function buildScenario(claimType, spec, index) {
   const legacyScenarioId = spec.id ?? `${legacyScenarioPrefixes[spec.sourceClaimTypeId] ?? slug(spec.sourceClaimTypeId)}-${slug(spec.subtype)}`;
   const scenarioId = `${claimType.prefix.toLowerCase()}-scenario-${String(index + 1).padStart(2, '0')}`;
   const alertReason = publicAlertReason(claimType.workflowType, spec);
-  const allegation = reportedAllegation(claimType.workflowType, alertReason);
+  const transactionInfo = publicTransactionInfo(spec);
+  const origin = caseOriginFor(claimType.workflowType);
+  const escalationReason = caseEscalationReason(claimType.workflowType, spec, transactionInfo);
+  const handlingNote = alertHandlingNote(claimType.workflowType);
+  const allegation = reportedAllegation(claimType.workflowType, spec, escalationReason);
   const patterns = suspectedPatternsFor(spec, claimType.workflowType);
   const operationalDecision = normalizeOperationalDecision(claimType.workflowType, spec.correctDetermination);
   const finalFinding = finalFindingFor(spec, claimType.workflowType, patterns, operationalDecision);
@@ -509,16 +589,19 @@ function buildScenario(claimType, spec, index) {
     subtype: alertReason,
     alertReason,
     reportedAllegation: allegation,
-    summary: `${allegation} The fictional packet contains routine and exception evidence for review.`,
-    statement: publicStatement(claimType.workflowType, alertReason),
+    caseOriginType: origin.type,
+    caseOrigin: origin.label,
+    caseEscalationReason: escalationReason,
+    alertHandlingNote: handlingNote,
+    summary: `${allegation} ${handlingNote} The fictional packet contains routine and exception evidence for review.`,
+    statement: publicStatement(claimType.workflowType, spec, escalationReason),
     channel: claimType.workflowType === WORKFLOW_TYPES.PAYROLL_CHANGE_ALERT
       ? 'Platform payroll alert'
       : claimType.workflowType === WORKFLOW_TYPES.PAYROLL_ACCOUNT_TAKEOVER
         ? 'Platform payroll access alert'
         : spec.channel ?? (customerType === CUSTOMER_TYPES.BUSINESS ? 'Business review queue' : 'Customer review queue'),
     amount: spec.amount,
-    transactionInfo: spec.transactionInfo
-      .replace(/compromised mailbox|email request|mailbox thread|reply-to mismatch|forwarding rule|email/gi, 'instruction source pending verification'),
+    transactionInfo,
     priority: spec.priority ?? 'Medium',
     family: claimType.label,
     entityRole: publicEntityRole(claimType.workflowType, customerType, spec.entityRole),

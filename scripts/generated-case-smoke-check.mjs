@@ -83,7 +83,7 @@ if (ids.size !== saved.length) failures.push('Generated case IDs are not unique.
 if (accountIds.size !== enrichedSaved.length || enrichedSaved.some((item) => !item.accountId?.startsWith('ACCT-'))) failures.push('Every saved case must expose a unique Account ID after catalog enrichment.');
 if (enrichedSaved.some((item) => item.customer?.relationship?.find((entry) => entry.label === 'Account ID')?.value !== item.accountId)) failures.push('Every saved case must expose its Account ID in Customer 360.');
 if (saved.filter((item) => item.generatedPacketVersion).some((item) => (
-  item.generatedPacketVersion !== 8
+  item.generatedPacketVersion !== 9
   || item.customer?.relationshipPacketVersion !== 1
   || !item.customer?.identity?.sourceRecordId
   || item.customer?.serviceContacts?.length !== 2
@@ -138,7 +138,7 @@ for (const [index, claimType] of coreClaimTypes.entries()) {
     failures.push(`${claimType.label} is missing complete generated profile-maintenance history.`);
   }
   const persistedCustomerIdentity = generated.customer?.identity;
-  if (generated.generatedPacketVersion !== 8 || generated.customer?.relationshipPacketVersion !== 1) {
+  if (generated.generatedPacketVersion !== 9 || generated.customer?.relationshipPacketVersion !== 1) {
     failures.push(`${claimType.label} is missing the generated packet or Customer 360 source-packet version.`);
   }
   for (const field of [

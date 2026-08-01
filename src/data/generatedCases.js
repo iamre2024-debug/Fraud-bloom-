@@ -167,11 +167,14 @@ export function buildGeneratedCaseSummary({
   const subject = generatedSubject({ person, scenario, employer, business });
   const statement = endSentence(scenario.statement);
   const transaction = endSentence(scenario.transactionInfo);
+  const sourceLead = scenario.caseOriginType === 'customer-reported-claim'
+    ? `${subject} reported through ${scenario.channel}`
+    : `${scenario.channel} routed the activity for review`;
   const documentStatus = requestedDocuments
     ? `${availableDocuments} supporting document(s) are available and ${requestedDocuments} remain requested.`
     : `${availableDocuments} supporting document(s) are available in the case packet.`;
 
-  return `${subject} reported through ${scenario.channel}: "${statement}" The ${scenario.subtype} review concerns ${transaction} The amount in scope is ${scenario.amount}; activity begins ${issueStartDate}, and the case was reported ${reportedDate}. ${documentStatus}`;
+  return `${sourceLead}: "${statement}" ${scenario.caseEscalationReason} The ${scenario.subtype} review concerns ${transaction} The amount in scope is ${scenario.amount}; activity begins ${issueStartDate}, and the case was reported ${reportedDate}. ${scenario.alertHandlingNote} ${documentStatus}`;
 }
 
 function dateFor(index, offset = 0) {
@@ -616,13 +619,20 @@ function scenarioVariant(baseScenario, index) {
   const transactionInfo = /ending \d{4}/i.test(baseScenario.transactionInfo)
     ? baseScenario.transactionInfo.replace(/ending \d{4}/i, `ending ${reference}`)
     : `${baseScenario.transactionInfo} · training reference ${reference}`;
+  const varyScenarioText = (value) => String(value ?? '')
+    .replaceAll(String(baseScenario.amount ?? ''), amount)
+    .replaceAll(String(baseScenario.transactionInfo ?? ''), transactionInfo);
 
   return {
     ...baseScenario,
     amount,
     channel,
     transactionInfo,
-    statement: `${endSentence(baseScenario.statement)} Please compare the dated records across the ${pattern}.`,
+    alertReason: varyScenarioText(baseScenario.alertReason),
+    reportedAllegation: varyScenarioText(baseScenario.reportedAllegation),
+    caseEscalationReason: varyScenarioText(baseScenario.caseEscalationReason),
+    summary: varyScenarioText(baseScenario.summary),
+    statement: `${endSentence(varyScenarioText(baseScenario.statement))} Please compare the dated records across the ${pattern}.`,
     variationId: `${baseScenario.id}-V${padded(seed, 8)}`,
     variationLabel: pattern,
   };
@@ -1115,6 +1125,10 @@ export function createGeneratedCase(indexOrOptions = Date.now(), options = {}) {
     workflowTypeLabel: domainLabels.workflowTypeLabel,
     alertReason: scenario.alertReason,
     reportedAllegation: scenario.reportedAllegation,
+    caseOriginType: scenario.caseOriginType,
+    caseOrigin: scenario.caseOrigin,
+    caseEscalationReason: scenario.caseEscalationReason,
+    alertHandlingNote: scenario.alertHandlingNote,
     suspectedPatterns: [],
     operationalDecision: null,
     finalFinding: null,
@@ -1134,7 +1148,7 @@ export function createGeneratedCase(indexOrOptions = Date.now(), options = {}) {
     commonMistake: scenario.commonMistake,
     miniExample: scenario.miniExample,
     scenarioTruthId: scenario.scenarioTruthId,
-    generatedPacketVersion: 8,
+    generatedPacketVersion: 9,
     difficulty,
     evidenceDepth: depth.label,
     priority: scenario.priority,
@@ -1157,7 +1171,7 @@ export function createGeneratedCase(indexOrOptions = Date.now(), options = {}) {
     transactionInfo: scenario.transactionInfo,
     shortSummary: generatedSummary,
     allegation: scenario.reportedAllegation,
-    queueReason: `${domainLabels.customerTypeLabel} · ${domainLabels.productTypeLabel} · ${domainLabels.workflowTypeLabel} · ${scenario.alertReason}.`,
+    queueReason: scenario.caseEscalationReason,
     statement: { label: statementLabel, value: scenario.statement, source: scenario.channel },
     assignedInvestigator: briefingPacket.assignedInvestigator,
     assignedDate: briefingPacket.assignedDate,
@@ -1186,7 +1200,7 @@ export function createGeneratedCase(indexOrOptions = Date.now(), options = {}) {
     intakeAnswers,
     briefingQuestions: claimType.intakePrompts,
     keyFacts: [
-      ['Customer type', domainLabels.customerTypeLabel], ['Product', domainLabels.productTypeLabel], ['Review workflow', domainLabels.workflowTypeLabel], ['Alert reason', scenario.alertReason], ['Reported date', reportedDate], ['Issue start date', issueStartDate], ['Amount / exposure', scenario.amount], ['Difficulty', difficultyProfile.label], ['Evidence depth', depth.label],
+      ['Customer type', domainLabels.customerTypeLabel], ['Product', domainLabels.productTypeLabel], ['Review workflow', domainLabels.workflowTypeLabel], ['Case origin', scenario.caseOrigin], ['Alert reason', scenario.alertReason], ['Escalation context', scenario.caseEscalationReason], ['Reported date', reportedDate], ['Issue start date', issueStartDate], ['Amount / exposure', scenario.amount], ['Difficulty', difficultyProfile.label], ['Evidence depth', depth.label],
     ],
     productsAccounts: [{ label: 'Customer type', value: domainLabels.customerTypeLabel }, { label: 'Product', value: domainLabels.productTypeLabel }, { label: 'Review workflow', value: domainLabels.workflowTypeLabel }, { label: 'Entity role', value: scenario.entityRole }, { label: 'Primary account context', value: scenario.transactionInfo }],
     availableTools: caseClaimType.availableTools,

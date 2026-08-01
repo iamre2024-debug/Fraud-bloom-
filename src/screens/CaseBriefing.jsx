@@ -1,6 +1,10 @@
 import {
   publicAlertReason,
+  publicAlertHandlingNote,
+  publicCaseEscalationReason,
   publicCaseFacts,
+  publicCaseOrigin,
+  publicCaseOriginType,
   publicReportedAllegation,
 } from '../data/publicCaseView.js';
 import {
@@ -57,6 +61,7 @@ export default function CaseBriefing({
   const briefingReviewed = completedTools.includes('Case Briefing');
   const receivedDocuments = documents.filter(availableDocument).length;
   const publicFacts = new Map(publicCaseFacts(activeCase));
+  const customerReported = publicCaseOriginType(activeCase) === 'customer-reported-claim';
   const timingMeta = [
     publicFacts.get('Reported / opened'),
     publicFacts.get('Issue start') && `Issue start: ${publicFacts.get('Issue start')}`,
@@ -120,11 +125,22 @@ export default function CaseBriefing({
         <header className="sky-briefing-card-title">
           <span aria-hidden="true"><SkyIcon name="evidence" size={23} /></span>
           <div>
-            <h2>Allegation Summary</h2>
-            <small>This is the intake allegation, not a finding.</small>
+            <h2>{customerReported ? 'Allegation Summary' : 'Review Trigger'}</h2>
+            <small>{customerReported ? 'This is the intake allegation, not a finding.' : 'This explains why the item was routed, not what the outcome is.'}</small>
           </div>
         </header>
         <p className="sky-lead">{publicReportedAllegation(activeCase)}</p>
+        <section className="sky-briefing-routing" aria-label="Case routing context">
+          <div>
+            <small>Case origin</small>
+            <strong>{publicCaseOrigin(activeCase)}</strong>
+          </div>
+          <div>
+            <small>Why this became a case</small>
+            <strong>{publicCaseEscalationReason(activeCase)}</strong>
+          </div>
+          <p>{publicAlertHandlingNote(activeCase)}</p>
+        </section>
         <div className="sky-briefing-facts">
           {allegationFacts.map((fact) => <BriefingFact key={fact.label} {...fact} />)}
         </div>
