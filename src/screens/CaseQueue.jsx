@@ -5,6 +5,7 @@ import {
   publicCaseTaxonomy,
 } from '../data/publicCaseView.js';
 import { getWorkspaceProgress } from '../data/workspaceProgress.js';
+import { claimGeneratorChoices, coreClaimTypes } from '../data/claimRegistry.js';
 import {
   SkyIcon,
   SkyProgressRing,
@@ -38,12 +39,38 @@ export default function CaseQueue({
   const [search, setSearch] = useState('');
   const [lifecycle, setLifecycle] = useState('All');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [generatorOpen, setGeneratorOpen] = useState(false);
   const [customerType, setCustomerType] = useState('All');
   const [productType, setProductType] = useState('All');
   const [workflowType, setWorkflowType] = useState('All');
   const [visibleLimit, setVisibleLimit] = useState(pageSize);
   const [creating, setCreating] = useState(false);
   const [generationError, setGenerationError] = useState('');
+  const generatorChoices = useMemo(() => claimGeneratorChoices(), []);
+  const [generatorCustomerType, setGeneratorCustomerType] = useState(
+    () => generatorChoices[0]?.id ?? '',
+  );
+  const generatorCustomer = generatorChoices.find(
+    (item) => item.id === generatorCustomerType,
+  ) ?? generatorChoices[0];
+  const [generatorProductType, setGeneratorProductType] = useState(
+    () => generatorChoices[0]?.products?.[0]?.id ?? '',
+  );
+  const generatorProduct = generatorCustomer?.products.find(
+    (item) => item.id === generatorProductType,
+  ) ?? generatorCustomer?.products?.[0];
+  const [generatorWorkflowType, setGeneratorWorkflowType] = useState(
+    () => generatorChoices[0]?.products?.[0]?.workflows?.[0]?.id ?? '',
+  );
+  const generatorWorkflow = generatorProduct?.workflows.find(
+    (item) => item.id === generatorWorkflowType,
+  ) ?? generatorProduct?.workflows?.[0];
+  const [generatorScenarioId, setGeneratorScenarioId] = useState('auto');
+  const [generatorDifficulty, setGeneratorDifficulty] = useState('standard');
+  const [generatorDepth, setGeneratorDepth] = useState('standard');
+  const generatorDefinition = coreClaimTypes.find(
+    (item) => item.id === generatorWorkflow?.id,
+  );
 
   const rows = useMemo(() => cases.map((item) => {
     const completedTools = completedToolsByCase[item.id] ?? [];
@@ -88,21 +115,53 @@ export default function CaseQueue({
   }, [customerType, lifecycle, productType, search, workflowType]);
 
   async function generatePracticeCase() {
+    if (!generatorCustomer || !generatorProduct || !generatorWorkflow) return;
     setCreating(true);
     setGenerationError('');
     try {
+      const selectedScenario = generatorWorkflow.scenarios.find(
+        (item) => item.id === generatorScenarioId,
+      );
       await createCase({
-        customerType: activeCase.customerType,
-        productType: activeCase.productType,
-        workflowType: activeCase.workflowType,
-        difficulty: 'standard',
-        evidenceDepth: 'expanded',
+        customerType: generatorCustomer.id,
+        productType: generatorProduct.id,
+        workflowType: generatorWorkflow.id,
+        claimTypeId: generatorWorkflow.id,
+        scenarioId: selectedScenario?.id,
+        alertReason: selectedScenario?.alertReason,
+        reportedAllegation: selectedScenario?.reportedAllegation,
+        difficulty: generatorDifficulty,
+        evidenceDepth: generatorDepth,
       });
+      setGeneratorOpen(false);
     } catch {
       setGenerationError('The practice case could not be generated. Try again.');
     } finally {
       setCreating(false);
     }
+  }
+
+  function changeGeneratorCustomer(nextCustomerType) {
+    const nextCustomer = generatorChoices.find((item) => item.id === nextCustomerType)
+      ?? generatorChoices[0];
+    const nextProduct = nextCustomer?.products?.[0];
+    setGeneratorCustomerType(nextCustomer?.id ?? '');
+    setGeneratorProductType(nextProduct?.id ?? '');
+    setGeneratorWorkflowType(nextProduct?.workflows?.[0]?.id ?? '');
+    setGeneratorScenarioId('auto');
+  }
+
+  function changeGeneratorProduct(nextProductType) {
+    const nextProduct = generatorCustomer?.products.find((item) => item.id === nextProductType)
+      ?? generatorCustomer?.products?.[0];
+    setGeneratorProductType(nextProduct?.id ?? '');
+    setGeneratorWorkflowType(nextProduct?.workflows?.[0]?.id ?? '');
+    setGeneratorScenarioId('auto');
+  }
+
+  function changeGeneratorWorkflow(nextWorkflowType) {
+    setGeneratorWorkflowType(nextWorkflowType);
+    setGeneratorScenarioId('auto');
   }
 
   function clearFilters() {
@@ -149,12 +208,13 @@ export default function CaseQueue({
           <button
             className="sky-button-secondary sky-queue-generate"
             type="button"
-            onClick={generatePracticeCase}
+            onClick={() => setGeneratorOpen((value) => !value)}
             disabled={creating}
-            aria-busy={creating}
+            aria-expanded={generatorOpen}
+            aria-controls="case-generator"
           >
             <SkyIcon name="sparkle" size={17} />
-            <span>{creating ? 'Building…' : 'New case'}</span>
+            <span>{creating ? 'Building…' : generatorOpen ? 'Close generator' : 'New case'}</span>
           </button>
           <button
             className="sky-button-secondary sky-queue-filter-toggle"
@@ -168,6 +228,108 @@ export default function CaseQueue({
           </button>
         </div>
       </div>
+
+      {generatorOpen ? (
+        <section className="sky-case-generator" id="case-generator" aria-label="Generate fictional training case">
+          <header>
+            <div>
+              <p className="sky-eyebrow">Unlimited fictional practice</p>
+              <h2>Create a training case</h2>
+              <span>Choose the customer, product, and neutral review workflow. Hidden findings stay locked until submission.</span>
+            </div>
+            <strong>{coreClaimTypes.length} workflows</strong>
+          </header>
+          <div className="sky-case-generator-grid">
+            <label>
+              <span>1. Customer type</span>
+              <select
+                aria-label="Generate case customer type"
+                value={generatorCustomer?.id ?? ''}
+                onChange={(event) => changeGeneratorCustomer(event.target.value)}
+              >
+                {generatorChoices.map((customer) => (
+                  <option key={customer.id} value={customer.id}>{customer.label}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>2. Product</span>
+              <select
+                aria-label="Generate case product"
+                value={generatorProduct?.id ?? ''}
+                onChange={(event) => changeGeneratorProduct(event.target.value)}
+              >
+                {(generatorCustomer?.products ?? []).map((product) => (
+                  <option key={product.id} value={product.id}>{product.label}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>3. Review workflow</span>
+              <select
+                aria-label="Generate case review workflow"
+                value={generatorWorkflow?.id ?? ''}
+                onChange={(event) => changeGeneratorWorkflow(event.target.value)}
+              >
+                {(generatorProduct?.workflows ?? []).map((workflow) => (
+                  <option key={workflow.id} value={workflow.id}>{workflow.label}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>4. Scenario</span>
+              <select
+                aria-label="Generate case scenario"
+                value={generatorScenarioId}
+                onChange={(event) => setGeneratorScenarioId(event.target.value)}
+              >
+                <option value="auto">Auto mix</option>
+                {(generatorWorkflow?.scenarios ?? []).map((scenario) => (
+                  <option key={scenario.id} value={scenario.id}>{scenario.title}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>5. Difficulty</span>
+              <select
+                aria-label="Generate case difficulty"
+                value={generatorDifficulty}
+                onChange={(event) => setGeneratorDifficulty(event.target.value)}
+              >
+                <option value="light">Light</option>
+                <option value="standard">Standard</option>
+                <option value="deep">Deep</option>
+              </select>
+            </label>
+            <label>
+              <span>6. Evidence depth</span>
+              <select
+                aria-label="Generate case evidence depth"
+                value={generatorDepth}
+                onChange={(event) => setGeneratorDepth(event.target.value)}
+              >
+                <option value="light">Light packet</option>
+                <option value="standard">Standard packet</option>
+                <option value="deep">Deep packet</option>
+              </select>
+            </label>
+          </div>
+          <div className="sky-case-generator-context">
+            <span><strong>Selected:</strong> {generatorCustomer?.label} · {generatorProduct?.label} · {generatorWorkflow?.label}</span>
+            <span><strong>Evidence areas:</strong> {(generatorDefinition?.evidenceAreas ?? []).slice(0, 3).join(' · ')}</span>
+          </div>
+          <button
+            className="sky-button sky-case-generator-submit"
+            type="button"
+            onClick={generatePracticeCase}
+            disabled={creating || !generatorWorkflow}
+            aria-busy={creating}
+          >
+            <SkyIcon name="sparkle" size={18} />
+            <span>{creating ? 'Building case…' : 'Generate and open case'}</span>
+          </button>
+        </section>
+      ) : null}
 
       <form
         className="sky-queue-search"

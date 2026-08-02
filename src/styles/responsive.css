@@ -4408,6 +4408,30 @@
     grid-template-columns: 1fr;
   }
 
+  .sky-case-generator {
+    gap: 13px;
+    padding: 13px;
+    border-radius: 17px 17px 24px 17px;
+  }
+
+  .sky-case-generator > header {
+    display: grid;
+  }
+
+  .sky-case-generator > header > strong {
+    justify-self: start;
+  }
+
+  .sky-case-generator-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sky-case-generator-submit {
+    justify-self: stretch;
+    width: 100%;
+    min-width: 0;
+  }
+
   .sky-case-card.sky-queue-reference-card {
     gap: 9px;
     padding: 12px;

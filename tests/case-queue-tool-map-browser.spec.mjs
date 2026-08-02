@@ -58,6 +58,17 @@ for (const width of [420, 390, 360, 320]) {
     await expect(page.locator('.sky-queue-status-tabs button').first()).toHaveAttribute('aria-pressed', 'true');
     await expect(page.getByText(/High Risk|Medium Risk|Low Risk|Merchant challenged/i)).toHaveCount(0);
 
+    await page.getByRole('button', { name: 'New case' }).click();
+    const generator = page.getByRole('region', { name: 'Generate fictional training case' });
+    await expect(generator).toBeVisible();
+    await expect(generator.getByText('14 workflows')).toBeVisible();
+    await generator.getByLabel('Generate case customer type').selectOption({ label: 'Business' });
+    await generator.getByLabel('Generate case product').selectOption({ label: 'Payroll product' });
+    await expect(generator.getByLabel('Generate case review workflow').locator('option')).toHaveCount(2);
+    await expect(generator.getByLabel('Generate case review workflow')).toContainText('Payroll Change Alert');
+    await expect(generator.getByLabel('Generate case review workflow')).toContainText('Payroll Account Takeover');
+    await page.getByRole('button', { name: 'Close generator' }).click();
+
     await page.getByRole('button', { name: /^Filters/ }).click();
     await expect(page.getByLabel('Customer type')).toBeVisible();
     await page.getByLabel('Customer type').selectOption({ label: 'Personal' });

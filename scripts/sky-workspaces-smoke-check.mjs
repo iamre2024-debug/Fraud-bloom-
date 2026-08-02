@@ -10,6 +10,7 @@ import { trainingCases } from '../src/data/cases.js';
 import { enrichTrainingCases } from '../src/data/caseEnrichment.js';
 import { getWorkspaceProgress } from '../src/data/workspaceProgress.js';
 import { publicCaseSearchText } from '../src/data/publicCaseView.js';
+import { claimGeneratorChoices, coreClaimTypes } from '../src/data/claimRegistry.js';
 import {
   applyWorkflowSubmissionGate,
   requiredSubmissionStages,
@@ -452,11 +453,25 @@ for (const anchor of [
   'sky-queue-search',
   'sky-queue-status-tabs',
   'sky-queue-filter-sheet',
+  'sky-case-generator',
+  'claimGeneratorChoices',
+  'Generate case customer type',
+  'Generate case product',
+  'Generate case review workflow',
+  'Generate case scenario',
+  'claimTypeId: generatorWorkflow.id',
   'getWorkspaceProgress(item, completedTools)',
   "completedTools.includes('Case Briefing')",
   "openCase(item.id, destination)",
 ]) {
   if (!caseQueueSource.includes(anchor)) fail(`Case Queue structural rebuild is missing ${anchor}.`);
+}
+const generatorChoices = claimGeneratorChoices();
+const generatorWorkflows = new Set(generatorChoices.flatMap((customer) => (
+  customer.products.flatMap((product) => product.workflows.map((workflow) => workflow.id))
+)));
+if (generatorWorkflows.size !== coreClaimTypes.length || coreClaimTypes.length !== 14) {
+  fail(`Case Queue generator exposes ${generatorWorkflows.size} of ${coreClaimTypes.length} registered workflows.`);
 }
 for (const forbidden of [
   'item.priority',
