@@ -36,9 +36,10 @@ function evidenceLabel(item) {
 }
 
 function indicatorAnswerComplete(answer = {}) {
+  const response = String(answer.answer ?? answer.response ?? '').trim();
   return Boolean(
-    String(answer.answer ?? answer.response ?? '').trim()
-    && String(answer.proof ?? '').trim()
+    response
+    && (response === 'Not enough evidence' || String(answer.proof ?? '').trim())
     && String(answer.explanation ?? '').trim(),
   );
 }
@@ -359,7 +360,8 @@ export function IndicatorsReview({
         />
         <p className="sky-review-guidance">
           Prompts alternate between unresolved concerns and legitimate or consistent evidence.
-          No risk color, weight, score, or correct response is shown.
+          No risk color, weight, score, or correct response is shown. This checklist is optional
+          and never controls your determination or ability to submit.
         </p>
         <div className="sky-indicator-rows">
           {checklist.flags.map((indicator, index) => {
@@ -429,7 +431,9 @@ export function IndicatorsReview({
                     <input
                       value={answer.proof ?? ''}
                       onChange={(event) => updateIndicator(indicator.id, { proof: event.target.value })}
-                      placeholder="Record ID, date, amount, or source"
+                      placeholder={response === 'Not enough evidence'
+                        ? 'Optional when the records are insufficient'
+                        : 'Record ID, date, amount, or source'}
                     />
                   </label>
                   <label className="sky-field wide">
@@ -496,7 +500,7 @@ export function IndicatorsReview({
           <span>
             {complete
               ? 'Every indicator has a response, evidence reference, and explanation.'
-              : 'Complete the response, evidence reference, and explanation for every indicator.'}
+              : 'Indicators are optional. You may continue without answering or marking them reviewed.'}
           </span>
           <div className="sky-action-row">
             <button

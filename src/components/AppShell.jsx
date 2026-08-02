@@ -61,7 +61,6 @@ const backRoutes = {
 const orderedWorkflowRequirements = [
   { completion: 'Case Briefing', message: 'After briefing' },
   { completion: 'Investigation Summary', message: 'After summary' },
-  { completion: 'Case Indicators Review', message: 'After indicators' },
   { completion: 'Determination', message: 'After determination' },
 ];
 
@@ -78,9 +77,9 @@ function stageLock(stageName, completedTools, latestPackage) {
       : { locked: true, message: 'After summary' };
   }
   if (stageName === 'determination') {
-    return completed.has('Case Indicators Review')
+    return completed.has('Investigation Summary')
       ? { locked: false, message: '' }
-      : { locked: true, message: 'After indicators' };
+      : { locked: true, message: 'After summary' };
   }
   if (stageName === 'submit') {
     const missing = orderedWorkflowRequirements.find(({ completion }) => !completed.has(completion));

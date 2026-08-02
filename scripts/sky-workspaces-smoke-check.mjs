@@ -571,13 +571,13 @@ for (const anchor of ['determinationComplete', 'decisionDraft.findingBasis', 'di
   if (!determinationSection.includes(anchor)) fail(`Determination does not enforce ${anchor}.`);
 }
 
-for (const stage of ['Case Briefing', 'Investigation Summary', 'Case Indicators Review', 'Determination']) {
+for (const stage of ['Case Briefing', 'Investigation Summary', 'Determination']) {
   if (!stateSource.includes(`'${stage}'`)) fail(`Submission gate is missing ${stage}.`);
 }
 if ((stateSource.match(/applyWorkflowSubmissionGate\(/g) ?? []).length < 3) {
   fail('Submission gating is not applied to both displayed and submitted package status.');
 }
-for (const anchor of ['workflowCompletedTools', 'After briefing', 'After summary', 'After indicators', 'After determination', 'After submission']) {
+for (const anchor of ['workflowCompletedTools', 'After briefing', 'After summary', 'After determination', 'After submission']) {
   if (!shellSource.includes(anchor)) fail(`App shell stage locks are missing ${anchor}.`);
 }
 for (const anchor of ['const legacyHistory', 'legacyHistory ? null : resolvePostSubmissionTruth(activeCase)', 'truthReveal: caseTruth ?']) {
@@ -587,12 +587,23 @@ for (const anchor of ['const legacyHistory', 'legacyHistory ? null : resolvePost
 const baseReadyStatus = { ready: true, blockers: [], messages: [] };
 const gatedStatus = applyWorkflowSubmissionGate(baseReadyStatus, ['Case Briefing']);
 if (gatedStatus.ready) fail('Submission gate allows a package before all workflow stages are complete.');
-if (gatedStatus.missingWorkflowStages.join('|') !== 'Investigation Summary|Case Indicators Review|Determination') {
+if (gatedStatus.missingWorkflowStages.join('|') !== 'Investigation Summary|Determination') {
   fail('Submission gate reports the wrong missing workflow stages.');
 }
 const completeStatus = applyWorkflowSubmissionGate(baseReadyStatus, requiredSubmissionStages);
 if (!completeStatus.ready || completeStatus.missingWorkflowStages.length) {
   fail('Submission gate does not release after all required workflow stages are complete.');
+}
+const optionalIndicatorStatus = applyWorkflowSubmissionGate({
+  ...baseReadyStatus,
+  indicatorSummary: {
+    answeredCount: 0,
+    unansweredCount: 6,
+    incompleteIndicators: [],
+  },
+}, requiredSubmissionStages);
+if (!optionalIndicatorStatus.ready || optionalIndicatorStatus.missingWorkflowStages.length) {
+  fail('Optional indicators still block submission when no indicator has been answered or reviewed.');
 }
 
 const activeCase = enrichTrainingCases(trainingCases)[0];

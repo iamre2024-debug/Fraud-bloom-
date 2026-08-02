@@ -67,19 +67,16 @@ export default function Dashboard({
   const openCases = cases.filter((item) => !/complete|closed/i.test(item.status ?? '')).length;
   const briefingComplete = completedTools.includes('Case Briefing');
   const summaryComplete = completedTools.includes('Investigation Summary');
-  const indicatorsComplete = completedTools.includes('Case Indicators Review');
   const determinationComplete = completedTools.includes('Determination');
   const nextWorkflow = !briefingComplete
     ? { route: 'briefing', label: `Review ${activeCase.id} briefing` }
     : !summaryComplete
       ? { route: 'workspace', label: `Continue ${activeCase.id} investigation` }
-      : !indicatorsComplete
-        ? { route: 'indicators', label: 'Complete case indicators' }
-        : !determinationComplete
-          ? { route: 'determination', label: 'Complete determination' }
-          : !latestPackage
-            ? { route: 'submit', label: 'Review submission' }
-            : { route: 'luna', label: 'Open Luna debrief' };
+      : !determinationComplete
+        ? { route: 'determination', label: 'Complete determination' }
+        : !latestPackage
+          ? { route: 'submit', label: 'Review submission' }
+          : { route: 'luna', label: 'Open Luna debrief' };
   return (
     <div className="sky-dashboard">
       <SkyCard

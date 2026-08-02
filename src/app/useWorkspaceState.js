@@ -41,22 +41,12 @@ const defaultDecisionDraft = {
 export const requiredSubmissionStages = Object.freeze([
   'Case Briefing',
   'Investigation Summary',
-  'Case Indicators Review',
   'Determination',
 ]);
 
 export function applyWorkflowSubmissionGate(status = {}, completedTools = []) {
   const completed = new Set(normalizeCompletedToolNames(completedTools));
-  const indicatorSummary = status.indicatorSummary ?? {};
-  const indicatorsComplete = !status.indicatorSummary || (
-    Number(indicatorSummary.unansweredCount ?? 0) === 0
-    && Number(indicatorSummary.answeredCount ?? 0) > 0
-    && !(indicatorSummary.incompleteIndicators ?? []).length
-  );
-  const missingWorkflowStages = requiredSubmissionStages.filter((stage) => (
-    !completed.has(stage)
-    || (stage === 'Case Indicators Review' && !indicatorsComplete)
-  ));
+  const missingWorkflowStages = requiredSubmissionStages.filter((stage) => !completed.has(stage));
   if (!missingWorkflowStages.length) {
     return {
       ...status,
