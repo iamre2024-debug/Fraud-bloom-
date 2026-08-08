@@ -74,6 +74,13 @@ const quickIdLabels = [
   'Address',
 ];
 
+const floatingViews = [
+  { id: 'note', label: 'Note', icon: 'evidence' },
+  { id: 'ids', label: 'IDs', icon: 'hash' },
+  { id: 'evidence', label: 'Evidence', icon: 'pin' },
+  { id: 'tools', label: 'Tools', icon: 'workspace' },
+];
+
 function itemsFromPin(pin, activeCaseTrainingId = '') {
   const sourceRecordId = pin.sourceRecordId ?? pin.recordId ?? pin.id;
   const record = pin.record ?? {};
@@ -208,6 +215,8 @@ export default function QuickPad({
   activeCaseAvailableTools = null,
 }) {
   const [open, setOpen] = useState(false);
+  const [floatingView, setFloatingView] = useState('note');
+  const [expanded, setExpanded] = useState(false);
   const [quickIdLabel, setQuickIdLabel] = useState('Training ID');
   const [quickIdValue, setQuickIdValue] = useState('');
   const panelId = useId();
@@ -294,10 +303,19 @@ export default function QuickPad({
 
   const closePad = useCallback(() => {
     setOpen(false);
+    setExpanded(false);
     if (typeof window !== 'undefined') {
       window.requestAnimationFrame(() => triggerRef.current?.focus());
     }
   }, []);
+
+  function openDestination(toolName, route) {
+    navigate('tool', {
+      tool: toolName,
+      query: route?.payload?.query ?? '',
+      initialPayload: route?.payload,
+    });
+  }
 
   useEffect(() => {
     if (!open || variant !== 'floating') return undefined;
@@ -440,11 +458,7 @@ export default function QuickPad({
               className="sky-button-secondary"
               type="button"
               key={toolName}
-              onClick={() => navigate('tool', {
-                tool: toolName,
-                query: route?.payload?.query ?? '',
-                initialPayload: route?.payload,
-              })}
+              onClick={() => openDestination(toolName, route)}
             >
               Open {toolName}
             </button>
@@ -456,6 +470,69 @@ export default function QuickPad({
           </div>
         ) : null}
       </div>
+    </div>
+  );
+
+  const compactQuickIds = (
+    <div className="sky-quick-pad-compact-ids">
+      <h3>Quick IDs</h3>
+      {items.slice(0, 2).map((item) => (
+        <div className="sky-quick-pad-id-chip" key={item.id}>
+          <SkyIcon name="hash" size={16} />
+          <span><strong>{item.label}</strong><small>{item.value}</small></span>
+          <button type="button" onClick={() => removeQuickId(item.id)} aria-label={`Remove ${item.label} ${item.value} from Quick Pad`}>×</button>
+        </div>
+      ))}
+      {!items.length ? <p className="sky-quick-pad-compact-empty">No IDs saved yet.</p> : null}
+      {items.length > 2 ? <button className="sky-quick-pad-more" type="button" onClick={() => setFloatingView('ids')}>+{items.length - 2} more</button> : null}
+    </div>
+  );
+
+  const floatingContent = floatingView === 'note' ? (
+    <div className="sky-quick-pad-split">
+      <div className="sky-quick-pad-compact-note">
+        <label htmlFor={`${panelId}-scratch`}>Scratch note</label>
+        <textarea
+          id={`${panelId}-scratch`}
+          value={quickPad.scratch ?? ''}
+          onChange={(event) => setQuickPad((current) => ({ ...current, scratch: event.target.value }))}
+          placeholder="Jot a quick note…"
+          aria-label="Case Quick Pad scratch note"
+        />
+        <small>Auto-saved for this case</small>
+      </div>
+      {compactQuickIds}
+    </div>
+  ) : floatingView === 'ids' ? (
+    <div className="sky-quick-pad-view sky-quick-pad-id-view">
+      <form className="sky-quick-pad-compact-form" onSubmit={addQuickId}>
+        <select value={quickIdLabel} onChange={(event) => setQuickIdLabel(event.target.value)} aria-label="Quick ID type">
+          {quickIdLabels.map((label) => <option key={label}>{label}</option>)}
+        </select>
+        <input value={quickIdValue} onChange={(event) => setQuickIdValue(event.target.value)} placeholder="ID value" aria-label="Quick ID value" autoComplete="off" />
+        <button type="submit" disabled={!quickIdValue.trim()} aria-label="Save Quick ID">+</button>
+      </form>
+      {compactQuickIds}
+    </div>
+  ) : floatingView === 'evidence' ? (
+    <div className="sky-quick-pad-view sky-quick-pad-compact-list">
+      <h3>Copy from evidence tray</h3>
+      {tray.slice(0, 4).map((pin, index) => (
+        <button type="button" key={pin.id ?? index} onClick={() => addPin(pin)}>
+          <SkyIcon name="pin" size={16} /><span>{pin.label ?? pin.id ?? pin}</span><strong>+</strong>
+        </button>
+      ))}
+      {!tray.length ? <p className="sky-quick-pad-compact-empty">The current evidence tray is empty.</p> : null}
+    </div>
+  ) : (
+    <div className="sky-quick-pad-view sky-quick-pad-compact-list">
+      <h3>Open a case tool</h3>
+      {destinations.slice(0, 5).map(({ toolName, route }) => (
+        <button type="button" key={toolName} onClick={() => openDestination(toolName, route)}>
+          <SkyIcon name="workspace" size={16} /><span>{toolName}</span><SkyIcon name="arrow" size={15} />
+        </button>
+      ))}
+      {!destinations.length ? <p className="sky-quick-pad-compact-empty">No tools are assigned to this case.</p> : null}
     </div>
   );
 
@@ -479,24 +556,44 @@ export default function QuickPad({
               aria-modal="true"
               aria-labelledby={`${panelId}-title`}
               tabIndex="-1"
+              data-expanded={expanded || undefined}
             >
               <span className="sky-quick-pad-sheet-sheen" aria-hidden="true" />
+              <div className="sky-quick-pad-luna" aria-hidden="true">
+                <img src="/assets/luna-anime-purple-v1.webp" alt="" />
+                <span>✦</span>
+              </div>
               <header>
                 <div>
-                  <p className="sky-eyebrow">Case-scoped scratchpad</p>
                   <h2 id={`${panelId}-title`}>Quick Pad</h2>
-                  <span>{activeCaseId || 'Active case'} · {items.length} typed items</span>
+                  <span>{items.length} saved {items.length === 1 ? 'ID' : 'IDs'} · {activeCaseId || 'Active case'}</span>
                 </div>
-                <button
-                  type="button"
-                  className="sky-icon-button"
-                  onClick={closePad}
-                  aria-label="Close Quick Pad"
-                >
-                  ×
-                </button>
+                <div className="sky-quick-pad-header-actions">
+                  <button type="button" className="sky-icon-button" onClick={() => setExpanded((value) => !value)} aria-label={expanded ? 'Use compact Quick Pad' : 'Expand Quick Pad'}>
+                    <span aria-hidden="true">{expanded ? '↙' : '↗'}</span>
+                  </button>
+                  <button type="button" className="sky-icon-button" onClick={closePad} aria-label="Close Quick Pad">×</button>
+                </div>
               </header>
-              {padContents}
+              {expanded ? padContents : (
+                <div className="sky-quick-pad-compact-shell">
+                  <nav className="sky-quick-pad-dock" aria-label="Quick Pad sections">
+                    {floatingViews.map((view) => (
+                      <button
+                        type="button"
+                        key={view.id}
+                        className={floatingView === view.id ? 'active' : ''}
+                        onClick={() => setFloatingView(view.id)}
+                        aria-pressed={floatingView === view.id}
+                      >
+                        <span><SkyIcon name={view.icon} size={18} /></span>
+                        <small>{view.label}</small>
+                      </button>
+                    ))}
+                  </nav>
+                  <div className="sky-quick-pad-compact-main">{floatingContent}</div>
+                </div>
+              )}
             </section>
           </>
         ) : null}

@@ -516,6 +516,15 @@ for (const anchor of [
   'aria-modal="true"',
   'panelRef.current',
   "document.body.style.overflow = 'hidden'",
+  'sky-quick-pad-luna',
+  'sky-quick-pad-dock',
+  'sky-quick-pad-split',
+  'Expand Quick Pad',
+  '/assets/luna-anime-purple-v1.webp',
+  "{ id: 'note', label: 'Note'",
+  "{ id: 'ids', label: 'IDs'",
+  "{ id: 'evidence', label: 'Evidence'",
+  "{ id: 'tools', label: 'Tools'",
 ]) {
   if (!quickPadSource.includes(anchor)) fail(`Functional floating Quick Pad is missing ${anchor}.`);
 }
